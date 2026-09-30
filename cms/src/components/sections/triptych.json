@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_sections_triptychs",
+  "info": { "displayName": "Triptych", "icon": "layout" },
+  "options": {},
+  "attributes": {
+    "panels": { "type": "json", "required": true },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

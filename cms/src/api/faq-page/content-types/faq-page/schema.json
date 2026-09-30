@@ -1,0 +1,46 @@
+{
+  "kind": "singleType",
+  "collectionName": "faq_pages",
+  "info": {
+    "singularName": "faq-page",
+    "pluralName": "faq-pages",
+    "displayName": "FAQ Page"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "sections": {
+      "type": "dynamiczone",
+      "components": [
+        "sections.hero-video",
+        "sections.stat-counters",
+        "sections.marquee",
+        "sections.class-rail",
+        "sections.scroll-chapter",
+        "sections.feature-split",
+        "sections.triptych",
+        "sections.program-tiers",
+        "sections.coach-spotlight",
+        "sections.coach-carousel",
+        "sections.pricing-teaser",
+        "sections.app-features",
+        "sections.gallery-grid",
+        "sections.testimonial-slider",
+        "sections.partner-strip",
+        "sections.faq-block",
+        "sections.location-block",
+        "sections.cta-banner",
+        "sections.newsletter-block",
+        "sections.rich-text",
+        "sections.video-feature"
+      ]
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

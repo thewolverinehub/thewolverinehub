@@ -1,0 +1,13 @@
+{
+  "kind": "collectionType",
+  "collectionName": "redirects",
+  "info": { "singularName": "redirect", "pluralName": "redirects", "displayName": "Redirect" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "from": { "type": "string", "required": true },
+    "to": { "type": "string", "required": true },
+    "statusCode": { "type": "enumeration", "enum": ["301", "302"], "default": "301" },
+    "isActive": { "type": "boolean", "default": true }
+  }
+}

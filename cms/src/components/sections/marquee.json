@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_sections_marquees",
+  "info": { "displayName": "Marquee", "icon": "arrowRight" },
+  "options": {},
+  "attributes": {
+    "items": { "type": "json", "required": true },
+    "speed": { "type": "enumeration", "enum": ["slow", "normal", "fast"], "default": "normal" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

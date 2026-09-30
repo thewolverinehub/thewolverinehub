@@ -1,0 +1,25 @@
+{
+  "kind": "singleType",
+  "collectionName": "ui_strings",
+  "info": { "singularName": "ui-strings", "pluralName": "ui-strings", "displayName": "UI Strings" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "skipLinkLabel": { "type": "string", "default": "Skip to main content" },
+    "searchPlaceholder": { "type": "string", "default": "Search classes, coaches, programs..." },
+    "filterNoResults": { "type": "string", "default": "No results found." },
+    "loadMoreLabel": { "type": "string", "default": "Load more" },
+    "bookNowLabel": { "type": "string", "default": "Book now" },
+    "viewDetailsLabel": { "type": "string", "default": "View details" },
+    "fullBadge": { "type": "string", "default": "Full" },
+    "spotsLeftTemplate": { "type": "string", "default": "{n} spots left" },
+    "introSkipLabel": { "type": "string", "default": "Skip the ceremony." },
+    "cookieNotice": { "type": "text" },
+    "formSuccessDefault": { "type": "string", "default": "Message received. We will be in touch." },
+    "formErrorDefault": { "type": "string", "default": "Something went wrong. Please try again." },
+    "notFoundHeading": { "type": "string", "default": "Rest Day." },
+    "notFoundBody": { "type": "text" },
+    "errorHeading": { "type": "string", "default": "Something snapped." },
+    "errorBody": { "type": "text" }
+  }
+}

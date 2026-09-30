@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_sections_coach_spotlights",
+  "info": { "displayName": "Coach Spotlight", "icon": "user" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "cta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

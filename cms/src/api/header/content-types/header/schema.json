@@ -1,0 +1,17 @@
+{
+  "kind": "singleType",
+  "collectionName": "headers",
+  "info": { "singularName": "header", "pluralName": "headers", "displayName": "Header" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "menuItems": { "type": "component", "repeatable": true, "component": "navigation.menu-item" },
+    "primaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "announcementBarEnabled": { "type": "boolean", "default": false },
+    "announcementBarText": { "type": "string" },
+    "announcementBarLink": { "type": "string" },
+    "announcementBarColour": { "type": "enumeration", "enum": ["yellow", "red", "blue"], "default": "yellow" },
+    "menuWidgetLabel": { "type": "string", "default": "Next class" },
+    "menuWidgetEnabled": { "type": "boolean", "default": true }
+  }
+}

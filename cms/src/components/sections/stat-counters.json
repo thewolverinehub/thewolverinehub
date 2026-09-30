@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_sections_stat_counters",
+  "info": { "displayName": "Stat Counters", "icon": "chartCircle" },
+  "options": {},
+  "attributes": {
+    "stats": { "type": "json", "required": true },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

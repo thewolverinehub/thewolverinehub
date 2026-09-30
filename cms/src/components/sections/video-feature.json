@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_sections_video_features",
+  "info": { "displayName": "Video Feature", "icon": "play" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "video": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["videos"] },
+    "poster": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "caption": { "type": "text" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

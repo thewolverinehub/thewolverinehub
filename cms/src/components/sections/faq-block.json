@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_sections_faq_blocks",
+  "info": { "displayName": "FAQ Block", "icon": "question" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "maxItems": { "type": "integer", "default": 5 },
+    "cta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

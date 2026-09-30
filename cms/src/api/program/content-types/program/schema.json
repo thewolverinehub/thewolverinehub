@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "programs",
+  "info": { "singularName": "program", "pluralName": "programs", "displayName": "Program" },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "name", "required": true },
+    "tagline": { "type": "string" },
+    "description": { "type": "blocks" },
+    "shortDescription": { "type": "text" },
+    "thumbnail": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "heroImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "fromPrice": { "type": "decimal" },
+    "currency": { "type": "string", "default": "LKR" },
+    "minimumCommitment": { "type": "string" },
+    "isLimitedAvailability": { "type": "boolean", "default": false },
+    "requiresQuestionnaire": { "type": "boolean", "default": false },
+    "questionnaireFields": { "type": "json" },
+    "isFeatured": { "type": "boolean", "default": false },
+    "sortOrder": { "type": "integer", "default": 0 },
+    "seo": { "type": "component", "repeatable": false, "component": "shared.seo" }
+  }
+}

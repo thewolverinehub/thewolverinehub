@@ -1,0 +1,17 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pricing_tiers",
+  "info": { "singularName": "pricing-tier", "pluralName": "pricing-tiers", "displayName": "Pricing Tier" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "name", "required": true },
+    "tagline": { "type": "string" },
+    "description": { "type": "text" },
+    "features": { "type": "json" },
+    "isMostPopular": { "type": "boolean", "default": false },
+    "colour": { "type": "enumeration", "enum": ["yellow", "blue", "red", "white"], "default": "yellow" },
+    "sortOrder": { "type": "integer", "default": 0 }
+  }
+}

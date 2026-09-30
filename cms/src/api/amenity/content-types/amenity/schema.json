@@ -1,0 +1,12 @@
+{
+  "kind": "collectionType",
+  "collectionName": "amenities",
+  "info": { "singularName": "amenity", "pluralName": "amenities", "displayName": "Amenity" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "icon": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "sortOrder": { "type": "integer", "default": 0 }
+  }
+}

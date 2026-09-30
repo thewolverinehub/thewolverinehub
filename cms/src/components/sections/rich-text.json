@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_sections_rich_texts",
+  "info": { "displayName": "Rich Text", "icon": "file" },
+  "options": {},
+  "attributes": {
+    "content": { "type": "blocks", "required": true },
+    "backgroundToken": { "type": "enumeration", "enum": ["black", "ink", "white"], "default": "black" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_sections_location_blocks",
+  "info": { "displayName": "Location Block", "icon": "pinMap" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "mapEmbedUrl": { "type": "string" },
+    "mapImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

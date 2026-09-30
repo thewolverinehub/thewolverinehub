@@ -1,0 +1,17 @@
+{
+  "kind": "collectionType",
+  "collectionName": "leads",
+  "info": { "singularName": "lead", "pluralName": "leads", "displayName": "Lead" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "formKey": { "type": "string", "required": true },
+    "name": { "type": "string", "required": true },
+    "email": { "type": "email", "required": true },
+    "phone": { "type": "string" },
+    "message": { "type": "text" },
+    "fields": { "type": "json" },
+    "ipHash": { "type": "string" },
+    "status": { "type": "enumeration", "enum": ["new", "contacted", "converted", "closed"], "default": "new" }
+  }
+}

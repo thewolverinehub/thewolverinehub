@@ -1,0 +1,13 @@
+{
+  "kind": "collectionType",
+  "collectionName": "partners",
+  "info": { "singularName": "partner", "pluralName": "partners", "displayName": "Partner" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "logo": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] },
+    "url": { "type": "string" },
+    "sortOrder": { "type": "integer", "default": 0 }
+  }
+}

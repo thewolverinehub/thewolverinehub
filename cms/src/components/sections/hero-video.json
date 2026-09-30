@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_sections_hero_videos",
+  "info": { "displayName": "Hero Video", "icon": "play" },
+  "options": {},
+  "attributes": {
+    "headline": { "type": "string", "required": true },
+    "subheadline": { "type": "text" },
+    "video": { "type": "media", "multiple": false, "allowedTypes": ["videos"] },
+    "poster": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "primaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "secondaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

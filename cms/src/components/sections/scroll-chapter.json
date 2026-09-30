@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_sections_scroll_chapters",
+  "info": { "displayName": "Scroll Chapter", "icon": "book" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string", "required": true },
+    "chapters": { "type": "json", "required": true },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

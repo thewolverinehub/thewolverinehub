@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_sections_testimonial_sliders",
+  "info": { "displayName": "Testimonial Slider", "icon": "quote" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "maxItems": { "type": "integer", "default": 6 },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

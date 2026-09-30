@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "posts",
+  "info": { "singularName": "post", "pluralName": "posts", "displayName": "Post" },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "summary": { "type": "text" },
+    "content": { "type": "blocks", "required": true },
+    "coverImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "author": { "type": "relation", "relation": "manyToOne", "target": "api::author.author" },
+    "category": { "type": "relation", "relation": "manyToOne", "target": "api::post-category.post-category" },
+    "tags": { "type": "json" },
+    "readingTimeMinutes": { "type": "integer" },
+    "isFeatured": { "type": "boolean", "default": false },
+    "publishedAt": { "type": "datetime" },
+    "seo": { "type": "component", "repeatable": false, "component": "shared.seo" }
+  }
+}

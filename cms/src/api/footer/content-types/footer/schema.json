@@ -1,0 +1,17 @@
+{
+  "kind": "singleType",
+  "collectionName": "footers",
+  "info": { "singularName": "footer", "pluralName": "footers", "displayName": "Footer" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "columns": { "type": "component", "repeatable": true, "component": "navigation.footer-column" },
+    "ctaBlock": { "type": "component", "repeatable": false, "component": "sections.cta-banner" },
+    "newsletterEnabled": { "type": "boolean", "default": true },
+    "newsletterHeading": { "type": "string" },
+    "newsletterSubheading": { "type": "text" },
+    "legalLinks": { "type": "component", "repeatable": true, "component": "shared.link" },
+    "copyrightText": { "type": "string" },
+    "wordmarkText": { "type": "string", "default": "THE WOLVERINE HUB" }
+  }
+}

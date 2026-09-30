@@ -1,0 +1,49 @@
+{
+  "name": "cms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Strapi application",
+  "scripts": {
+    "build": "strapi build",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "lint": "eslint src",
+    "ts:check": "tsc --noEmit",
+    "seed": "node scripts/seed/index.mjs",
+    "seed:clear": "node scripts/seed/clear.mjs",
+    "sync:push": "node scripts/sync/push.mjs",
+    "sync:pull": "node scripts/sync/pull.mjs",
+    "backup:live": "node scripts/sync/backup.mjs live",
+    "backup:local": "node scripts/sync/backup.mjs local"
+  },
+  "dependencies": {
+    "@strapi/database": "5.55.1",
+    "@strapi/plugin-cloud": "5.55.1",
+    "@strapi/plugin-users-permissions": "5.55.1",
+    "@strapi/provider-upload-aws-s3": "^5.55.1",
+    "@strapi/strapi": "5.55.1",
+    "pg": "8.20.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.30.3",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^10.11.0",
+    "typescript": "^5",
+    "typescript-eslint": "^8.71.0"
+  },
+  "engines": {
+    "node": ">=22.0.0 <=26.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "9d89cbbc-9b88-4496-bd4e-da7717a0c280",
+    "installId": "d6f0ded0b26bccfe4135f80a5a05d75cd97503d28d65e020797ece39774711d4"
+  }
+}

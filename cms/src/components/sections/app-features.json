@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_sections_app_features",
+  "info": { "displayName": "App Features", "icon": "apps" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "features": { "type": "json" },
+    "comingSoon": { "type": "boolean", "default": false },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_navigation_menu_items",
+  "info": { "displayName": "Menu Item", "icon": "bulletList" },
+  "options": {},
+  "attributes": {
+    "label": { "type": "string", "required": true },
+    "href": { "type": "string", "required": true },
+    "indexNumber": { "type": "string" },
+    "description": { "type": "text" },
+    "previewImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "previewVideo": { "type": "media", "multiple": false, "allowedTypes": ["videos"] },
+    "subItems": { "type": "component", "repeatable": true, "component": "shared.link" }
+  }
+}

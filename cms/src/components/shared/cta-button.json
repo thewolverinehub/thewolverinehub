@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_shared_cta_buttons",
+  "info": { "displayName": "CTA Button", "icon": "cursor" },
+  "options": {},
+  "attributes": {
+    "label": { "type": "string", "required": true },
+    "href": { "type": "string", "required": true },
+    "variant": {
+      "type": "enumeration",
+      "enum": ["primary", "secondary", "ghost", "danger"],
+      "default": "primary"
+    },
+    "openInNewTab": { "type": "boolean", "default": false }
+  }
+}

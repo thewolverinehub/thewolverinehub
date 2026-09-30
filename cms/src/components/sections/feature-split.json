@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_sections_feature_splits",
+  "info": { "displayName": "Feature Split", "icon": "layer" },
+  "options": {},
+  "attributes": {
+    "eyebrow": { "type": "string" },
+    "heading": { "type": "string", "required": true },
+    "body": { "type": "blocks" },
+    "media": { "type": "component", "repeatable": false, "component": "shared.media-with-alt" },
+    "cta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "imagePosition": { "type": "enumeration", "enum": ["left", "right"], "default": "right" },
+    "backgroundToken": { "type": "enumeration", "enum": ["black", "ink", "blue", "white"], "default": "black" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

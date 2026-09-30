@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_sections_partner_strips",
+  "info": { "displayName": "Partner Strip", "icon": "handHeart" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

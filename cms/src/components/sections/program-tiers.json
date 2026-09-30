@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_sections_program_tiers",
+  "info": { "displayName": "Program Tiers", "icon": "star" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "subheading": { "type": "text" },
+    "cta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}

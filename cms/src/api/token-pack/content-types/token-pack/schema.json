@@ -1,0 +1,14 @@
+{
+  "kind": "collectionType",
+  "collectionName": "token_packs",
+  "info": { "singularName": "token-pack", "pluralName": "token-packs", "displayName": "Token Pack" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "tokens": { "type": "integer", "required": true },
+    "validityDays": { "type": "integer", "default": 15 },
+    "priceLKR": { "type": "decimal", "required": true },
+    "payHereItemName": { "type": "string" },
+    "sortOrder": { "type": "integer", "default": 0 }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "schedule_slots",
+  "info": { "singularName": "schedule-slot", "pluralName": "schedule-slots", "displayName": "Schedule Slot" },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "class": { "type": "relation", "relation": "manyToOne", "target": "api::class.class", "required": true },
+    "coach": { "type": "relation", "relation": "manyToOne", "target": "api::coach.coach" },
+    "weekday": { "type": "enumeration", "enum": ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"], "required": true },
+    "startTime": { "type": "time", "required": true },
+    "endTime": { "type": "time", "required": true },
+    "capacity": { "type": "integer", "default": 20 },
+    "room": { "type": "string" },
+    "isActive": { "type": "boolean", "default": true },
+    "notes": { "type": "text" }
+  }
+}

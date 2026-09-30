@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_sections_cta_banners",
+  "info": { "displayName": "CTA Banner", "icon": "megaphone" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string", "required": true },
+    "subheading": { "type": "text" },
+    "primaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "secondaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
+    "backgroundToken": { "type": "enumeration", "enum": ["black", "ink", "blue", "red", "yellow"], "default": "blue" },
+    "visible": { "type": "boolean", "default": true },
+    "anchorId": { "type": "string" }
+  }
+}
