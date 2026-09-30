@@ -3,6 +3,11 @@ name: Lighthouse CI
 on:
   push:
     branches: [main]
+    paths:
+      - "web/**"
+      - ".lighthouserc*.js"
+      - ".github/workflows/lighthouse.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,6 +16,9 @@ jobs:
   lighthouse:
     name: Lighthouse — mobile & desktop
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
 
     steps:
       - uses: actions/checkout@v4
@@ -18,13 +26,80 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          # Minimal runtime env vars — real values come from Railway
+          PUBLIC_SITE_URL: http://localhost:4321
+          CMS_PUBLIC_URL: http://localhost:1337
+          CMS_INTERNAL_URL: http://localhost:1337
+          STRAPI_API_TOKEN: ci_placeholder
+          REDIS_URL: redis://localhost:6379
+          SITE_INDEXING: "false"
+          PAYMENT_MODE: preview
+          EDGE_CHECK: "false"
+          BUCKET_ENDPOINT: http://localhost:9000
+          BUCKET_REGION: us-east-1
+          BUCKET_ACCESS_KEY_ID: ci_key
+          BUCKET_SECRET_ACCESS_KEY: ci_secret
+          BUCKET_NAME: wolverinehub-media
 
       - name: Install LHCI
         run: npm install -g @lhci/cli@latest
+        working-directory: .
 
-      - name: Run Lighthouse CI
-        run: lhci autorun
+      # ── Mobile ────────────────────────────────────────────────────────────────
+      - name: Lighthouse — mobile
+        run: lhci autorun --config ../.lighthouserc.js
         env:
+          PORT: 4321
+          HOST: "0.0.0.0"
+          PUBLIC_SITE_URL: http://localhost:4321
+          CMS_PUBLIC_URL: http://localhost:1337
+          CMS_INTERNAL_URL: http://localhost:1337
+          STRAPI_API_TOKEN: ci_placeholder
+          REDIS_URL: redis://localhost:6379
+          SITE_INDEXING: "false"
+          PAYMENT_MODE: preview
+          EDGE_CHECK: "false"
+          BUCKET_ENDPOINT: http://localhost:9000
+          BUCKET_REGION: us-east-1
+          BUCKET_ACCESS_KEY_ID: ci_key
+          BUCKET_SECRET_ACCESS_KEY: ci_secret
+          BUCKET_NAME: wolverinehub-media
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-          # Target URL is the deployed Railway dev link — set in repo secrets
-          LHCI_TARGET_URL: ${{ secrets.RAILWAY_WEB_URL }}
+
+      # ── Desktop ───────────────────────────────────────────────────────────────
+      - name: Lighthouse — desktop
+        run: lhci autorun --config ../.lighthouserc.desktop.js
+        env:
+          PORT: 4322
+          HOST: "0.0.0.0"
+          PUBLIC_SITE_URL: http://localhost:4322
+          CMS_PUBLIC_URL: http://localhost:1337
+          CMS_INTERNAL_URL: http://localhost:1337
+          STRAPI_API_TOKEN: ci_placeholder
+          REDIS_URL: redis://localhost:6379
+          SITE_INDEXING: "false"
+          PAYMENT_MODE: preview
+          EDGE_CHECK: "false"
+          BUCKET_ENDPOINT: http://localhost:9000
+          BUCKET_REGION: us-east-1
+          BUCKET_ACCESS_KEY_ID: ci_key
+          BUCKET_SECRET_ACCESS_KEY: ci_secret
+          BUCKET_NAME: wolverinehub-media
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: web/.lighthouseci/
+          retention-days: 30

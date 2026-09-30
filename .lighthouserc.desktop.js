@@ -1,13 +1,9 @@
 /**
- * Lighthouse CI — MOBILE preset.
- * Starts the built Astro server locally and runs 3 audits per URL (median used).
- * Fails CI if any category drops below 90.
- *
- * Note: `is-crawlable` is skipped while SITE_INDEXING=false (noindex by design).
- * Remove the skip at go-live.
+ * Lighthouse CI — DESKTOP preset.
+ * Same routes and thresholds as mobile, desktop throttling profile.
  */
 
-const PORT = 4321;
+const PORT = 4322;
 const BASE_URL = `http://localhost:${PORT}`;
 
 const ROUTES = ["/", "/404"];
@@ -30,21 +26,21 @@ module.exports = {
       startServerReadyTimeout: 30000,
       url: urls,
       settings: {
-        // Mobile preset
+        // Desktop preset
         preset: "perf",
         throttlingMethod: "simulate",
-        formFactor: "mobile",
+        formFactor: "desktop",
         screenEmulation: {
-          mobile: true,
-          width: 390,
-          height: 844,
-          deviceScaleFactor: 3,
+          mobile: false,
+          width: 1350,
+          height: 940,
+          deviceScaleFactor: 1,
           disabled: false,
         },
         throttling: {
-          rttMs: 150,
-          throughputKbps: 1638.4,
-          cpuSlowdownMultiplier: 4,
+          rttMs: 40,
+          throughputKbps: 10240,
+          cpuSlowdownMultiplier: 1,
         },
       },
     },
