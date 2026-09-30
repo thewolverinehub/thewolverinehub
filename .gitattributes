@@ -1,0 +1,30 @@
+# Normalise line endings to LF in the repo; check out as-is on Windows
+* text=auto eol=lf
+
+# PowerShell scripts — keep CRLF on Windows checkout
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets — no line-ending conversion, no diff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+*.mov binary
+*.glb binary
+*.glsl diff
+
+# Treat lockfiles as text (prevents merge conflicts from binary classification)
+package-lock.json text eol=lf

@@ -1,0 +1,88 @@
+# ── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Environment variables ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Astro ────────────────────────────────────────────────────────────────────
+web/dist/
+web/.astro/
+
+# ── Strapi ───────────────────────────────────────────────────────────────────
+cms/.tmp/
+cms/build/
+cms/dist/
+cms/public/uploads/
+cms/.strapi/
+
+# ── Backups ──────────────────────────────────────────────────────────────────
+backups/
+!backups/.gitkeep
+
+# ── Seed media ───────────────────────────────────────────────────────────────
+# Downloaded stock assets — not committed; re-downloaded by seed script
+cms/scripts/seed/media/
+
+# ── Raw / large media ────────────────────────────────────────────────────────
+# Production photos and videos live in Strapi/MinIO, not git
+*.mov
+*.avi
+*.mkv
+*.raw
+*.cr2
+*.nef
+*.dng
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+logs/
+
+# ── OS artefacts ─────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── IDE / editor ─────────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+# Keep .vscode/extensions.json (recommended extensions) but ignore other vscode config
+.vscode/*
+!.vscode/extensions.json
+
+# ── Secrets / certificates ───────────────────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# ── Test artefacts ───────────────────────────────────────────────────────────
+web/tests/results/
+web/tests/playwright-report/
+web/coverage/
+cms/coverage/
+
+# ── Lighthouse CI ────────────────────────────────────────────────────────────
+.lighthouseci/
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+*.tgz

@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Detect which packages changed ────────────────────────────────────────────
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      cms: ${{ steps.filter.outputs.cms }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'web/**'
+            cms:
+              - 'cms/**'
+
+  # ── Web: Astro ────────────────────────────────────────────────────────────────
+  web:
+    name: Web — lint · type-check · build
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+        env:
+          # Minimal env vars needed for build — real values injected by Railway
+          PUBLIC_SITE_URL: http://localhost:4321
+          CMS_PUBLIC_URL: http://localhost:1337
+          CMS_INTERNAL_URL: http://localhost:1337
+          STRAPI_API_TOKEN: ci_placeholder
+          REDIS_URL: redis://localhost:6379
+          SITE_INDEXING: "false"
+
+  # ── CMS: Strapi ───────────────────────────────────────────────────────────────
+  cms:
+    name: CMS — lint · type-check · build
+    needs: changes
+    if: needs.changes.outputs.cms == 'true' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cms
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: wolverinehub_ci
+          POSTGRES_USER: twh
+          POSTGRES_PASSWORD: twh_ci
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: cms/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run ts:check
+
+      - name: Build admin
+        run: npm run build
+        env:
+          DATABASE_CLIENT: postgres
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: wolverinehub_ci
+          DATABASE_USERNAME: twh
+          DATABASE_PASSWORD: twh_ci
+          APP_KEYS: ci_key_1,ci_key_2,ci_key_3,ci_key_4
+          API_TOKEN_SALT: ci_api_token_salt
+          ADMIN_JWT_SECRET: ci_admin_jwt_secret
+          TRANSFER_TOKEN_SALT: ci_transfer_token_salt
+          JWT_SECRET: ci_jwt_secret
