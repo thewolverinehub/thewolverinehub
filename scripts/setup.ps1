@@ -3,8 +3,8 @@
 .SYNOPSIS
   First-time local development setup for The Wolverine Hub.
 .DESCRIPTION
-  Checks prerequisites, starts Docker services, creates .env files,
-  and installs Node dependencies for both web and cms.
+  Checks prerequisites, creates .env files, and installs Node dependencies.
+  Uses Railway PostgreSQL and Railway Bucket — no local Docker required.
   Run from the repo root: .\scripts\setup.ps1
 #>
 
@@ -33,18 +33,6 @@ try {
   Write-OK "npm $npmVersion"
 } catch { Write-Warn "npm not found — bundled with Node.js" }
 
-# Docker
-try {
-  $dockerVersion = (docker --version 2>&1).ToString()
-  Write-OK $dockerVersion
-} catch { Write-Fail "Docker not found. Install Docker Desktop: https://www.docker.com/products/docker-desktop" }
-
-# Docker Desktop running
-try {
-  docker info > $null 2>&1
-  Write-OK "Docker daemon is running"
-} catch { Write-Fail "Docker daemon is not running. Start Docker Desktop and retry." }
-
 # Git
 try {
   $gitVersion = (git --version 2>&1).ToString()
@@ -55,15 +43,9 @@ try {
 try {
   $railwayVersion = (railway --version 2>&1).ToString()
   Write-OK "Railway CLI $railwayVersion"
-} catch { Write-Warn "Railway CLI not found (optional). Install: https://docs.railway.com/guides/cli" }
+} catch { Write-Warn "Railway CLI not found (optional). Install: npm install -g @railway/cli" }
 
-# ── 2. Docker services ────────────────────────────────────────────────────────
-Write-Step "Starting Docker services (PostgreSQL, Redis, MinIO)"
-Set-Location $RepoRoot
-docker compose up -d --remove-orphans
-Write-OK "Docker services started"
-
-# ── 3. Environment files ──────────────────────────────────────────────────────
+# ── 2. Environment files ──────────────────────────────────────────────────────
 Write-Step "Creating .env files from examples (skips if .env already exists)"
 
 $envFiles = @(
@@ -79,13 +61,13 @@ foreach ($ef in $envFiles) {
     Write-Warn "$($ef.Target) already exists — skipping (delete it to regenerate)"
   } elseif (Test-Path $examplePath) {
     Copy-Item $examplePath $targetPath
-    Write-OK "$($ef.Target) created from example"
+    Write-OK "$($ef.Target) created from example — fill in secrets before starting"
   } else {
-    Write-Warn "$($ef.Example) not found yet — will be available after Phase 4 (Strapi) and Phase 5 (Astro)"
+    Write-Warn "$($ef.Example) not found yet"
   }
 }
 
-# ── 4. Install dependencies ───────────────────────────────────────────────────
+# ── 3. Install dependencies ───────────────────────────────────────────────────
 Write-Step "Installing Node dependencies"
 
 $packages = @(
@@ -104,18 +86,17 @@ foreach ($pkg in $packages) {
     Pop-Location
     Write-OK "$($pkg.Label) dependencies installed"
   } else {
-    Write-Warn "$($pkg.Label) package.json not found — run setup again after Phase 4/5"
+    Write-Warn "$($pkg.Label) package.json not found"
   }
 }
 
-# ── 5. Done ───────────────────────────────────────────────────────────────────
+# ── 4. Done ───────────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "Setup complete." -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:"
-Write-Host "  1. Edit cms\.env and web\.env with any local overrides"
-Write-Host "  2. Start the CMS:     cd cms && npm run develop"
-Write-Host "  3. Start the website: cd web && npm run dev"
+Write-Host "  1. Ensure cms\.env has DATABASE_URL set to the Railway public proxy URL"
+Write-Host "  2. Start the CMS:     cd cms; npm run develop"
+Write-Host "  3. Start the website: cd web; npm run dev"
 Write-Host "  4. CMS admin:         http://localhost:1337/admin"
 Write-Host "  5. Website:           http://localhost:4321"
-Write-Host "  6. MinIO console:     http://localhost:9001"
