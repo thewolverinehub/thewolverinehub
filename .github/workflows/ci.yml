@@ -125,3 +125,4 @@ jobs:
           ADMIN_JWT_SECRET: ci_admin_jwt_secret
           TRANSFER_TOKEN_SALT: ci_transfer_token_salt
           JWT_SECRET: ci_jwt_secret
+          ENCRYPTION_KEY: ci_encryption_key_placeholder
