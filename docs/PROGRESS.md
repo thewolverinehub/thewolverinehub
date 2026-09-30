@@ -14,15 +14,28 @@
 - Proposed 3 hero headline options with rationale (see creative-direction.md §3)
 - Proposed tone-of-voice archetype: "The Dark Coach" (see creative-direction.md §2)
 
-### Next (Phase 1 — after checkpoint approval)
-- Git init, GitHub remote, full folder structure (§6)
-- `.gitignore`, `.gitattributes`, `.editorconfig`, `.nvmrc`, `CLAUDE.md`
-- Stub all docs files
-- `docker-compose.yml` (Postgres + Redis + MinIO)
-- `scripts/setup.ps1`
-- GitHub Actions: `ci.yml`, `security.yml`, `lighthouse.yml`
-- Dependabot, PR template
-- First push to `main`
+## Phase 1 — Repository and local stack
+
+**Date:** 2026-09-30
+**Status:** Complete ✓ — pushed to `main`
+
+### Done
+- Git init + GitHub remote (`https://github.com/thewolverinehub/thewolverinehub`)
+- Full folder structure per spec §6
+- `.gitignore`, `.gitattributes`, `.editorconfig`, `.nvmrc` (Node 22 LTS)
+- `CLAUDE.md` with all project conventions
+- `docker-compose.yml` (PostgreSQL 16, Redis 7, MinIO)
+- `docker/minio-init.sh` (bucket + service account creation)
+- `scripts/setup.ps1` (prerequisites, Docker start, .env copy, npm install)
+- GitHub Actions: `ci.yml` (path-filtered), `security.yml` (gitleaks, audit, CodeQL), `lighthouse.yml`
+- `.lighthouserc.js` (≥90 all categories, mobile + desktop)
+- Dependabot (web, cms, actions — weekly)
+- PR template + bug report issue template
+- All `docs/` stubs: architecture, data-sync, deployment, security, content-guide, go-live-checklist
+- `README.md` placed at repo root
+- First commit pushed: `27ae03c`
+
+### Next (Phase 2 — Railway setup)
 
 ### Decisions locked
 - **Hero headline:** Option B — "WHERE IRON MEETS INSTINCT."
