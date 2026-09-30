@@ -73,9 +73,6 @@ async function setPublicPermissions(strapi: Core.Strapi) {
 
   // Build find + findOne permissions for public read types
   for (const uid of PUBLIC_READ) {
-    const [, apiPart] = uid.split('::');
-    const [apiName] = apiPart.split('.');
-
     for (const action of ['find', 'findOne']) {
       permissionsToCreate.push({
         action: `${uid}.${action}`,

@@ -1,7 +1,7 @@
 {
   "kind": "singleType",
   "collectionName": "ui_strings",
-  "info": { "singularName": "ui-strings", "pluralName": "ui-strings", "displayName": "UI Strings" },
+  "info": { "singularName": "ui-strings", "pluralName": "ui-strings-settings", "displayName": "UI Strings" },
   "options": { "draftAndPublish": false },
   "pluginOptions": {},
   "attributes": {

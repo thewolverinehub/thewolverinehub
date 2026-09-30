@@ -7,7 +7,7 @@
   "attributes": {
     "from": { "type": "string", "required": true },
     "to": { "type": "string", "required": true },
-    "statusCode": { "type": "enumeration", "enum": ["301", "302"], "default": "301" },
+    "statusCode": { "type": "enumeration", "enum": ["permanent", "temporary"], "default": "permanent" },
     "isActive": { "type": "boolean", "default": true }
   }
 }
