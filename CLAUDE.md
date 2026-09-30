@@ -87,11 +87,13 @@ Full file tree in the master prompt §6.
 |---|---|---|
 | Web | `http://localhost:4321` | Railway dev link → `https://thewolverinehub.com` at go-live |
 | CMS | `http://localhost:1337/admin` | Railway dev link → `https://cms.thewolverinehub.com/admin` |
-| Database | Docker PostgreSQL | Railway PostgreSQL |
-| Media | MinIO (Docker) | Railway Bucket |
-| Cache | Redis (Docker) | Railway Redis |
+| Database | Railway PostgreSQL (public TCP proxy) | Railway PostgreSQL (private network) |
+| Media | Railway Bucket (shared) | Railway Bucket |
+| Cache | Redis not required locally | Railway Redis |
 | Payments | `PAYMENT_MODE=preview` | `sandbox` → `live` |
 | Indexing | off | `SITE_INDEXING=false` until go-live |
+
+**No Docker required.** Both local and live share Railway PostgreSQL via the public TCP proxy (`metro.proxy.rlwy.net:38232`). Media uploads go directly to the Railway Bucket.
 
 **Never hard-code a domain.** All URLs come from environment variables: `PUBLIC_SITE_URL`, `CMS_PUBLIC_URL`, `CMS_INTERNAL_URL`.
 
