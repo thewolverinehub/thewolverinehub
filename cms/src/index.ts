@@ -1,6 +1,6 @@
 import type { Core } from '@strapi/strapi';
 
-// Public read-only content types — the Public role gets find/findOne on these.
+// Public read-only content types — Public role gets find/findOne on these.
 const PUBLIC_READ = [
   'api::global.global',
   'api::header.header',
@@ -43,7 +43,7 @@ const PUBLIC_READ = [
   'api::redirect.redirect',
 ];
 
-// Write-only types — Public role gets create only, never find/findOne.
+// Write-only types — Public role gets create only.
 const PUBLIC_CREATE_ONLY = [
   'api::lead.lead',
   'api::newsletter-subscriber.newsletter-subscriber',
@@ -53,71 +53,67 @@ export default {
   register(_ctx: { strapi: Core.Strapi }) {},
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
-    await setPublicPermissions(strapi);
-    await checkWebhookSecret(strapi);
+    try {
+      await setPublicPermissions(strapi);
+    } catch (err) {
+      strapi.log.warn('[bootstrap] Could not auto-configure public permissions — set them manually in the admin panel.');
+      strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    checkWebhookSecret(strapi);
   },
 };
 
 async function setPublicPermissions(strapi: Core.Strapi) {
-  // Find the Public role
-  const publicRole = await strapi
-    .service('plugin::users-permissions.role')
-    .findOne({ type: 'public' });
+  // Get the Public role
+  const roles = await strapi.db
+    .query('plugin::users-permissions.role')
+    .findMany({ where: { type: 'public' } });
 
+  const publicRole = roles[0];
   if (!publicRole) {
     strapi.log.warn('[bootstrap] Public role not found — skipping permission setup');
     return;
   }
 
-  const permissionsToCreate: Array<{ action: string; role: number }> = [];
+  // Get existing permissions for this role using db.query (avoids relation filter issues)
+  const existing = await strapi.db
+    .query('plugin::users-permissions.permission')
+    .findMany({ where: { role: { id: publicRole.id } } });
 
-  // Build find + findOne permissions for public read types
+  const existingActions = new Set(existing.map((p: { action: string }) => p.action));
+
+  // Build desired permissions list
+  const desired: string[] = [];
   for (const uid of PUBLIC_READ) {
-    for (const action of ['find', 'findOne']) {
-      permissionsToCreate.push({
-        action: `${uid}.${action}`,
-        role: publicRole.id,
-      });
-    }
+    desired.push(`${uid}.find`, `${uid}.findOne`);
   }
-
-  // Build create-only permissions for write-only types
   for (const uid of PUBLIC_CREATE_ONLY) {
-    permissionsToCreate.push({
-      action: `${uid}.create`,
-      role: publicRole.id,
-    });
+    desired.push(`${uid}.create`);
   }
 
-  // Get existing permissions for the public role
-  const existingPermissions = await strapi
-    .service('plugin::users-permissions.permission')
-    .find({ filters: { role: publicRole.id } });
+  // Create only the missing ones
+  const missing = desired.filter((action) => !existingActions.has(action));
 
-  const existingActions = new Set(
-    existingPermissions.map((p: { action: string; role: number }) => `${p.action}|${p.role}`)
-  );
-
-  // Only create permissions that don't already exist
-  const toCreate = permissionsToCreate.filter(
-    (p) => !existingActions.has(`${p.action}|${p.role}`)
-  );
-
-  if (toCreate.length > 0) {
-    await Promise.all(
-      toCreate.map((p) =>
-        strapi.service('plugin::users-permissions.permission').create({ data: p })
-      )
-    );
-    strapi.log.info(`[bootstrap] Created ${toCreate.length} public permissions`);
-  } else {
+  if (missing.length === 0) {
     strapi.log.info('[bootstrap] Public permissions already up to date');
+    return;
   }
+
+  await Promise.all(
+    missing.map((action) =>
+      strapi.db.query('plugin::users-permissions.permission').create({
+        data: { action, role: publicRole.id, enabled: true },
+      })
+    )
+  );
+
+  strapi.log.info(`[bootstrap] Created ${missing.length} public permissions`);
 }
 
-async function checkWebhookSecret(strapi: Core.Strapi) {
+function checkWebhookSecret(strapi: Core.Strapi) {
   const secret = process.env.WEBHOOK_SECRET;
   if (!secret || secret.length < 32) {
-    strapi.log.warn('[bootstrap] WEBHOOK_SECRET is missing or too short (minimum 32 chars). Set it before going live.');
+    strapi.log.warn('[bootstrap] WEBHOOK_SECRET is missing or too short. Set it before going live.');
   }
 }
