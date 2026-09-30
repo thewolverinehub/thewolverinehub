@@ -57,11 +57,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
       - uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
           queries: security-and-quality
-      - uses: github/codeql-action/autobuild@v3
+
+      # Manual build for monorepo — autobuild fails with no root package.json
+      - name: Install dependencies
+        run: |
+          npm --prefix web ci
+          npm --prefix cms ci
+
       - uses: github/codeql-action/analyze@v3
         with:
           category: /language:javascript-typescript
