@@ -35,7 +35,30 @@
 - `README.md` placed at repo root
 - First commit pushed: `27ae03c`
 
-### Next (Phase 2 — Railway setup)
+## Phase 2 — Railway
+
+**Date:** 2026-09-30
+**Status:** Complete ✓
+
+### Done
+- Railway project created: `the-wolverine-hub` (ID: `ce0d9d7c-fd84-4011-9b4c-416750fc188d`)
+- Services provisioned: PostgreSQL 16, Redis 7, Bucket (Singapore / `sin` region)
+- `cms` service — root `/cms`, build `npm run build`, start `npm run start`, health `/_health`
+- `web` service — root `/web`, start `node ./dist/server/entry.mjs`, health `/api/health`
+- Public domains generated:
+  - Web: `https://web-production-2a3c3.up.railway.app`
+  - CMS: `https://cms-production-3644.up.railway.app`
+- Private networking active: `cms.railway.internal`, `web.railway.internal`
+- All environment variables set on both services (17 on cms, 15 on web)
+- "Wait for CI" (checkSuites) enabled on both deployment triggers
+- `cms/.env.example` and `web/.env.example` written
+- Railway CLI installed + MCP configured
+
+### Open Issues
+- `STRAPI_API_TOKEN` on web is a placeholder — update after Phase 4 (Strapi) boots for the first time
+- `REVALIDATE_SECRET` on web not yet set — add when webhook is configured in Phase 4
+
+### Next (Phase 3 — Lighthouse CI baseline)
 
 ### Decisions locked
 - **Hero headline:** Option B — "WHERE IRON MEETS INSTINCT."
