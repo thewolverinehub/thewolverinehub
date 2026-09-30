@@ -1,0 +1,8 @@
+/* Self-hosted fonts via Fontsource — Latin subset only */
+
+/* Bebas Neue — display / headlines */
+@import "@fontsource/bebas-neue/latin-400.css";
+
+/* Inter Variable — body copy */
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/inter/standard-italic.css";

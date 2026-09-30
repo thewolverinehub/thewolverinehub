@@ -1,0 +1,74 @@
+---
+import type { StrapiSeo, StrapiGlobal } from '../../lib/strapi/types';
+
+interface Props {
+  seo?: StrapiSeo;
+  global?: StrapiGlobal;
+  titleTemplate?: string;
+  canonicalUrl?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const {
+  seo,
+  global,
+  titleTemplate = '%s | The Wolverine Hub',
+  canonicalUrl = Astro.url.href,
+  jsonLd,
+  noindex = import.meta.env.SITE_INDEXING !== 'true',
+} = Astro.props;
+
+const siteName = global?.siteName ?? 'The Wolverine Hub';
+const defaultDesc = global?.defaultSeo?.metaDescription ?? 'Where iron meets instinct. Premium training centre in Colombo, Sri Lanka.';
+
+const title = seo?.metaTitle
+  ? titleTemplate.replace('%s', seo.metaTitle)
+  : siteName;
+
+const description = seo?.metaDescription ?? defaultDesc;
+const ogTitle = seo?.ogTitle ?? seo?.metaTitle ?? siteName;
+const ogDesc = seo?.ogDescription ?? description;
+const ogImage = seo?.ogImage?.url ?? global?.defaultSeo?.ogImage?.url;
+const twitterHandle = global?.twitterHandle;
+
+const robotsContent = noindex
+  ? 'noindex, nofollow, noarchive'
+  : (seo?.metaRobots ?? 'index, follow');
+
+const schemas = jsonLd
+  ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd])
+  : [];
+---
+
+<!-- Primary -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+{seo?.keywords && <meta name="keywords" content={seo.keywords} />}
+<meta name="robots" content={robotsContent} />
+<link rel="canonical" href={seo?.canonicalURL ?? canonicalUrl} />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={siteName} />
+<meta property="og:title" content={ogTitle} />
+<meta property="og:description" content={ogDesc} />
+<meta property="og:url" content={seo?.canonicalURL ?? canonicalUrl} />
+{ogImage && <meta property="og:image" content={ogImage} />}
+
+<!-- Twitter -->
+<meta name="twitter:card" content={seo?.twitterCard ?? 'summary_large_image'} />
+{twitterHandle && <meta name="twitter:site" content={twitterHandle} />}
+<meta name="twitter:title" content={ogTitle} />
+<meta name="twitter:description" content={ogDesc} />
+{ogImage && <meta name="twitter:image" content={ogImage} />}
+
+<!-- Favicons (served from /public; overridden with Strapi assets at Phase 13) -->
+<link rel="icon" href="/favicon.ico" sizes="any" />
+
+<!-- JSON-LD structured data -->
+{schemas.map((schema) => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+))}

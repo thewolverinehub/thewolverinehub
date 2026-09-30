@@ -1,0 +1,24 @@
+---
+/**
+ * PageLayout — wraps pages with header + footer (added in Phase 6).
+ * For now it renders the BaseLayout directly.
+ */
+import BaseLayout from './BaseLayout.astro';
+import type { StrapiSeo, StrapiGlobal } from '../lib/strapi/types';
+
+interface Props {
+  seo?: StrapiSeo;
+  global?: StrapiGlobal;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const { seo, global, jsonLd, noindex } = Astro.props;
+---
+
+<BaseLayout {seo} {global} {jsonLd} {noindex}>
+  <slot name="head" slot="head" />
+  <main id="main-content">
+    <slot />
+  </main>
+</BaseLayout>

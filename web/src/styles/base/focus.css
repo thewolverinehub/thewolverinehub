@@ -1,0 +1,12 @@
+/* Focus styles — WCAG 2.2 AA */
+
+:focus-visible {
+  outline: 3px solid var(--color-twh-yellow);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Remove default focus ring for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}

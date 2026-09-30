@@ -1,0 +1,84 @@
+---
+// Dev-only styleguide — excluded from production via middleware
+if (import.meta.env.NODE_ENV === 'production') {
+  return Astro.redirect('/', 302);
+}
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const colours = [
+  { token: '--color-twh-black',     hex: '#0A0A0B', label: 'Black (background)' },
+  { token: '--color-twh-ink',       hex: '#141418', label: 'Ink (cards)' },
+  { token: '--color-twh-white',     hex: '#FFFFFF', label: 'White (text)' },
+  { token: '--color-twh-red',       hex: '#D7141A', label: 'Red (energy)' },
+  { token: '--color-twh-red-deep',  hex: '#8E0B10', label: 'Red Deep' },
+  { token: '--color-twh-yellow',    hex: '#FFC20E', label: 'Yellow (CTA, focus)' },
+  { token: '--color-twh-blue',      hex: '#1B3F94', label: 'Blue (sections)' },
+  { token: '--color-twh-blue-deep', hex: '#0B2359', label: 'Blue Deep' },
+];
+
+const approvedPairs = [
+  { bg: '#0A0A0B', text: '#FFFFFF', label: 'White on Black' },
+  { bg: '#0A0A0B', text: '#FFC20E', label: 'Yellow on Black' },
+  { bg: '#FFC20E', text: '#0A0A0B', label: 'Black on Yellow (CTA)' },
+  { bg: '#1B3F94', text: '#FFFFFF', label: 'White on Blue' },
+  { bg: '#0A0A0B', text: '#D7141A', label: 'Red on Black' },
+  { bg: '#141418', text: '#FFFFFF', label: 'White on Ink' },
+];
+---
+
+<BaseLayout seo={{ metaTitle: 'Styleguide', metaDescription: 'Design system reference' }} noindex>
+  <main id="main-content" style="padding:4rem 2rem;max-width:72rem;margin:0 auto;">
+    <h1 style="margin-bottom:3rem;">TWH Styleguide</h1>
+
+    <!-- Colours -->
+    <section style="margin-bottom:4rem;">
+      <h2 style="font-size:1.5rem;margin-bottom:1.5rem;color:var(--color-twh-grey-400);">Brand Colours</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;">
+        {colours.map((c) => (
+          <div>
+            <div style={`background:${c.hex};height:80px;border-radius:4px;border:1px solid #2a2a30;`} />
+            <p style="font-size:0.75rem;margin-top:0.5rem;font-weight:700;">{c.label}</p>
+            <p style="font-size:0.65rem;color:var(--color-twh-grey-500);font-family:monospace;">{c.hex}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Approved pairs -->
+    <section style="margin-bottom:4rem;">
+      <h2 style="font-size:1.5rem;margin-bottom:1.5rem;color:var(--color-twh-grey-400);">Approved Colour Pairs</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
+        {approvedPairs.map((p) => (
+          <div style={`background:${p.bg};color:${p.text};padding:1.5rem;border-radius:4px;border:1px solid #2a2a30;`}>
+            <p style="font-weight:700;font-size:0.875rem;">{p.label}</p>
+            <p style="font-size:0.75rem;opacity:0.7;">{p.bg} / {p.text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Typography -->
+    <section style="margin-bottom:4rem;">
+      <h2 style="font-size:1.5rem;margin-bottom:1.5rem;color:var(--color-twh-grey-400);">Typography Scale</h2>
+      {['text-6xl','text-5xl','text-4xl','text-3xl','text-2xl','text-xl','text-lg','text-base','text-sm'].map((cls) => (
+        <p class={cls} style="margin-bottom:0.75rem;font-family:var(--font-display);">{cls} — WHERE IRON MEETS INSTINCT</p>
+      ))}
+      <hr style="border-color:#2a2a30;margin:2rem 0;" />
+      {['text-6xl','text-5xl','text-4xl','text-3xl','text-2xl','text-xl','text-lg','text-base','text-sm'].map((cls) => (
+        <p class={cls} style="margin-bottom:0.75rem;font-family:var(--font-body);">{cls} — Primal drives. Technical precision.</p>
+      ))}
+    </section>
+
+    <!-- Buttons -->
+    <section>
+      <h2 style="font-size:1.5rem;margin-bottom:1.5rem;color:var(--color-twh-grey-400);">Button Variants</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;">
+        <a href="#" style="background:var(--color-twh-yellow);color:var(--color-twh-black);font-weight:800;font-size:0.875rem;letter-spacing:0.05em;text-transform:uppercase;padding:0.875rem 2rem;border-radius:4px;text-decoration:none;">Primary</a>
+        <a href="#" style="background:transparent;color:var(--color-twh-white);font-weight:800;font-size:0.875rem;letter-spacing:0.05em;text-transform:uppercase;padding:0.875rem 2rem;border-radius:4px;text-decoration:none;border:2px solid var(--color-twh-white);">Secondary</a>
+        <a href="#" style="background:var(--color-twh-red);color:var(--color-twh-white);font-weight:800;font-size:0.875rem;letter-spacing:0.05em;text-transform:uppercase;padding:0.875rem 2rem;border-radius:4px;text-decoration:none;">Danger</a>
+        <a href="#" style="background:transparent;color:var(--color-twh-grey-400);font-weight:800;font-size:0.875rem;letter-spacing:0.05em;text-transform:uppercase;padding:0.875rem 2rem;border-radius:4px;text-decoration:none;">Ghost</a>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

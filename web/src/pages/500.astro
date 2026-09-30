@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const heading = 'Something snapped.';
+const body = "An unexpected error occurred. Reload the page or come back shortly.";
+---
+
+<BaseLayout seo={{ metaTitle: '500 — Server Error', metaDescription: body }} noindex>
+  <main id="main-content" style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;">
+    <p style="font-size:clamp(6rem,20vw,14rem);font-family:var(--font-display);line-height:1;color:var(--color-twh-grey-800);margin:0;">500</p>
+    <h1 style="font-size:clamp(2rem,6vw,4rem);margin:1rem 0 0.75rem;">{heading}</h1>
+    <p style="color:var(--color-twh-grey-400);max-width:36ch;margin:0 0 2rem;">{body}</p>
+    <a href="/" style="background:var(--color-twh-yellow);color:var(--color-twh-black);font-weight:800;letter-spacing:0.05em;text-transform:uppercase;padding:0.875rem 2rem;border-radius:4px;text-decoration:none;">
+      Back to Home
+    </a>
+  </main>
+</BaseLayout>

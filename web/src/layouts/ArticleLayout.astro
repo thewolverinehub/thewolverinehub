@@ -1,0 +1,25 @@
+---
+import PageLayout from './PageLayout.astro';
+import type { StrapiSeo, StrapiGlobal, StrapiPost } from '../lib/strapi/types';
+import { articleSchema, breadcrumbSchema } from '../lib/seo/json-ld';
+
+interface Props {
+  post: StrapiPost;
+  global?: StrapiGlobal;
+}
+
+const { post, global } = Astro.props;
+
+const jsonLd = [
+  articleSchema(post, post.author?.name),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Journal', url: '/journal' },
+    { name: post.title, url: `/journal/${post.slug}` },
+  ]),
+];
+---
+
+<PageLayout seo={post.seo} {global} {jsonLd}>
+  <slot />
+</PageLayout>

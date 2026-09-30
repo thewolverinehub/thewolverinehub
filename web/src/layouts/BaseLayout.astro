@@ -1,0 +1,32 @@
+---
+import SEOHead from '../components/seo/SEOHead.astro';
+import type { StrapiSeo, StrapiGlobal } from '../lib/strapi/types';
+import '../styles/global.css';
+
+interface Props {
+  seo?: StrapiSeo;
+  global?: StrapiGlobal;
+  title?: string;
+  description?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+  class?: string;
+}
+
+const { seo, global, jsonLd, noindex, class: className } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="twh-grain">
+  <head>
+    <SEOHead {seo} {global} {jsonLd} {noindex} />
+    <slot name="head" />
+  </head>
+  <body class={className}>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-twh-yellow focus:text-twh-black focus:px-4 focus:py-2 focus:rounded focus:font-bold">
+      {global ? 'Skip to main content' : 'Skip to main content'}
+    </a>
+
+    <slot />
+  </body>
+</html>

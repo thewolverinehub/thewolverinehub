@@ -1,0 +1,29 @@
+---
+import PageLayout from './PageLayout.astro';
+import type { StrapiSeo, StrapiGlobal } from '../lib/strapi/types';
+
+interface Props {
+  title: string;
+  seo?: StrapiSeo;
+  global?: StrapiGlobal;
+  lastUpdated?: string;
+}
+
+const { title, seo, global, lastUpdated } = Astro.props;
+---
+
+<PageLayout {seo} {global}>
+  <article class="max-w-3xl mx-auto px-6 py-24">
+    <header class="mb-12">
+      <h1 class="text-5xl mb-4">{title}</h1>
+      {lastUpdated && (
+        <p class="text-twh-grey-400 text-sm">
+          Last updated: <time datetime={lastUpdated}>{new Date(lastUpdated).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+        </p>
+      )}
+    </header>
+    <div class="prose prose-invert max-w-none">
+      <slot />
+    </div>
+  </article>
+</PageLayout>
