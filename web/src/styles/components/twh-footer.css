@@ -1,0 +1,210 @@
+/* ============================================================
+   TWH Footer
+   ============================================================ */
+
+.twh-footer {
+  background: var(--color-twh-ink);
+  border-top: 1px solid var(--color-twh-grey-900);
+  padding-top: 0;
+  overflow: hidden;
+}
+
+/* Giant wordmark */
+.twh-footer__wordmark {
+  padding: 3rem 2rem 1rem;
+  overflow: hidden;
+}
+
+.twh-footer__wordmark-text {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 9rem);
+  letter-spacing: 0.02em;
+  color: var(--color-twh-grey-900);
+  line-height: 0.9;
+  white-space: nowrap;
+  transition: color 0.3s;
+  cursor: default;
+  user-select: none;
+}
+
+.twh-footer__wordmark-text:hover {
+  color: var(--color-twh-grey-800);
+}
+
+/* Newsletter */
+.twh-footer__newsletter {
+  background: var(--color-twh-blue);
+  padding: 3rem 2rem;
+}
+
+.twh-footer__newsletter-inner {
+  max-width: 36rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.twh-footer__newsletter-heading {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  margin-bottom: 0.5rem;
+}
+
+.twh-footer__newsletter-sub {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1.5rem;
+}
+
+.twh-footer__newsletter-form {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.twh-footer__newsletter-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--color-twh-white);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+}
+
+.twh-footer__newsletter-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+.twh-footer__newsletter-input:focus { outline: 2px solid var(--color-twh-yellow); }
+
+/* Main grid */
+.twh-footer__grid {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, 1fr);
+  gap: 3rem;
+  padding: 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .twh-footer__grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  .twh-footer__grid { grid-template-columns: 1fr; gap: 2rem; padding: 2.5rem 1.25rem; }
+}
+
+/* Brand */
+.twh-footer__brand-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+}
+
+.twh-footer__brand-tagline {
+  color: var(--color-twh-grey-400);
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.twh-footer__socials {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.twh-footer__social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-twh-grey-700);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--color-twh-grey-400);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.twh-footer__social-link:hover {
+  border-color: var(--color-twh-yellow);
+  color: var(--color-twh-yellow);
+}
+
+/* Columns */
+.twh-footer__col-heading {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-500);
+  margin-bottom: 1rem;
+}
+
+.twh-footer__col-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.twh-footer__col-link {
+  color: var(--color-twh-grey-300);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  transition: color 0.15s;
+}
+
+.twh-footer__col-link:hover { color: var(--color-twh-white); }
+
+.twh-footer__address {
+  font-style: normal;
+  color: var(--color-twh-grey-400);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Bottom bar */
+.twh-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--color-twh-grey-900);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.twh-footer__copyright,
+.twh-footer__company {
+  font-size: 0.8125rem;
+  color: var(--color-twh-grey-600);
+  margin: 0;
+}
+
+.twh-footer__legal-nav {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.twh-footer__legal-link {
+  font-size: 0.8125rem;
+  color: var(--color-twh-grey-600);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.twh-footer__legal-link:hover { color: var(--color-twh-grey-300); }
+
+@media (max-width: 640px) {
+  .twh-footer__bottom { padding: 1.25rem; }
+}

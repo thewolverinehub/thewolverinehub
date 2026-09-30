@@ -1,0 +1,10 @@
+---
+interface Props {
+  variant?: 'yellow' | 'red' | 'blue' | 'grey';
+  class?: string;
+}
+const { variant = 'yellow', class: className = '' } = Astro.props;
+---
+<span class={`twh-badge twh-badge--${variant} ${className}`}>
+  <slot />
+</span>

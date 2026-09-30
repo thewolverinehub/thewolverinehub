@@ -1,0 +1,92 @@
+---
+import AnnouncementBar from './AnnouncementBar.astro';
+import type { StrapiHeader, StrapiGlobal } from '../../lib/strapi/types';
+
+interface Props {
+  header?: StrapiHeader;
+  global?: StrapiGlobal;
+  menuId?: string;
+}
+
+const { header, global, menuId = 'main-menu' } = Astro.props;
+const siteName = global?.siteName ?? 'The Wolverine Hub';
+---
+
+<AnnouncementBar {header} />
+
+<header class="twh-header" id="site-header">
+  <div class="twh-header__inner">
+
+    <!-- Logo -->
+    <a href="/" class="twh-header__logo" aria-label={`${siteName} — Home`}>
+      {global?.logoLight ? (
+        <img
+          src={global.logoLight.url}
+          alt={siteName}
+          width="160"
+          height="40"
+          class="twh-header__logo-full"
+          fetchpriority="high"
+        />
+      ) : (
+        <span class="twh-header__logo-text">
+          THE <span>WOLVERINE</span> HUB
+        </span>
+      )}
+      {global?.logoMonogram ? (
+        <img
+          src={global.logoMonogram.url}
+          alt={siteName}
+          width="40"
+          height="40"
+          class="twh-header__logo-mono"
+          aria-hidden="true"
+        />
+      ) : (
+        <span class="twh-header__logo-mono-text" aria-hidden="true">WH</span>
+      )}
+    </a>
+
+    <!-- Desktop nav (hidden — lives inside the menu) -->
+    <nav class="twh-header__nav sr-only" aria-label="Primary navigation" id="primary-nav">
+      {header?.menuItems?.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+    </nav>
+
+    <!-- Right side -->
+    <div class="twh-header__right">
+      {header?.primaryCta && (
+        <a
+          href={header.primaryCta.href}
+          class="twh-btn twh-btn--primary twh-btn--sm twh-header__cta"
+          target={header.primaryCta.openInNewTab ? '_blank' : undefined}
+          rel={header.primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+        >
+          {header.primaryCta.label}
+        </a>
+      )}
+
+      <!-- Menu trigger -->
+      <button
+        class="twh-menu-trigger"
+        aria-controls={menuId}
+        aria-expanded="false"
+        aria-label="Open menu"
+        id="menu-trigger"
+        type="button"
+      >
+        <span class="twh-menu-trigger__bar" aria-hidden="true"></span>
+        <span class="twh-menu-trigger__bar" aria-hidden="true"></span>
+        <span class="twh-menu-trigger__bar" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scroll progress line -->
+  <div class="twh-header__progress" id="scroll-progress" aria-hidden="true"></div>
+</header>
+
+<style>
+  @import '../../styles/components/twh-header.css';
+</style>

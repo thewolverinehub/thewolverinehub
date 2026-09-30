@@ -1,0 +1,85 @@
+/* ============================================================
+   TWH UI Components
+   Table of contents:
+   1. Buttons
+   2. Badges
+   ============================================================ */
+
+/* ── 1. Buttons ─────────────────────────────────────────────── */
+
+.twh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 0.15s, background-color 0.15s, color 0.15s, transform 0.1s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.twh-btn:active { transform: translateY(1px); }
+.twh-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+/* Sizes */
+.twh-btn--sm  { font-size: 0.75rem;    padding: 0.5rem 1rem; }
+.twh-btn--md  { font-size: 0.875rem;   padding: 0.875rem 1.75rem; }
+.twh-btn--lg  { font-size: 1rem;       padding: 1.125rem 2.25rem; }
+
+/* Variants */
+.twh-btn--primary {
+  background: var(--color-twh-yellow);
+  color: var(--color-twh-black);
+}
+.twh-btn--primary:hover { opacity: 0.88; }
+
+.twh-btn--secondary {
+  background: transparent;
+  color: var(--color-twh-white);
+  border: 2px solid var(--color-twh-white);
+}
+.twh-btn--secondary:hover {
+  background: var(--color-twh-white);
+  color: var(--color-twh-black);
+}
+
+.twh-btn--ghost {
+  background: transparent;
+  color: var(--color-twh-grey-400);
+  border: 2px solid var(--color-twh-grey-700);
+}
+.twh-btn--ghost:hover {
+  border-color: var(--color-twh-grey-400);
+  color: var(--color-twh-white);
+}
+
+.twh-btn--danger {
+  background: var(--color-twh-red);
+  color: var(--color-twh-white);
+}
+.twh-btn--danger:hover { background: var(--color-twh-red-deep); }
+
+/* ── 2. Badges ──────────────────────────────────────────────── */
+
+.twh-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+}
+
+.twh-badge--yellow { background: var(--color-twh-yellow); color: var(--color-twh-black); }
+.twh-badge--red    { background: var(--color-twh-red);    color: var(--color-twh-white); }
+.twh-badge--blue   { background: var(--color-twh-blue);   color: var(--color-twh-white); }
+.twh-badge--grey   { background: var(--color-twh-grey-800); color: var(--color-twh-grey-300); border: 1px solid var(--color-twh-grey-700); }

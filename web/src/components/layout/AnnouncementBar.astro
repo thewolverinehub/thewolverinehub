@@ -1,0 +1,31 @@
+---
+import type { StrapiHeader } from '../../lib/strapi/types';
+
+interface Props {
+  header?: StrapiHeader;
+}
+const { header } = Astro.props;
+
+if (!header?.announcementBarEnabled || !header.announcementBarText) return;
+
+const colourMap = {
+  yellow: 'background:var(--color-twh-yellow);color:var(--color-twh-black);',
+  red:    'background:var(--color-twh-red);color:var(--color-twh-white);',
+  blue:   'background:var(--color-twh-blue);color:var(--color-twh-white);',
+};
+const style = colourMap[header.announcementBarColour] ?? colourMap.yellow;
+---
+
+<div
+  role="banner"
+  aria-label="Announcement"
+  style={`${style}text-align:center;padding:0.5rem 1rem;font-size:0.8125rem;font-weight:700;letter-spacing:0.04em;`}
+>
+  {header.announcementBarLink ? (
+    <a href={header.announcementBarLink} style="color:inherit;text-decoration:underline;text-underline-offset:2px;">
+      {header.announcementBarText}
+    </a>
+  ) : (
+    header.announcementBarText
+  )}
+</div>

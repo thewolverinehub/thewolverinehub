@@ -1,0 +1,269 @@
+---
+/**
+ * ALTERNATIVE 2 — THE SLIDE
+ * Premium right-edge drawer. Panel slides in from the right.
+ * Items: index numbers + names + short descriptions.
+ * Background dims behind the panel.
+ * Vibe: structured, premium, architectural.
+ */
+import type { StrapiHeader, StrapiGlobal } from '../../lib/strapi/types';
+
+interface Props {
+  header?: StrapiHeader;
+  global?: StrapiGlobal;
+  id?: string;
+}
+
+const { header, global, id = 'main-menu' } = Astro.props;
+const items = header?.menuItems ?? [];
+---
+
+<!-- Backdrop -->
+<div
+  class="twh-slide-backdrop"
+  aria-hidden="true"
+  id="slide-backdrop"
+></div>
+
+<div
+  class="twh-slide-menu"
+  id={id}
+  role="dialog"
+  aria-modal="true"
+  aria-label="Main navigation"
+  aria-hidden="true"
+>
+  <!-- Top bar inside panel -->
+  <div class="twh-slide-menu__top">
+    <span class="twh-slide-menu__label">Navigation</span>
+    <button
+      class="twh-slide-menu__close"
+      data-menu-close
+      aria-label="Close menu"
+      type="button"
+    >
+      <span aria-hidden="true">✕</span>
+    </button>
+  </div>
+
+  <!-- Nav items with index -->
+  <nav class="twh-slide-menu__nav" aria-label="Primary navigation">
+    <ul class="twh-slide-menu__list" role="list">
+      {items.map((item, i) => (
+        <li class="twh-slide-menu__item">
+          <a href={item.href} class="twh-slide-menu__link">
+            <span class="twh-slide-menu__item-index">{String(i + 1).padStart(2, '0')}</span>
+            <span class="twh-slide-menu__item-body">
+              <span class="twh-slide-menu__item-name">{item.label}</span>
+              {item.description && (
+                <span class="twh-slide-menu__item-desc">{item.description}</span>
+              )}
+            </span>
+            <span class="twh-slide-menu__item-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <!-- Footer inside panel -->
+  <div class="twh-slide-menu__footer">
+    {header?.primaryCta && (
+      <a href={header.primaryCta.href} class="twh-btn twh-btn--primary twh-btn--md" style="width:100%;justify-content:center;">
+        {header.primaryCta.label}
+      </a>
+    )}
+    <div class="twh-slide-menu__footer-meta">
+      {global?.email && <a href={`mailto:${global.email}`} class="twh-slide-menu__footer-link">{global.email}</a>}
+      {global?.phone && <a href={`tel:${global.phone}`} class="twh-slide-menu__footer-link">{global.phone}</a>}
+    </div>
+    <div class="twh-slide-menu__footer-socials">
+      {global?.instagram && <a href={global.instagram} target="_blank" rel="noopener noreferrer" class="twh-slide-menu__social">IG</a>}
+      {global?.facebook  && <a href={global.facebook}  target="_blank" rel="noopener noreferrer" class="twh-slide-menu__social">FB</a>}
+      {global?.youtube   && <a href={global.youtube}   target="_blank" rel="noopener noreferrer" class="twh-slide-menu__social">YT</a>}
+    </div>
+  </div>
+</div>
+
+<style>
+.twh-slide-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 149;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.twh-slide-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.twh-slide-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(480px, 100vw);
+  z-index: 150;
+  background: var(--color-twh-ink);
+  border-left: 1px solid var(--color-twh-grey-900);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.45s var(--ease-snappy);
+  visibility: hidden;
+  overflow-y: auto;
+}
+
+.twh-slide-menu.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.twh-slide-menu__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--color-twh-grey-900);
+  position: sticky;
+  top: 0;
+  background: var(--color-twh-ink);
+  z-index: 2;
+}
+
+.twh-slide-menu__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-500);
+}
+
+.twh-slide-menu__close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-twh-grey-900);
+  border: none;
+  border-radius: 4px;
+  color: var(--color-twh-grey-400);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.twh-slide-menu__close:hover {
+  background: var(--color-twh-grey-700);
+  color: var(--color-twh-white);
+}
+
+.twh-slide-menu__nav {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.twh-slide-menu__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.twh-slide-menu__link {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 2rem;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-twh-grey-900);
+  transition: background 0.15s;
+  position: relative;
+}
+
+.twh-slide-menu__link:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.twh-slide-menu__link:hover .twh-slide-menu__item-arrow {
+  color: var(--color-twh-yellow);
+  transform: translateX(4px);
+}
+
+.twh-slide-menu__item-index {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-twh-grey-700);
+  letter-spacing: 0.08em;
+  min-width: 1.75rem;
+}
+
+.twh-slide-menu__item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.twh-slide-menu__item-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.03em;
+  color: var(--color-twh-white);
+  line-height: 1;
+}
+
+.twh-slide-menu__item-desc {
+  font-size: 0.8125rem;
+  color: var(--color-twh-grey-500);
+  line-height: 1.4;
+}
+
+.twh-slide-menu__item-arrow {
+  font-size: 1rem;
+  color: var(--color-twh-grey-700);
+  transition: color 0.2s, transform 0.2s;
+}
+
+.twh-slide-menu__footer {
+  padding: 2rem;
+  border-top: 1px solid var(--color-twh-grey-900);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.twh-slide-menu__footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.twh-slide-menu__footer-link {
+  font-size: 0.8125rem;
+  color: var(--color-twh-grey-500);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.twh-slide-menu__footer-link:hover { color: var(--color-twh-white); }
+
+.twh-slide-menu__footer-socials {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.twh-slide-menu__social {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-twh-grey-500);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.twh-slide-menu__social:hover { color: var(--color-twh-white); }
+</style>

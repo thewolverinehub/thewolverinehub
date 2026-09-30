@@ -1,0 +1,49 @@
+---
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  type?: 'button' | 'submit' | 'reset';
+  openInNewTab?: boolean;
+  class?: string;
+  disabled?: boolean;
+  'aria-label'?: string;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  openInNewTab = false,
+  class: className = '',
+  disabled = false,
+  'aria-label': ariaLabel,
+} = Astro.props;
+
+const base = 'twh-btn';
+const variantClass = `twh-btn--${variant}`;
+const sizeClass = `twh-btn--${size}`;
+const classes = [base, variantClass, sizeClass, className].filter(Boolean).join(' ');
+---
+
+{href ? (
+  <a
+    href={href}
+    class={classes}
+    target={openInNewTab ? '_blank' : undefined}
+    rel={openInNewTab ? 'noopener noreferrer' : undefined}
+    aria-label={ariaLabel}
+  >
+    <slot />
+  </a>
+) : (
+  <button
+    type={type}
+    class={classes}
+    {disabled}
+    aria-label={ariaLabel}
+  >
+    <slot />
+  </button>
+)}

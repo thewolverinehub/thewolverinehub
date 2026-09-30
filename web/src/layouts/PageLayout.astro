@@ -1,10 +1,10 @@
 ---
-/**
- * PageLayout — wraps pages with header + footer (added in Phase 6).
- * For now it renders the BaseLayout directly.
- */
 import BaseLayout from './BaseLayout.astro';
-import type { StrapiSeo, StrapiGlobal } from '../lib/strapi/types';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import SlashMenu from '../components/layout/SlashMenu.astro';
+import type { StrapiSeo, StrapiGlobal, StrapiHeader, StrapiFooter } from '../lib/strapi/types';
+import { getHeader, getFooter } from '../lib/strapi/queries';
 
 interface Props {
   seo?: StrapiSeo;
@@ -14,11 +14,31 @@ interface Props {
 }
 
 const { seo, global, jsonLd, noindex } = Astro.props;
+
+let header: StrapiHeader | undefined;
+let footer: StrapiFooter | undefined;
+
+try {
+  [header, footer] = await Promise.all([getHeader(), getFooter()]);
+} catch {
+  // CMS unavailable — render without nav
+}
 ---
 
 <BaseLayout {seo} {global} {jsonLd} {noindex}>
   <slot name="head" slot="head" />
-  <main id="main-content">
+
+  <Header {header} {global} menuId="main-menu" />
+  <SlashMenu {header} {global} id="main-menu" />
+
+  <main id="main-content" style="padding-top:80px;">
     <slot />
   </main>
+
+  <Footer {footer} {global} />
 </BaseLayout>
+
+<script>
+  import { initMenu } from '../scripts/interactions/menu';
+  initMenu();
+</script>

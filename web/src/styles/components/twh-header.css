@@ -1,0 +1,157 @@
+/* ============================================================
+   TWH Header
+   ============================================================ */
+
+.twh-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: background 0.3s, backdrop-filter 0.3s, transform 0.4s var(--ease-snappy);
+}
+
+/* Scrolled state — added via JS */
+.twh-header.is-scrolled {
+  background: rgba(10, 10, 11, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Hidden on scroll down */
+.twh-header.is-hidden {
+  transform: translateY(-100%);
+}
+
+.twh-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  gap: 1.5rem;
+}
+
+/* Logo */
+.twh-header__logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.twh-header__logo-full {
+  height: 36px;
+  width: auto;
+}
+
+.twh-header__logo-mono {
+  height: 36px;
+  width: auto;
+  display: none;
+}
+
+.twh-header__logo-text {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+  color: var(--color-twh-white);
+  line-height: 1;
+}
+
+.twh-header__logo-text span {
+  color: var(--color-twh-yellow);
+}
+
+.twh-header__logo-mono-text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  color: var(--color-twh-yellow);
+  display: none;
+  line-height: 1;
+}
+
+/* Compact on scroll — swap full logo for monogram */
+.twh-header.is-scrolled .twh-header__logo-full,
+.twh-header.is-scrolled .twh-header__logo-text {
+  display: none;
+}
+
+.twh-header.is-scrolled .twh-header__logo-mono,
+.twh-header.is-scrolled .twh-header__logo-mono-text {
+  display: block;
+}
+
+/* Right side */
+.twh-header__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.twh-header__cta {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .twh-header__cta { display: inline-flex; }
+}
+
+/* Menu trigger */
+.twh-menu-trigger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 200;
+}
+
+.twh-menu-trigger__bar {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--color-twh-white);
+  border-radius: 1px;
+  transform-origin: center;
+  transition: transform 0.3s var(--ease-snappy), opacity 0.2s, background 0.2s;
+}
+
+/* Hover: bars skew into slashes */
+.twh-menu-trigger:hover .twh-menu-trigger__bar:nth-child(1) { transform: skewX(-25deg) scaleX(0.9); }
+.twh-menu-trigger:hover .twh-menu-trigger__bar:nth-child(2) { transform: skewX(-25deg); }
+.twh-menu-trigger:hover .twh-menu-trigger__bar:nth-child(3) { transform: skewX(-25deg) scaleX(0.9); }
+
+/* Open: morphs to X */
+.twh-menu-trigger[aria-expanded="true"] .twh-menu-trigger__bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.twh-menu-trigger[aria-expanded="true"] .twh-menu-trigger__bar:nth-child(2) {
+  transform: scaleX(0);
+  opacity: 0;
+}
+.twh-menu-trigger[aria-expanded="true"] .twh-menu-trigger__bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Scroll progress */
+.twh-header__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--color-twh-yellow);
+  transition: width 0.1s linear;
+}
+
+@media (max-width: 639px) {
+  .twh-header__inner { padding: 1rem 1.25rem; }
+}

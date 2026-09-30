@@ -1,0 +1,139 @@
+---
+/**
+ * THE SLASH MENU — Primary menu (as per spec §3.3)
+ * Three diagonal panels tear across the screen on open.
+ * Desktop: giant indexed items left + media preview right.
+ * Mobile: bottom sheet.
+ */
+import type { StrapiHeader, StrapiGlobal } from '../../lib/strapi/types';
+
+interface Props {
+  header?: StrapiHeader;
+  global?: StrapiGlobal;
+  id?: string;
+}
+
+const { header, global, id = 'main-menu' } = Astro.props;
+const items = header?.menuItems ?? [];
+---
+
+<div
+  class="twh-slash-menu"
+  id={id}
+  role="dialog"
+  aria-modal="true"
+  aria-label="Main navigation"
+  aria-hidden="true"
+>
+  <!-- Three diagonal panels (red → blue → yellow) -->
+  <div class="twh-slash-menu__panels" aria-hidden="true">
+    <div class="twh-slash-menu__panel twh-slash-menu__panel--red"></div>
+    <div class="twh-slash-menu__panel twh-slash-menu__panel--blue"></div>
+    <div class="twh-slash-menu__panel twh-slash-menu__panel--yellow"></div>
+  </div>
+
+  <!-- Content -->
+  <div class="twh-slash-menu__content">
+
+    <!-- Desktop: left column — giant nav items -->
+    <nav class="twh-slash-menu__nav" aria-label="Primary navigation">
+      <ul class="twh-slash-menu__list" role="list">
+        {items.map((item, i) => (
+          <li class="twh-slash-menu__item">
+            <a
+              href={item.href}
+              class="twh-slash-menu__link"
+              data-index={String(i + 1).padStart(2, '0')}
+              data-preview-image={item.previewImage?.url}
+              data-preview-video={item.previewVideo?.url}
+            >
+              <span class="twh-slash-menu__link-index">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span class="twh-slash-menu__link-label">{item.label}</span>
+            </a>
+            {item.subItems && item.subItems.length > 0 && (
+              <ul class="twh-slash-menu__subitems" role="list">
+                {item.subItems.map((sub) => (
+                  <li>
+                    <a href={sub.href} class="twh-slash-menu__sublink">{sub.label}</a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <!-- Desktop: right column — media preview (slash mask) -->
+    <div class="twh-slash-menu__preview" aria-hidden="true">
+      <div class="twh-slash-menu__preview-mask">
+        <div class="twh-slash-menu__preview-inner" id="menu-preview">
+          <div class="twh-slash-menu__preview-placeholder">
+            <span>/</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom panel: next class widget + socials + CTA -->
+  <div class="twh-slash-menu__bottom">
+    {header?.menuWidgetEnabled && (
+      <div class="twh-slash-menu__widget">
+        <span class="twh-slash-menu__widget-label">{header.menuWidgetLabel ?? 'Next class'}</span>
+        <span class="twh-slash-menu__widget-info" id="menu-next-class">— Loading</span>
+      </div>
+    )}
+    <div class="twh-slash-menu__bottom-socials">
+      {global?.instagram && <a href={global.instagram} target="_blank" rel="noopener noreferrer" class="twh-slash-menu__bottom-link">IG</a>}
+      {global?.facebook && <a href={global.facebook} target="_blank" rel="noopener noreferrer" class="twh-slash-menu__bottom-link">FB</a>}
+      {global?.youtube && <a href={global.youtube} target="_blank" rel="noopener noreferrer" class="twh-slash-menu__bottom-link">YT</a>}
+    </div>
+    {header?.primaryCta && (
+      <a
+        href={header.primaryCta.href}
+        class="twh-btn twh-btn--primary twh-btn--sm"
+      >
+        {header.primaryCta.label}
+      </a>
+    )}
+    {global?.email && (
+      <a href={`mailto:${global.email}`} class="twh-slash-menu__bottom-link twh-slash-menu__bottom-link--contact">
+        {global.email}
+      </a>
+    )}
+  </div>
+
+  <!-- Mobile close -->
+  <button
+    class="twh-slash-menu__mobile-close sr-only focus:not-sr-only"
+    data-menu-close
+    aria-label="Close menu"
+    type="button"
+  >
+    Close
+  </button>
+
+</div>
+
+<!-- Mobile: bottom pill -->
+<div class="twh-mobile-pill" aria-hidden="true">
+  <button
+    class="twh-mobile-pill__btn"
+    id="mobile-menu-trigger"
+    aria-controls={id}
+    aria-expanded="false"
+    aria-label="Open menu"
+    type="button"
+  >
+    <span>Menu</span>
+    <span class="twh-mobile-pill__icon" aria-hidden="true">↑</span>
+  </button>
+</div>
+
+<style>
+  @import '../../styles/components/twh-slash-menu.css';
+</style>

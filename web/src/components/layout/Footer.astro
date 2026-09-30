@@ -1,0 +1,127 @@
+---
+import type { StrapiFooter, StrapiGlobal } from '../../lib/strapi/types';
+
+interface Props {
+  footer?: StrapiFooter;
+  global?: StrapiGlobal;
+}
+const { footer, global } = Astro.props;
+const year = new Date().getFullYear();
+const siteName = global?.siteName ?? 'The Wolverine Hub';
+const wordmark = footer?.wordmarkText ?? 'THE WOLVERINE HUB';
+---
+
+<footer class="twh-footer">
+
+  <!-- Giant interactive wordmark -->
+  <div class="twh-footer__wordmark" aria-hidden="true">
+    <span class="twh-footer__wordmark-text">{wordmark}</span>
+  </div>
+
+  <!-- Newsletter (if enabled) -->
+  {footer?.newsletterEnabled && (
+    <div class="twh-footer__newsletter">
+      <div class="twh-footer__newsletter-inner">
+        <h2 class="twh-footer__newsletter-heading">
+          {footer.newsletterHeading ?? 'Join the Pack.'}
+        </h2>
+        {footer.newsletterSubheading && (
+          <p class="twh-footer__newsletter-sub">{footer.newsletterSubheading}</p>
+        )}
+        <form class="twh-footer__newsletter-form" action="/api/newsletter" method="post">
+          <input
+            type="email"
+            name="email"
+            placeholder="Your email address"
+            required
+            aria-label="Email address"
+            class="twh-footer__newsletter-input"
+          />
+          <button type="submit" class="twh-btn twh-btn--primary twh-btn--md">
+            Join the Pack
+          </button>
+        </form>
+      </div>
+    </div>
+  )}
+
+  <!-- Main grid -->
+  <div class="twh-footer__grid">
+
+    <!-- Brand column -->
+    <div class="twh-footer__brand">
+      <p class="twh-footer__brand-name">{siteName}</p>
+      {global?.siteTagline && <p class="twh-footer__brand-tagline">{global.siteTagline}</p>}
+
+      <!-- Socials -->
+      <div class="twh-footer__socials">
+        {global?.instagram && (
+          <a href={global.instagram} aria-label="Instagram" target="_blank" rel="noopener noreferrer" class="twh-footer__social-link">IG</a>
+        )}
+        {global?.facebook && (
+          <a href={global.facebook} aria-label="Facebook" target="_blank" rel="noopener noreferrer" class="twh-footer__social-link">FB</a>
+        )}
+        {global?.youtube && (
+          <a href={global.youtube} aria-label="YouTube" target="_blank" rel="noopener noreferrer" class="twh-footer__social-link">YT</a>
+        )}
+        {global?.tiktok && (
+          <a href={global.tiktok} aria-label="TikTok" target="_blank" rel="noopener noreferrer" class="twh-footer__social-link">TT</a>
+        )}
+      </div>
+    </div>
+
+    <!-- Navigation columns from Strapi -->
+    {footer?.columns?.map((col) => (
+      <div class="twh-footer__col">
+        <h3 class="twh-footer__col-heading">{col.heading}</h3>
+        <ul class="twh-footer__col-links" role="list">
+          {col.links?.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="twh-footer__col-link"
+                target={link.openInNewTab ? '_blank' : undefined}
+                rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+
+    <!-- Contact column -->
+    {global && (
+      <div class="twh-footer__col">
+        <h3 class="twh-footer__col-heading">Contact</h3>
+        <ul class="twh-footer__col-links" role="list">
+          {global.email && <li><a href={`mailto:${global.email}`} class="twh-footer__col-link">{global.email}</a></li>}
+          {global.phone && <li><a href={`tel:${global.phone}`} class="twh-footer__col-link">{global.phone}</a></li>}
+          {global.whatsapp && <li><a href={`https://wa.me/${global.whatsapp.replace(/\D/g,'')}`} class="twh-footer__col-link" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>}
+          {global.address && <li><address class="twh-footer__address">{global.address}</address></li>}
+        </ul>
+      </div>
+    )}
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="twh-footer__bottom">
+    <p class="twh-footer__copyright">
+      {footer?.copyrightText ?? `© ${year} ${siteName}. All rights reserved.`}
+    </p>
+    {global?.companyNumber && (
+      <p class="twh-footer__company">Company No. {global.companyNumber}</p>
+    )}
+    <nav aria-label="Legal" class="twh-footer__legal-nav">
+      {footer?.legalLinks?.map((link) => (
+        <a href={link.href} class="twh-footer__legal-link">{link.label}</a>
+      ))}
+    </nav>
+  </div>
+
+</footer>
+
+<style>
+  @import '../../styles/components/twh-footer.css';
+</style>
