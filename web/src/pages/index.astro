@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 import { getGlobal } from '../lib/strapi/queries';
 
 let global;
@@ -11,27 +11,19 @@ const seo = {
 };
 ---
 
-<BaseLayout {seo} {global}>
-  <main id="main-content" style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;">
-
+<PageLayout {seo} {global}>
+  <section style="min-height:calc(100dvh - 80px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;">
     <span style="display:inline-block;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--color-twh-yellow);margin-bottom:1.5rem;">
       Coming Soon · Colombo, Sri Lanka
     </span>
-
     <h1 style="font-size:clamp(2.5rem,10vw,6rem);max-width:12ch;margin:0 0 1.5rem;">
       Where Iron Meets <span style="color:var(--color-twh-yellow);">Instinct.</span>
     </h1>
-
     <p style="font-size:clamp(1rem,2.5vw,1.25rem);color:var(--color-twh-grey-400);max-width:40ch;margin:0 0 3rem;">
       Classes, coaching and programs built for those who mean it.
     </p>
-
-    <a
-      href="mailto:train@thewolverinehub.com"
-      style="background:var(--color-twh-yellow);color:var(--color-twh-black);font-weight:800;font-size:0.9375rem;letter-spacing:0.04em;text-transform:uppercase;padding:1rem 2rem;border-radius:4px;text-decoration:none;"
-    >
+    <a href="mailto:train@thewolverinehub.com" style="background:var(--color-twh-yellow);color:var(--color-twh-black);font-weight:800;font-size:0.9375rem;letter-spacing:0.04em;text-transform:uppercase;padding:1rem 2rem;border-radius:4px;text-decoration:none;">
       Get Notified
     </a>
-
-  </main>
-</BaseLayout>
+  </section>
+</PageLayout>
