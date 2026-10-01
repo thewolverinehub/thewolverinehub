@@ -76,9 +76,9 @@ const tierColour: Record<string, { bg: string; text: string; border: string }> =
                   <a href="/pricing" class="twh-pricing__price-link" style={`color: ${colors.bg};`}>See prices →</a>
                 </div>
               )}
-              {tier.features && tier.features.length > 0 && (
+              {tier.features && tier.features.trim().length > 0 && (
                 <ul class="twh-pricing__features" role="list">
-                  {tier.features.map((f) => (
+                  {tier.features.split('\n').filter(Boolean).map((f) => (
                     <li class="twh-pricing__feature">
                       <span class="twh-pricing__feature-check" aria-hidden="true" style={`color: ${colors.bg};`}>✓</span>
                       {f}

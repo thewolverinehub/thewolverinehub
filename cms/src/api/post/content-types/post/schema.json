@@ -88,11 +88,11 @@
       }
     },
     "tags": {
-      "type": "json",
+      "type": "text",
       "pluginOptions": {
         "content-manager": {
-          "label": "Tags",
-          "description": "Keywords for filtering and discovery — enter one tag per entry."
+          "label": "Tags (one per line)",
+          "description": "Keywords for search and filtering. Type each tag on its own line — e.g. boxing, technique, beginner."
         }
       }
     },

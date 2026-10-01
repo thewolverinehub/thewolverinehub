@@ -83,11 +83,11 @@
       }
     },
     "specialties": {
-      "type": "json",
+      "type": "text",
       "pluginOptions": {
         "content-manager": {
-          "label": "Specialties",
-          "description": "Key skills or techniques — enter one per line."
+          "label": "Specialties (one per line)",
+          "description": "Key skills, techniques, or certifications. Type each on its own line — shown as tag badges on the profile."
         }
       }
     },

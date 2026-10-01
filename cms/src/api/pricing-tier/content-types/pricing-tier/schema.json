@@ -52,11 +52,11 @@
       }
     },
     "features": {
-      "type": "json",
+      "type": "text",
       "pluginOptions": {
         "content-manager": {
-          "label": "Features List",
-          "description": "Bullet points shown on the pricing card, one per entry."
+          "label": "Features (one per line)",
+          "description": "What's included in this plan. Type each bullet point on its own line — no punctuation needed."
         }
       }
     },

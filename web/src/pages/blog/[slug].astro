@@ -91,9 +91,9 @@ const seo = post.seo ?? {
       </div>
 
       <!-- Tags -->
-      {post.tags && post.tags.length > 0 && (
+      {post.tags && post.tags.trim().length > 0 && (
         <div class="twh-article__tags" aria-label="Post tags">
-          {post.tags.map(tag => (
+          {post.tags.split('\n').filter(Boolean).map(tag => (
             <span class="twh-article__tag">{tag}</span>
           ))}
         </div>

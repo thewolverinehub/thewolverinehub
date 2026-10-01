@@ -855,11 +855,11 @@ export interface ApiCoachCoach extends Struct.CollectionTypeSchema {
         };
       }> &
       Schema.Attribute.DefaultTo<0>;
-    specialties: Schema.Attribute.JSON &
+    specialties: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Key skills or techniques \u2014 enter one per line.';
-          label: 'Specialties';
+          description: 'Key skills, techniques, or certifications. Type each on its own line \u2014 shown as tag badges on the profile.';
+          label: 'Specialties (one per line)';
         };
       }>;
     updatedAt: Schema.Attribute.DateTime;
@@ -1560,6 +1560,10 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
     fields: Schema.Attribute.JSON;
     formKey: Schema.Attribute.String & Schema.Attribute.Required;
     ipHash: Schema.Attribute.String;
+    leadStatus: Schema.Attribute.Enumeration<
+      ['new', 'contacted', 'converted', 'closed']
+    > &
+      Schema.Attribute.DefaultTo<'new'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::lead.lead'> &
       Schema.Attribute.Private;
@@ -1580,10 +1584,6 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
         };
       }>;
     publishedAt: Schema.Attribute.DateTime;
-    status: Schema.Attribute.Enumeration<
-      ['new', 'contacted', 'converted', 'closed']
-    > &
-      Schema.Attribute.DefaultTo<'new'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2039,11 +2039,11 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
           label: 'Summary';
         };
       }>;
-    tags: Schema.Attribute.JSON &
+    tags: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Keywords for filtering and discovery \u2014 enter one tag per entry.';
-          label: 'Tags';
+          description: 'Keywords for search and filtering. Type each tag on its own line \u2014 e.g. boxing, technique, beginner.';
+          label: 'Tags (one per line)';
         };
       }>;
     title: Schema.Attribute.String &
@@ -2090,11 +2090,11 @@ export interface ApiPricingTierPricingTier extends Struct.CollectionTypeSchema {
           label: 'Description';
         };
       }>;
-    features: Schema.Attribute.JSON &
+    features: Schema.Attribute.Text &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Bullet points shown on the pricing card, one per entry.';
-          label: 'Features List';
+          description: "What's included in this plan. Type each bullet point on its own line \u2014 no punctuation needed.";
+          label: 'Features (one per line)';
         };
       }>;
     isMostPopular: Schema.Attribute.Boolean &

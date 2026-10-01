@@ -75,9 +75,9 @@ const seo = {
                 {tier.tagline && <p class="twh-pricing-page__tier-tagline">{tier.tagline}</p>}
                 {tier.description && <p class="twh-pricing-page__tier-desc">{tier.description}</p>}
 
-                {(tier.features ?? []).length > 0 && (
+                {tier.features && tier.features.trim().length > 0 && (
                   <ul class="twh-pricing-page__features" role="list">
-                    {(tier.features ?? []).map(f => (
+                    {tier.features.split('\n').filter(Boolean).map(f => (
                       <li class="twh-pricing-page__feature">
                         <span class="twh-pricing-page__feature-icon" style={`color:${colors.bg};`}>✓</span>
                         {f}

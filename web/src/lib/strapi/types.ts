@@ -258,7 +258,7 @@ export interface StrapiCoach {
   shortBio?: string;
   photo?: StrapiMedia;
   yearsExperience?: number;
-  specialties?: string[];
+  specialties?: string;
   disciplines?: StrapiDiscipline[];
   instagram?: string;
   isHeadCoach: boolean;
@@ -285,7 +285,7 @@ export interface StrapiPricingTier {
   slug: string;
   tagline?: string;
   description?: string;
-  features?: string[];
+  features?: string;
   isMostPopular: boolean;
   colour: 'yellow' | 'blue' | 'red' | 'white';
   sortOrder: number;
@@ -338,7 +338,7 @@ export interface StrapiPost {
   coverImage?: StrapiMedia;
   author?: StrapiAuthor;
   category?: StrapiPostCategory;
-  tags?: string[];
+  tags?: string;
   readingTimeMinutes?: number;
   isFeatured: boolean;
   publishedAt: string;

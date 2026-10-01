@@ -41,9 +41,9 @@ const seo = coach.seo ?? {
         <h1 class="twh-coach-detail__name">{coach.name}</h1>
         {coach.shortBio && <p class="twh-coach-detail__short-bio">{coach.shortBio}</p>}
 
-        {coach.specialties && coach.specialties.length > 0 && (
+        {coach.specialties && coach.specialties.trim().length > 0 && (
           <div class="twh-coach-detail__tags">
-            {coach.specialties.map(s => (
+            {coach.specialties.split('\n').filter((s: string) => s.trim() !== '').map((s: string) => (
               <span class="twh-coach-detail__tag">{s}</span>
             ))}
           </div>
@@ -83,7 +83,7 @@ const seo = coach.seo ?? {
             {(coach.disciplines ?? []).map(d => (
               <li class="twh-coach-detail__spec-item">{d.name}</li>
             ))}
-            {(coach.specialties ?? []).map(s => (
+            {(coach.specialties ?? '').split('\n').filter((s: string) => s.trim() !== '').map((s: string) => (
               <li class="twh-coach-detail__spec-item">{s}</li>
             ))}
           </ul>
