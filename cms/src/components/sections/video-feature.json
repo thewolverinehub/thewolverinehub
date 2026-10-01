@@ -1,13 +1,74 @@
 {
   "collectionName": "components_sections_video_features",
-  "info": { "displayName": "Video Feature", "icon": "play" },
+  "info": {
+    "displayName": "Video Feature",
+    "icon": "play"
+  },
   "options": {},
   "attributes": {
-    "heading": { "type": "string" },
-    "video": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["videos"] },
-    "poster": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "caption": { "type": "text" },
-    "visible": { "type": "boolean", "default": true },
-    "anchorId": { "type": "string" }
+    "heading": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Column Heading",
+          "description": "Title above this group of footer links."
+        }
+      }
+    },
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "videos"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Background Video",
+          "description": "Upload the hero video (WebM VP9 + MP4 H.264, muted, ≤ 3 MB)."
+        }
+      }
+    },
+    "poster": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Video Poster Image",
+          "description": "Still image shown before the video loads. Must match the video dimensions."
+        }
+      }
+    },
+    "caption": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Caption",
+          "description": "Short caption displayed below the image."
+        }
+      }
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Visible on Page?",
+          "description": "Untick to hide this section without deleting it."
+        }
+      }
+    },
+    "anchorId": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Section Anchor ID",
+          "description": "Optional HTML anchor for deep-linking, e.g. \"about\". Used in URLs like /page#about."
+        }
+      }
+    }
   }
 }

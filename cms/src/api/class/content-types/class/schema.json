@@ -1,24 +1,175 @@
 {
   "kind": "collectionType",
   "collectionName": "classes",
-  "info": { "singularName": "class", "pluralName": "classes", "displayName": "Class" },
-  "options": { "draftAndPublish": true },
+  "info": {
+    "singularName": "class",
+    "pluralName": "classes",
+    "displayName": "Class",
+    "description": "A training class (e.g. Muay Thai, CrossFit, Yoga). Each class has a thumbnail, description, intensity level, and links to schedule slots."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "name", "required": true },
-    "tagline": { "type": "string" },
-    "description": { "type": "blocks" },
-    "durationMinutes": { "type": "integer", "required": true },
-    "intensity": { "type": "enumeration", "enum": ["low", "medium", "high", "extreme"], "default": "medium" },
-    "level": { "type": "enumeration", "enum": ["beginner", "intermediate", "advanced", "all"], "default": "all" },
-    "discipline": { "type": "relation", "relation": "manyToOne", "target": "api::discipline.discipline" },
-    "thumbnail": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "previewVideo": { "type": "media", "multiple": false, "allowedTypes": ["videos"] },
-    "featuredVideo": { "type": "media", "multiple": false, "allowedTypes": ["videos"] },
-    "whatToExpect": { "type": "blocks" },
-    "isFree": { "type": "boolean", "default": false },
-    "sortOrder": { "type": "integer", "default": 0 },
-    "seo": { "type": "component", "repeatable": false, "component": "shared.seo" }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    },
+    "tagline": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Tagline",
+          "description": "Short punchy line shown beneath the title (one sentence max)."
+        }
+      }
+    },
+    "description": {
+      "type": "blocks",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Description",
+          "description": "Detailed description with rich text formatting."
+        }
+      }
+    },
+    "durationMinutes": {
+      "type": "integer",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Duration (minutes)",
+          "description": "Class length in minutes, e.g. 60 for a one-hour class."
+        }
+      }
+    },
+    "intensity": {
+      "type": "enumeration",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "extreme"
+      ],
+      "default": "medium",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Intensity Level",
+          "description": "How physically demanding this class is: Low, Medium, High, or Extreme."
+        }
+      }
+    },
+    "level": {
+      "type": "enumeration",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "all"
+      ],
+      "default": "all",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Experience Level",
+          "description": "Who this class suits: Beginner, Intermediate, Advanced, or All levels."
+        }
+      }
+    },
+    "discipline": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::discipline.discipline",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Discipline",
+          "description": "The martial art or training style this class belongs to."
+        }
+      }
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Thumbnail",
+          "description": "Small preview image used in grids, cards, and listings."
+        }
+      }
+    },
+    "previewVideo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "videos"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Hover Preview Video",
+          "description": "Short looping video shown when hovering over this item."
+        }
+      }
+    },
+    "featuredVideo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "videos"
+      ]
+    },
+    "whatToExpect": {
+      "type": "blocks"
+    },
+    "isFree": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Free Class?",
+          "description": "Tick if this class is free and does not require a membership or pass."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "SEO Settings",
+          "description": "Search engine optimisation settings for this page."
+        }
+      }
+    }
   }
 }

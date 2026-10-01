@@ -1,14 +1,53 @@
 {
   "kind": "collectionType",
   "collectionName": "token_packs",
-  "info": { "singularName": "token-pack", "pluralName": "token-packs", "displayName": "Token Pack" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "token-pack",
+    "pluralName": "token-packs",
+    "displayName": "Token Pack",
+    "description": "A token bundle product that members purchase to book individual classes."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "tokens": { "type": "integer", "required": true },
-    "validityDays": { "type": "integer", "default": 15 },
-    "priceLKR": { "type": "decimal", "required": true },
-    "payHereItemName": { "type": "string" },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "tokens": {
+      "type": "integer",
+      "required": true
+    },
+    "validityDays": {
+      "type": "integer",
+      "default": 15
+    },
+    "priceLKR": {
+      "type": "decimal",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Price (LKR)",
+          "description": "Price in Sri Lankan Rupees. Do not include commas or currency symbols."
+        }
+      }
+    },
+    "payHereItemName": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "PayHere Item Name",
+          "description": "Short item name sent to the PayHere payment gateway. No special characters."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

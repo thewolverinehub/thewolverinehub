@@ -1,14 +1,67 @@
 {
   "kind": "collectionType",
   "collectionName": "faqs",
-  "info": { "singularName": "faq", "pluralName": "faqs", "displayName": "FAQ" },
-  "options": { "draftAndPublish": true },
+  "info": {
+    "singularName": "faq",
+    "pluralName": "faqs",
+    "displayName": "FAQ",
+    "description": "A frequently asked question with rich-text answer. Assign to a category for grouping."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
   "pluginOptions": {},
   "attributes": {
-    "question": { "type": "string", "required": true },
-    "answer": { "type": "blocks", "required": true },
-    "category": { "type": "relation", "relation": "manyToOne", "target": "api::faq-category.faq-category" },
-    "isFeatured": { "type": "boolean", "default": false },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "question": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Question",
+          "description": "The frequently asked question, written as the visitor would phrase it."
+        }
+      }
+    },
+    "answer": {
+      "type": "blocks",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Answer",
+          "description": "Full answer with rich text formatting. You can add bullet lists, bold text, and links."
+        }
+      }
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::faq-category.faq-category",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "FAQ Category",
+          "description": "Groups this question with related FAQs on the FAQ page."
+        }
+      }
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Featured?",
+          "description": "Featured items appear in homepage sections and spotlights."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

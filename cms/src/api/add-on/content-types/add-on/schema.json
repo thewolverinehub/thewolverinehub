@@ -1,16 +1,71 @@
 {
   "kind": "collectionType",
   "collectionName": "add_ons",
-  "info": { "singularName": "add-on", "pluralName": "add-ons", "displayName": "Add-on" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "add-on",
+    "pluralName": "add-ons",
+    "displayName": "Add-on",
+    "description": "An optional add-on product (e.g. personal training session, nutrition consult)."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "description": { "type": "text" },
-    "sessions": { "type": "integer", "required": true },
-    "validityDays": { "type": "integer" },
-    "priceLKR": { "type": "decimal", "required": true },
-    "payHereItemName": { "type": "string" },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Description",
+          "description": "Detailed description with rich text formatting."
+        }
+      }
+    },
+    "sessions": {
+      "type": "integer",
+      "required": true
+    },
+    "validityDays": {
+      "type": "integer"
+    },
+    "priceLKR": {
+      "type": "decimal",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Price (LKR)",
+          "description": "Price in Sri Lankan Rupees. Do not include commas or currency symbols."
+        }
+      }
+    },
+    "payHereItemName": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "PayHere Item Name",
+          "description": "Short item name sent to the PayHere payment gateway. No special characters."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

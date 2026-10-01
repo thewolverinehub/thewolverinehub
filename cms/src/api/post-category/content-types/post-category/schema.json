@@ -1,11 +1,37 @@
 {
   "kind": "collectionType",
   "collectionName": "post_categories",
-  "info": { "singularName": "post-category", "pluralName": "post-categories", "displayName": "Post Category" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "post-category",
+    "pluralName": "post-categories",
+    "displayName": "Post Category",
+    "description": "A category for grouping blog/journal articles."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "name", "required": true }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    }
   }
 }

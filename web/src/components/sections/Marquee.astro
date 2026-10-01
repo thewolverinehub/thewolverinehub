@@ -1,0 +1,46 @@
+---
+import type { StrapiMarqueeSection } from '../../lib/strapi/types';
+
+interface Props {
+  section?: Partial<StrapiMarqueeSection>;
+}
+
+const { section } = Astro.props;
+
+const anchorId = section?.anchorId ?? 'marquee';
+const speed = section?.speed ?? 'normal';
+
+const speedDuration: Record<string, string> = {
+  slow:   '60s',
+  normal: '35s',
+  fast:   '20s',
+};
+const duration = speedDuration[speed] ?? '35s';
+
+const rawItems = section?.items ?? [
+  'Boxing', 'Muay Thai', 'Brazilian Jiu-Jitsu', 'Kickboxing',
+  'Strength & Conditioning', 'Wrestling', 'MMA', 'Yoga',
+  'HIIT', 'Kettlebell', 'Calisthenics', 'Functional Fitness',
+];
+
+// Normalise to plain strings
+const labels: string[] = rawItems.map((item) =>
+  typeof item === 'string' ? item : (item as { text: string }).text
+);
+
+// Duplicate so the seamless loop always fills the viewport
+const doubled = [...labels, ...labels];
+---
+
+<div class="twh-marquee" id={anchorId} aria-hidden="true">
+  <div class="twh-marquee__track" style={`--marquee-duration: ${duration};`}>
+    {doubled.map((label) => (
+      <span class="twh-marquee__item">
+        <span class="twh-marquee__slash" aria-hidden="true">/</span>
+        {label}
+      </span>
+    ))}
+  </div>
+</div>
+
+<style>@import '../../styles/components/twh-marquee.css';</style>

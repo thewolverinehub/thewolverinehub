@@ -1,13 +1,59 @@
 {
   "kind": "collectionType",
   "collectionName": "authors",
-  "info": { "singularName": "author", "pluralName": "authors", "displayName": "Author" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "author",
+    "pluralName": "authors",
+    "displayName": "Author",
+    "description": "A blog post author — name, bio, photo, and links."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "name", "required": true },
-    "bio": { "type": "text" },
-    "photo": { "type": "media", "multiple": false, "allowedTypes": ["images"] }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    },
+    "bio": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Full Biography",
+          "description": "Full biography with rich text formatting."
+        }
+      }
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Photo",
+          "description": "Portrait or profile photo."
+        }
+      }
+    }
   }
 }

@@ -1,15 +1,56 @@
 {
   "collectionName": "components_shared_cta_buttons",
-  "info": { "displayName": "CTA Button", "icon": "cursor" },
+  "info": {
+    "displayName": "CTA Button",
+    "icon": "cursor"
+  },
   "options": {},
   "attributes": {
-    "label": { "type": "string", "required": true },
-    "href": { "type": "string", "required": true },
+    "label": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Button Text",
+          "description": "Text displayed on the button (e.g. \"Start Training\")."
+        }
+      }
+    },
+    "href": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Destination URL",
+          "description": "Where the button links. Use \"/\" for homepage or a full URL for external links."
+        }
+      }
+    },
     "variant": {
       "type": "enumeration",
-      "enum": ["primary", "secondary", "ghost", "danger"],
-      "default": "primary"
+      "enum": [
+        "primary",
+        "secondary",
+        "ghost",
+        "danger"
+      ],
+      "default": "primary",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Button Style",
+          "description": "Visual style: primary = yellow filled, ghost = outline, secondary = muted, danger = red."
+        }
+      }
     },
-    "openInNewTab": { "type": "boolean", "default": false }
+    "openInNewTab": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Open in New Tab?",
+          "description": "Tick this for external links so the visitor stays on the site."
+        }
+      }
+    }
   }
 }

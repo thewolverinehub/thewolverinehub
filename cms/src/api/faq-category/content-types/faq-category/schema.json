@@ -1,12 +1,47 @@
 {
   "kind": "collectionType",
   "collectionName": "faq_categories",
-  "info": { "singularName": "faq-category", "pluralName": "faq-categories", "displayName": "FAQ Category" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "faq-category",
+    "pluralName": "faq-categories",
+    "displayName": "FAQ Category",
+    "description": "Groups FAQs on the FAQ page (e.g. Membership, Classes, Facilities)."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "name", "required": true },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

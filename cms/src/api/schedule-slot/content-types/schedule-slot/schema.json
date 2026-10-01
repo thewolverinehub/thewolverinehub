@@ -1,18 +1,116 @@
 {
   "kind": "collectionType",
   "collectionName": "schedule_slots",
-  "info": { "singularName": "schedule-slot", "pluralName": "schedule-slots", "displayName": "Schedule Slot" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "schedule-slot",
+    "pluralName": "schedule-slots",
+    "displayName": "Schedule Slot",
+    "description": "A recurring class slot on the weekly timetable — weekday, start/end time, class, coach, and capacity."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "class": { "type": "relation", "relation": "manyToOne", "target": "api::class.class", "required": true },
-    "coach": { "type": "relation", "relation": "manyToOne", "target": "api::coach.coach" },
-    "weekday": { "type": "enumeration", "enum": ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"], "required": true },
-    "startTime": { "type": "time", "required": true },
-    "endTime": { "type": "time", "required": true },
-    "capacity": { "type": "integer", "default": 20 },
-    "room": { "type": "string" },
-    "isActive": { "type": "boolean", "default": true },
-    "notes": { "type": "text" }
+    "class": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::class.class",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Class",
+          "description": "Which class is scheduled in this time slot."
+        }
+      }
+    },
+    "coach": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::coach.coach",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Coach",
+          "description": "Coach leading this session (optional)."
+        }
+      }
+    },
+    "weekday": {
+      "type": "enumeration",
+      "enum": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+      ],
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Day of Week",
+          "description": "Which day this slot runs every week."
+        }
+      }
+    },
+    "startTime": {
+      "type": "time",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Start Time",
+          "description": "Time the class begins in 24-hour format, e.g. 06:00."
+        }
+      }
+    },
+    "endTime": {
+      "type": "time",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "End Time",
+          "description": "Time the class ends in 24-hour format, e.g. 07:00."
+        }
+      }
+    },
+    "capacity": {
+      "type": "integer",
+      "default": 20,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Maximum Capacity",
+          "description": "Maximum number of participants allowed per session."
+        }
+      }
+    },
+    "room": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Room / Area",
+          "description": "Which part of the gym this runs in, e.g. \"Main Floor\" or \"Boxing Ring\"."
+        }
+      }
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Active on Schedule?",
+          "description": "Only active slots are shown on the public schedule page."
+        }
+      }
+    },
+    "notes": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Internal Notes",
+          "description": "Private notes for the team — not shown on the public website."
+        }
+      }
+    }
   }
 }

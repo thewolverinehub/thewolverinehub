@@ -1,16 +1,86 @@
 {
   "kind": "collectionType",
   "collectionName": "passes",
-  "info": { "singularName": "pass", "pluralName": "passes", "displayName": "Pass" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "pass",
+    "pluralName": "passes",
+    "displayName": "Pass",
+    "description": "A class pass product — number of sessions, validity period, and price."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "tier": { "type": "relation", "relation": "manyToOne", "target": "api::pricing-tier.pricing-tier", "required": true },
-    "duration": { "type": "string", "required": true },
-    "durationDays": { "type": "integer" },
-    "priceLKR": { "type": "decimal", "required": true },
-    "payHereItemName": { "type": "string" },
-    "isPurchasable": { "type": "boolean", "default": true },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "tier": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pricing-tier.pricing-tier",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Pricing Tier",
+          "description": "The membership tier this pass belongs to."
+        }
+      }
+    },
+    "duration": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Duration Label",
+          "description": "Human-readable duration shown to customers, e.g. \"1 Month\" or \"3 Months\"."
+        }
+      }
+    },
+    "durationDays": {
+      "type": "integer",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Duration in Days",
+          "description": "Exact number of days — used to calculate pass expiry."
+        }
+      }
+    },
+    "priceLKR": {
+      "type": "decimal",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Price (LKR)",
+          "description": "Price in Sri Lankan Rupees. Do not include commas or currency symbols."
+        }
+      }
+    },
+    "payHereItemName": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "PayHere Item Name",
+          "description": "Short item name sent to the PayHere payment gateway. No special characters."
+        }
+      }
+    },
+    "isPurchasable": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Available for Purchase?",
+          "description": "If unticked, this pass is hidden from the pricing page."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

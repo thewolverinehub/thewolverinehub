@@ -1,34 +1,272 @@
 {
   "kind": "singleType",
   "collectionName": "globals",
-  "info": { "singularName": "global", "pluralName": "globals", "displayName": "Global", "description": "Site-wide settings, contact info, SEO defaults, experience toggles" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "global",
+    "pluralName": "globals",
+    "displayName": "Global",
+    "description": "Site-wide settings: logo, contact details, social links, SEO defaults, and experience feature flags."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "siteName": { "type": "string", "required": true, "default": "The Wolverine Hub" },
-    "siteTagline": { "type": "string" },
-    "logoLight": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "logoDark": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "logoMonogram": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "favicon": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "email": { "type": "email" },
-    "phone": { "type": "string" },
-    "whatsapp": { "type": "string" },
-    "address": { "type": "text" },
-    "mapLink": { "type": "string" },
-    "hoursJson": { "type": "json" },
-    "instagram": { "type": "string" },
-    "facebook": { "type": "string" },
-    "youtube": { "type": "string" },
-    "tiktok": { "type": "string" },
-    "companyNumber": { "type": "string" },
-    "twitterHandle": { "type": "string" },
-    "defaultSeo": { "type": "component", "repeatable": false, "component": "shared.seo" },
-    "experienceIntroAnimation": { "type": "boolean", "default": true },
-    "experienceWebgl": { "type": "boolean", "default": true },
-    "experienceSmoothScroll": { "type": "boolean", "default": true },
-    "experienceCustomCursor": { "type": "boolean", "default": true },
-    "experienceSoundDefault": { "type": "boolean", "default": false },
-    "experienceMotionIntensity": { "type": "enumeration", "enum": ["full", "lite", "minimal"], "default": "full" }
+    "siteName": {
+      "type": "string",
+      "required": true,
+      "default": "The Wolverine Hub",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Site Name",
+          "description": "Official site name shown in browser tabs and SEO (e.g. \"The Wolverine Hub\")."
+        }
+      }
+    },
+    "siteTagline": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Brand Tagline",
+          "description": "Short tagline shown under the logo in some layouts."
+        }
+      }
+    },
+    "logoLight": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Logo – Light Version",
+          "description": "Full logo for use on dark backgrounds (transparent PNG or SVG)."
+        }
+      }
+    },
+    "logoDark": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Logo – Dark Version",
+          "description": "Full logo for use on light backgrounds (transparent PNG or SVG)."
+        }
+      }
+    },
+    "logoMonogram": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Logo – Monogram / Icon",
+          "description": "Small square icon version of the logo used in the mobile header and favicons."
+        }
+      }
+    },
+    "favicon": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Favicon",
+          "description": "Browser tab icon. Recommended: 32 × 32 px ICO or PNG."
+        }
+      }
+    },
+    "email": {
+      "type": "email",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Contact Email",
+          "description": "Main contact email address displayed on the site."
+        }
+      }
+    },
+    "phone": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Phone Number",
+          "description": "Contact phone number including country code, e.g. +94 77 123 4567."
+        }
+      }
+    },
+    "whatsapp": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "WhatsApp Number",
+          "description": "WhatsApp number including country code with no spaces, e.g. +94771234567."
+        }
+      }
+    },
+    "address": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Physical Address",
+          "description": "Full postal address shown on the Contact page."
+        }
+      }
+    },
+    "mapLink": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Google Maps URL",
+          "description": "Link to the location on Google Maps."
+        }
+      }
+    },
+    "hoursJson": {
+      "type": "json",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Opening Hours (JSON)",
+          "description": "Opening hours as a JSON object, e.g. {\"Monday\": \"6am–9pm\", \"Tuesday\": \"6am–9pm\"}."
+        }
+      }
+    },
+    "instagram": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Instagram Username",
+          "description": "Instagram handle without the @ symbol."
+        }
+      }
+    },
+    "facebook": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Facebook Page URL",
+          "description": "Full Facebook page URL."
+        }
+      }
+    },
+    "youtube": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "YouTube Channel URL",
+          "description": "Full YouTube channel URL."
+        }
+      }
+    },
+    "tiktok": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "TikTok Username",
+          "description": "TikTok handle without the @ symbol."
+        }
+      }
+    },
+    "companyNumber": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Company Registration Number",
+          "description": "Used in legal footer notices."
+        }
+      }
+    },
+    "twitterHandle": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Twitter / X Handle",
+          "description": "Twitter/X username without the @ symbol."
+        }
+      }
+    },
+    "defaultSeo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Default SEO Settings",
+          "description": "Fallback SEO used when a page has no specific SEO fields set."
+        }
+      }
+    },
+    "experienceIntroAnimation": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Enable Intro Animation",
+          "description": "Show the full-screen cinematic intro on first visit."
+        }
+      }
+    },
+    "experienceWebgl": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Enable WebGL Effects",
+          "description": "Enable 3D / shader effects in the hero section. Disabling improves performance on low-end devices."
+        }
+      }
+    },
+    "experienceSmoothScroll": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Enable Smooth Scroll",
+          "description": "Enable GSAP ScrollSmoother on desktop browsers."
+        }
+      }
+    },
+    "experienceCustomCursor": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Enable Custom Cursor",
+          "description": "Show a custom cursor on desktop (auto-disabled on touch devices)."
+        }
+      }
+    },
+    "experienceSoundDefault": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sound On by Default",
+          "description": "Play ambient sound automatically on load. Not recommended — leave off unless specifically needed."
+        }
+      }
+    },
+    "experienceMotionIntensity": {
+      "type": "enumeration",
+      "enum": [
+        "full",
+        "lite",
+        "minimal"
+      ],
+      "default": "full",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Motion Intensity",
+          "description": "Full = all animations active. Lite = reduced animations. Minimal = static layout only."
+        }
+      }
+    }
   }
 }

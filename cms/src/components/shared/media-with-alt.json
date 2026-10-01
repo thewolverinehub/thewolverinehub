@@ -1,10 +1,38 @@
 {
   "collectionName": "components_shared_media_with_alts",
-  "info": { "displayName": "Media with Alt", "icon": "landscape" },
+  "info": {
+    "displayName": "Media with Alt",
+    "icon": "landscape"
+  },
   "options": {},
   "attributes": {
-    "file": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images", "videos"] },
-    "alt": { "type": "string", "required": true },
-    "caption": { "type": "string" }
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "videos"
+      ]
+    },
+    "alt": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Alt Text",
+          "description": "Describe the image for screen readers and search engines."
+        }
+      }
+    },
+    "caption": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Caption",
+          "description": "Short caption displayed below the image."
+        }
+      }
+    }
   }
 }

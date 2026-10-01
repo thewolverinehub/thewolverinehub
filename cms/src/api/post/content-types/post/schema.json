@@ -1,21 +1,139 @@
 {
   "kind": "collectionType",
   "collectionName": "posts",
-  "info": { "singularName": "post", "pluralName": "posts", "displayName": "Post" },
-  "options": { "draftAndPublish": true },
+  "info": {
+    "singularName": "post",
+    "pluralName": "posts",
+    "displayName": "Post",
+    "description": "A journal/blog article with rich-text content, cover image, author, and category."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
   "pluginOptions": {},
   "attributes": {
-    "title": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "title", "required": true },
-    "summary": { "type": "text" },
-    "content": { "type": "blocks", "required": true },
-    "coverImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "author": { "type": "relation", "relation": "manyToOne", "target": "api::author.author" },
-    "category": { "type": "relation", "relation": "manyToOne", "target": "api::post-category.post-category" },
-    "tags": { "type": "json" },
-    "readingTimeMinutes": { "type": "integer" },
-    "isFeatured": { "type": "boolean", "default": false },
-    "publishedAt": { "type": "datetime" },
-    "seo": { "type": "component", "repeatable": false, "component": "shared.seo" }
+    "title": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Title",
+          "description": "The display title shown on the page and in browser tabs."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    },
+    "summary": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Summary",
+          "description": "Short summary shown in listings and search results (1–2 sentences, plain text)."
+        }
+      }
+    },
+    "content": {
+      "type": "blocks",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Body Content",
+          "description": "Main body of this entry — supports rich text, images, and embeds."
+        }
+      }
+    },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Cover Image",
+          "description": "Full-width feature image shown at the top of the page or post."
+        }
+      }
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::author.author",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Author",
+          "description": "The person who wrote this post."
+        }
+      }
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::post-category.post-category",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "FAQ Category",
+          "description": "Groups this question with related FAQs on the FAQ page."
+        }
+      }
+    },
+    "tags": {
+      "type": "json",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Tags",
+          "description": "Keywords for filtering and discovery — enter one tag per entry."
+        }
+      }
+    },
+    "readingTimeMinutes": {
+      "type": "integer",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Reading Time (minutes)",
+          "description": "Estimated reading time. Leave blank to auto-calculate from word count."
+        }
+      }
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Featured?",
+          "description": "Featured items appear in homepage sections and spotlights."
+        }
+      }
+    },
+    "publishedAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Published Date",
+          "description": "Date and time this post was published."
+        }
+      }
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "SEO Settings",
+          "description": "Search engine optimisation settings for this page."
+        }
+      }
+    }
   }
 }

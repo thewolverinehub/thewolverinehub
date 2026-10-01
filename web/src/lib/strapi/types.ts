@@ -93,8 +93,6 @@ export interface StrapiHeader {
   announcementBarText?: string;
   announcementBarLink?: string;
   announcementBarColour: 'yellow' | 'red' | 'blue';
-  menuWidgetLabel: string;
-  menuWidgetEnabled: boolean;
 }
 
 export interface StrapiFooter {
@@ -126,6 +124,102 @@ export interface StrapiUiStrings {
   notFoundBody?: string;
   errorHeading: string;
   errorBody?: string;
+}
+
+/* ── Section components ───────────────────────────────────── */
+
+export interface StrapiHeroSection {
+  __component: 'sections.hero-video';
+  headline: string;
+  subheadline?: string;
+  video?: StrapiMedia;
+  poster?: StrapiMedia;
+  primaryCta?: StrapiCtaButton;
+  secondaryCta?: StrapiCtaButton;
+  visible: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiStatItem {
+  number: string;
+  label: string;
+}
+
+export interface StrapiStatCountersSection {
+  __component: 'sections.stat-counters';
+  stats: StrapiStatItem[];
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiMarqueeSection {
+  __component: 'sections.marquee';
+  items: string[] | Array<{ text: string }>;
+  speed?: 'slow' | 'normal' | 'fast';
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiClassRailSection {
+  __component: 'sections.class-rail';
+  heading?: string;
+  cta?: StrapiCtaButton;
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiMediaComponent {
+  image?: StrapiMedia;
+  video?: StrapiMedia;
+}
+
+export interface StrapiFeatureSplitSection {
+  __component: 'sections.feature-split';
+  eyebrow?: string;
+  heading: string;
+  body?: unknown; // blocks
+  media?: StrapiMediaComponent;
+  cta?: StrapiCtaButton;
+  imagePosition?: 'left' | 'right';
+  backgroundToken?: string;
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiCoachCarouselSection {
+  __component: 'sections.coach-carousel';
+  heading?: string;
+  cta?: StrapiCtaButton;
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiPricingTeaserSection {
+  __component: 'sections.pricing-teaser';
+  heading?: string;
+  subheading?: string;
+  cta?: StrapiCtaButton;
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiTestimonialSliderSection {
+  __component: 'sections.testimonial-slider';
+  heading?: string;
+  maxItems?: number;
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiCtaBannerSection {
+  __component: 'sections.cta-banner';
+  heading: string;
+  subheading?: string;
+  primaryCta?: StrapiCtaButton;
+  secondaryCta?: StrapiCtaButton;
+  backgroundToken?: string;
+  visible?: boolean;
+  anchorId?: string;
 }
 
 /* ── Collections ──────────────────────────────────────────── */
@@ -284,17 +378,20 @@ export interface StrapiRedirect {
 }
 
 /* ── Page types ───────────────────────────────────────────── */
-export interface StrapiPageBase {
-  documentId: string;
-  sections: StrapiSection[];
-  seo?: StrapiSeo;
-}
 
 export type StrapiSection = Record<string, unknown> & {
   __component: string;
   visible?: boolean;
   anchorId?: string;
 };
+
+export interface StrapiPage {
+  documentId: string;
+  title: string;
+  slug: string;
+  sections: StrapiSection[];
+  seo?: StrapiSeo;
+}
 
 /* ── API response wrappers ────────────────────────────────── */
 export interface StrapiListResponse<T> {

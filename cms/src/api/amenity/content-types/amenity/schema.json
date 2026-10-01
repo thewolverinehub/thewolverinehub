@@ -1,12 +1,49 @@
 {
   "kind": "collectionType",
   "collectionName": "amenities",
-  "info": { "singularName": "amenity", "pluralName": "amenities", "displayName": "Amenity" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "amenity",
+    "pluralName": "amenities",
+    "displayName": "Amenity",
+    "description": "A gym facility or amenity (e.g. Showers, Sauna, Parking) shown on the Contact/About page."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "icon": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "icon": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Icon",
+          "description": "Small decorative icon image."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

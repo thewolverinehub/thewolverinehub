@@ -1,0 +1,51 @@
+---
+/**
+ * Renders any section from Strapi's dynamic zone.
+ * Maps __component values to Astro components.
+ * Skips sections where visible === false.
+ */
+import type { StrapiSection } from '../../lib/strapi/types';
+
+import HeroVideo          from './HeroVideo.astro';
+import StatCounters       from './StatCounters.astro';
+import Marquee            from './Marquee.astro';
+import ClassRail          from './ClassRail.astro';
+import FeatureSplit       from './FeatureSplit.astro';
+import CoachCarousel      from './CoachCarousel.astro';
+import PricingTeaser      from './PricingTeaser.astro';
+import TestimonialSlider  from './TestimonialSlider.astro';
+import CTABanner          from './CTABanner.astro';
+
+interface Props {
+  sections?: StrapiSection[];
+}
+
+const { sections = [] } = Astro.props;
+const visible = sections.filter((s) => s.visible !== false);
+---
+
+{visible.map((section) => {
+  const s = section as Record<string, unknown>;
+  switch (s.__component) {
+    case 'sections.hero-video':
+      return <HeroVideo section={s as any} />;
+    case 'sections.stat-counters':
+      return <StatCounters section={s as any} />;
+    case 'sections.marquee':
+      return <Marquee section={s as any} />;
+    case 'sections.class-rail':
+      return <ClassRail section={s as any} />;
+    case 'sections.feature-split':
+      return <FeatureSplit section={s as any} />;
+    case 'sections.coach-carousel':
+      return <CoachCarousel section={s as any} />;
+    case 'sections.pricing-teaser':
+      return <PricingTeaser section={s as any} />;
+    case 'sections.testimonial-slider':
+      return <TestimonialSlider section={s as any} />;
+    case 'sections.cta-banner':
+      return <CTABanner section={s as any} />;
+    default:
+      return null;
+  }
+})}

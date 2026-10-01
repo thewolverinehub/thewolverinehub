@@ -1,17 +1,90 @@
 {
   "kind": "singleType",
   "collectionName": "footers",
-  "info": { "singularName": "footer", "pluralName": "footers", "displayName": "Footer" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "footer",
+    "pluralName": "footers",
+    "displayName": "Footer",
+    "description": "Footer content: navigation columns, newsletter signup, legal links, copyright text, and wordmark."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "columns": { "type": "component", "repeatable": true, "component": "navigation.footer-column" },
-    "ctaBlock": { "type": "component", "repeatable": false, "component": "sections.cta-banner" },
-    "newsletterEnabled": { "type": "boolean", "default": true },
-    "newsletterHeading": { "type": "string" },
-    "newsletterSubheading": { "type": "text" },
-    "legalLinks": { "type": "component", "repeatable": true, "component": "shared.link" },
-    "copyrightText": { "type": "string" },
-    "wordmarkText": { "type": "string", "default": "THE WOLVERINE HUB" }
+    "columns": {
+      "type": "component",
+      "repeatable": true,
+      "component": "navigation.footer-column",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Footer Link Columns",
+          "description": "Groups of links in the footer. Drag to reorder."
+        }
+      }
+    },
+    "ctaBlock": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.cta-banner"
+    },
+    "newsletterEnabled": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Show Newsletter Sign-up?",
+          "description": "Display the email sign-up form in the footer."
+        }
+      }
+    },
+    "newsletterHeading": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Newsletter Heading",
+          "description": "Heading above the newsletter form (e.g. \"Stay in the Loop\")."
+        }
+      }
+    },
+    "newsletterSubheading": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Newsletter Subheading",
+          "description": "Short description below the newsletter heading."
+        }
+      }
+    },
+    "legalLinks": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.link",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Legal Links",
+          "description": "Links shown in the footer bottom bar — Privacy Policy, Terms, etc."
+        }
+      }
+    },
+    "copyrightText": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Copyright Line",
+          "description": "Copyright notice in the bottom bar. Use {year} as a placeholder for the current year, e.g. \"© {year} The Wolverine Hub\"."
+        }
+      }
+    },
+    "wordmarkText": {
+      "type": "string",
+      "default": "THE WOLVERINE HUB",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Footer Wordmark",
+          "description": "Large brand text shown as a background watermark in the footer."
+        }
+      }
+    }
   }
 }

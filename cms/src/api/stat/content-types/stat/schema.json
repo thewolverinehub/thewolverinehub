@@ -1,14 +1,64 @@
 {
   "kind": "collectionType",
   "collectionName": "stats",
-  "info": { "singularName": "stat", "pluralName": "stats", "displayName": "Stat" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "stat",
+    "pluralName": "stats",
+    "displayName": "Stat",
+    "description": "A key statistic for the Stat Counters section (e.g. '24 disciplines', '5 coaches')."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "value": { "type": "string", "required": true },
-    "label": { "type": "string", "required": true },
-    "prefix": { "type": "string" },
-    "suffix": { "type": "string" },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "value": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Stat Value",
+          "description": "The number or text shown in large format, e.g. \"24\" or \"500+\"."
+        }
+      }
+    },
+    "label": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Stat Label",
+          "description": "Short descriptor shown beneath the number, e.g. \"Disciplines\", \"Expert Coaches\", \"Members trained\"."
+        }
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Prefix",
+          "description": "Text before the number, e.g. \"Over\" or \"~\"."
+        }
+      }
+    },
+    "suffix": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Suffix",
+          "description": "Text after the number, e.g. \"+\" or \"classes\"."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

@@ -1,15 +1,88 @@
 {
   "kind": "collectionType",
   "collectionName": "gallery_items",
-  "info": { "singularName": "gallery-item", "pluralName": "gallery-items", "displayName": "Gallery Item" },
-  "options": { "draftAndPublish": true },
+  "info": {
+    "singularName": "gallery-item",
+    "pluralName": "gallery-items",
+    "displayName": "Gallery Item",
+    "description": "A photo or video for the gallery. Add a caption and category for filtering."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
   "pluginOptions": {},
   "attributes": {
-    "media": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images", "videos"] },
-    "alt": { "type": "string", "required": true },
-    "caption": { "type": "string" },
-    "category": { "type": "enumeration", "enum": ["training", "facility", "coaches", "community", "recovery", "food", "event"] },
-    "isFeatured": { "type": "boolean", "default": false },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "media": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "videos"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Media Asset",
+          "description": "Image or video file."
+        }
+      }
+    },
+    "alt": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Alt Text",
+          "description": "Describe the image for screen readers and search engines."
+        }
+      }
+    },
+    "caption": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Caption",
+          "description": "Short caption displayed below the image."
+        }
+      }
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "training",
+        "facility",
+        "coaches",
+        "community",
+        "recovery",
+        "food",
+        "event"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "FAQ Category",
+          "description": "Groups this question with related FAQs on the FAQ page."
+        }
+      }
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Featured?",
+          "description": "Featured items appear in homepage sections and spotlights."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

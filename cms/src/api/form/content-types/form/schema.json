@@ -1,15 +1,35 @@
 {
   "kind": "collectionType",
   "collectionName": "forms",
-  "info": { "singularName": "form", "pluralName": "forms", "displayName": "Form" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "form",
+    "pluralName": "forms",
+    "displayName": "Form",
+    "description": "A form definition for contact and lead-capture forms. Configure fields and destination here."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "formKey": { "type": "uid", "required": true },
-    "fields": { "type": "json" },
-    "successMessage": { "type": "text" },
-    "errorMessage": { "type": "text" },
-    "consentText": { "type": "text" },
-    "recipientEmails": { "type": "json" }
+    "formKey": {
+      "type": "uid",
+      "required": true
+    },
+    "fields": {
+      "type": "json"
+    },
+    "successMessage": {
+      "type": "text"
+    },
+    "errorMessage": {
+      "type": "text"
+    },
+    "consentText": {
+      "type": "text"
+    },
+    "recipientEmails": {
+      "type": "json"
+    }
   }
 }

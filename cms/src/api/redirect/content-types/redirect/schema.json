@@ -1,13 +1,60 @@
 {
   "kind": "collectionType",
   "collectionName": "redirects",
-  "info": { "singularName": "redirect", "pluralName": "redirects", "displayName": "Redirect" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "redirect",
+    "pluralName": "redirects",
+    "displayName": "Redirect",
+    "description": "A URL redirect rule. Use permanent (301) for SEO-safe redirects."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "from": { "type": "string", "required": true },
-    "to": { "type": "string", "required": true },
-    "statusCode": { "type": "enumeration", "enum": ["permanent", "temporary"], "default": "permanent" },
-    "isActive": { "type": "boolean", "default": true }
+    "from": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Old URL (redirect from)",
+          "description": "The old URL path to redirect away from, e.g. /old-page."
+        }
+      }
+    },
+    "to": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "New URL (redirect to)",
+          "description": "The destination URL, e.g. /new-page or a full https:// URL."
+        }
+      }
+    },
+    "statusCode": {
+      "type": "enumeration",
+      "enum": [
+        "permanent",
+        "temporary"
+      ],
+      "default": "permanent",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Redirect Type",
+          "description": "Permanent (301) = moved forever. Temporary (302) = short-term redirect."
+        }
+      }
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Active on Schedule?",
+          "description": "Only active slots are shown on the public schedule page."
+        }
+      }
+    }
   }
 }

@@ -1,11 +1,42 @@
 {
   "collectionName": "components_sections_marquees",
-  "info": { "displayName": "Marquee", "icon": "arrowRight" },
+  "info": {
+    "displayName": "Marquee",
+    "icon": "arrowRight"
+  },
   "options": {},
   "attributes": {
-    "items": { "type": "json", "required": true },
-    "speed": { "type": "enumeration", "enum": ["slow", "normal", "fast"], "default": "normal" },
-    "visible": { "type": "boolean", "default": true },
-    "anchorId": { "type": "string" }
+    "items": {
+      "type": "json",
+      "required": true
+    },
+    "speed": {
+      "type": "enumeration",
+      "enum": [
+        "slow",
+        "normal",
+        "fast"
+      ],
+      "default": "normal"
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Visible on Page?",
+          "description": "Untick to hide this section without deleting it."
+        }
+      }
+    },
+    "anchorId": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Section Anchor ID",
+          "description": "Optional HTML anchor for deep-linking, e.g. \"about\". Used in URLs like /page#about."
+        }
+      }
+    }
   }
 }

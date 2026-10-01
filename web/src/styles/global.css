@@ -71,6 +71,15 @@
 @import "./components/twh-header.css";
 @import "./components/twh-footer.css";
 @import "./components/twh-slash-menu.css";
+@import "./components/twh-hero.css";
+@import "./components/twh-stat-counters.css";
+@import "./components/twh-marquee.css";
+@import "./components/twh-class-rail.css";
+@import "./components/twh-feature-split.css";
+@import "./components/twh-coach-carousel.css";
+@import "./components/twh-pricing-teaser.css";
+@import "./components/twh-testimonial-slider.css";
+@import "./components/twh-cta-banner.css";
 
 /* ── 6. Utility classes ─────────────────────────────────────── */
 

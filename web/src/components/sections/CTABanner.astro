@@ -1,0 +1,98 @@
+---
+import type { StrapiCtaBannerSection } from '../../lib/strapi/types';
+
+interface Props {
+  section?: Partial<StrapiCtaBannerSection>;
+}
+
+const { section } = Astro.props;
+
+const heading        = section?.heading        ?? 'Ready to Start?';
+const subheading     = section?.subheading     ?? 'Your first class is on us. No excuses. No delays.';
+const primaryCta     = section?.primaryCta     ?? { label: 'Book a Free Trial', href: '/free-trial', variant: 'primary', openInNewTab: false };
+const secondaryCta   = section?.secondaryCta;
+const backgroundToken = section?.backgroundToken ?? 'red';
+const anchorId       = section?.anchorId       ?? 'cta';
+
+const bgMap: Record<string, string> = {
+  red:        'var(--color-twh-red)',
+  yellow:     'var(--color-twh-yellow)',
+  blue:       'var(--color-twh-blue)',
+  'blue-deep': 'var(--color-twh-blue-deep)',
+  black:      'var(--color-twh-black)',
+  ink:        'var(--color-twh-ink)',
+};
+
+const textMap: Record<string, string> = {
+  red: 'var(--color-twh-white)', yellow: 'var(--color-twh-black)',
+  blue: 'var(--color-twh-white)', 'blue-deep': 'var(--color-twh-white)',
+  black: 'var(--color-twh-white)', ink: 'var(--color-twh-white)',
+};
+
+const bg   = bgMap[backgroundToken]   ?? bgMap.red;
+const text = textMap[backgroundToken] ?? textMap.red;
+---
+
+<section
+  class="twh-cta-banner"
+  id={anchorId}
+  aria-label="Call to action"
+  style={`--cta-bg: ${bg}; --cta-text: ${text};`}
+>
+  <div class="twh-cta-banner__slashes" aria-hidden="true">
+    <span class="twh-cta-banner__slash twh-cta-banner__slash--1">/</span>
+    <span class="twh-cta-banner__slash twh-cta-banner__slash--2">/</span>
+    <span class="twh-cta-banner__slash twh-cta-banner__slash--3">/</span>
+  </div>
+
+  <div class="twh-cta-banner__inner">
+    <h2 class="twh-cta-banner__heading">{heading}</h2>
+    {subheading && <p class="twh-cta-banner__sub">{subheading}</p>}
+    <div class="twh-cta-banner__ctas">
+      <a
+        href={primaryCta.href}
+        class={`twh-btn twh-btn--${backgroundToken === 'yellow' ? 'secondary' : 'primary'} twh-btn--lg`}
+        target={primaryCta.openInNewTab ? '_blank' : undefined}
+        rel={primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+        style={backgroundToken === 'yellow' ? 'border-color:var(--color-twh-black);color:var(--color-twh-black);' : ''}
+      >
+        {primaryCta.label}
+      </a>
+      {secondaryCta && (
+        <a
+          href={secondaryCta.href}
+          class="twh-btn twh-btn--ghost twh-btn--lg twh-cta-banner__secondary"
+          target={secondaryCta.openInNewTab ? '_blank' : undefined}
+          rel={secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+        >
+          {secondaryCta.label}
+        </a>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>@import '../../styles/components/twh-cta-banner.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector('.twh-cta-banner');
+  if (section) {
+    const inner = section.querySelector('.twh-cta-banner__inner');
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      if (inner) {
+        gsap.fromTo(inner,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 80%' } }
+        );
+      }
+    });
+    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+      if (inner) (inner as HTMLElement).style.opacity = '1';
+    });
+  }
+</script>

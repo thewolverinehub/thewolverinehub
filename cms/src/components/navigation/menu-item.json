@@ -1,14 +1,85 @@
 {
   "collectionName": "components_navigation_menu_items",
-  "info": { "displayName": "Menu Item", "icon": "bulletList" },
+  "info": {
+    "displayName": "Menu Item",
+    "icon": "bulletList"
+  },
   "options": {},
   "attributes": {
-    "label": { "type": "string", "required": true },
-    "href": { "type": "string", "required": true },
-    "indexNumber": { "type": "string" },
-    "description": { "type": "text" },
-    "previewImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "previewVideo": { "type": "media", "multiple": false, "allowedTypes": ["videos"] },
-    "subItems": { "type": "component", "repeatable": true, "component": "shared.link" }
+    "label": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Button Text",
+          "description": "Text displayed on the button (e.g. \"Start Training\")."
+        }
+      }
+    },
+    "href": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Destination URL",
+          "description": "Where the button links. Use \"/\" for homepage or a full URL for external links."
+        }
+      }
+    },
+    "indexNumber": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Index Number",
+          "description": "Number displayed next to the item in the menu (e.g. \"01\", \"02\")."
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Description",
+          "description": "Detailed description with rich text formatting."
+        }
+      }
+    },
+    "previewImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Hover Preview Image",
+          "description": "Image shown when hovering over this item in the navigation menu."
+        }
+      }
+    },
+    "previewVideo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "videos"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Hover Preview Video",
+          "description": "Short looping video shown when hovering over this item."
+        }
+      }
+    },
+    "subItems": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.link",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sub-links",
+          "description": "Optional secondary links shown below this menu item."
+        }
+      }
+    }
   }
 }

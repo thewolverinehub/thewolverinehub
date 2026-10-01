@@ -1,17 +1,100 @@
 {
   "kind": "collectionType",
   "collectionName": "pricing_tiers",
-  "info": { "singularName": "pricing-tier", "pluralName": "pricing-tiers", "displayName": "Pricing Tier" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "pricing-tier",
+    "pluralName": "pricing-tiers",
+    "displayName": "Pricing Tier",
+    "description": "A pricing plan shown on the Pricing page. Contains name, tagline, feature list, and colour."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "name", "required": true },
-    "tagline": { "type": "string" },
-    "description": { "type": "text" },
-    "features": { "type": "json" },
-    "isMostPopular": { "type": "boolean", "default": false },
-    "colour": { "type": "enumeration", "enum": ["yellow", "blue", "red", "white"], "default": "yellow" },
-    "sortOrder": { "type": "integer", "default": 0 }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    },
+    "tagline": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Tagline",
+          "description": "Short punchy line shown beneath the title (one sentence max)."
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Description",
+          "description": "Detailed description with rich text formatting."
+        }
+      }
+    },
+    "features": {
+      "type": "json",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Features List",
+          "description": "Bullet points shown on the pricing card, one per entry."
+        }
+      }
+    },
+    "isMostPopular": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Most Popular?",
+          "description": "Adds a \"Most Popular\" badge to highlight this tier."
+        }
+      }
+    },
+    "colour": {
+      "type": "enumeration",
+      "enum": [
+        "yellow",
+        "blue",
+        "red",
+        "white"
+      ],
+      "default": "yellow",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Accent Colour",
+          "description": "Colour used to style this card: Yellow, Blue, Red, or White."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    }
   }
 }

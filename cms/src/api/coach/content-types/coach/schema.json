@@ -1,22 +1,146 @@
 {
   "kind": "collectionType",
   "collectionName": "coaches",
-  "info": { "singularName": "coach", "pluralName": "coaches", "displayName": "Coach" },
-  "options": { "draftAndPublish": true },
+  "info": {
+    "singularName": "coach",
+    "pluralName": "coaches",
+    "displayName": "Coach",
+    "description": "A coach profile. Includes photo, bio, specialities, disciplines, and social links."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "name", "required": true },
-    "role": { "type": "string" },
-    "bio": { "type": "blocks" },
-    "shortBio": { "type": "text" },
-    "photo": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "yearsExperience": { "type": "integer" },
-    "specialties": { "type": "json" },
-    "disciplines": { "type": "relation", "relation": "manyToMany", "target": "api::discipline.discipline" },
-    "instagram": { "type": "string" },
-    "isHeadCoach": { "type": "boolean", "default": false },
-    "sortOrder": { "type": "integer", "default": 0 },
-    "seo": { "type": "component", "repeatable": false, "component": "shared.seo" }
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    },
+    "role": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Role / Title",
+          "description": "Job title shown on the coach card, e.g. \"Head Boxing Coach\"."
+        }
+      }
+    },
+    "bio": {
+      "type": "blocks",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Full Biography",
+          "description": "Full biography with rich text formatting."
+        }
+      }
+    },
+    "shortBio": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Short Bio",
+          "description": "Brief bio for card previews — 1 to 2 sentences."
+        }
+      }
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Photo",
+          "description": "Portrait or profile photo."
+        }
+      }
+    },
+    "yearsExperience": {
+      "type": "integer",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Years of Experience",
+          "description": "Total years of coaching or competition experience."
+        }
+      }
+    },
+    "specialties": {
+      "type": "json",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Specialties",
+          "description": "Key skills or techniques — enter one per line."
+        }
+      }
+    },
+    "disciplines": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::discipline.discipline",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Disciplines",
+          "description": "Martial arts or training styles taught by this coach."
+        }
+      }
+    },
+    "instagram": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Instagram Username",
+          "description": "Instagram handle without the @ symbol."
+        }
+      }
+    },
+    "isHeadCoach": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Head Coach?",
+          "description": "Mark as Head Coach to feature this person prominently on the Coaches page."
+        }
+      }
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Sort Order",
+          "description": "Lower numbers appear first in listings. Items with the same number are sorted alphabetically."
+        }
+      }
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "SEO Settings",
+          "description": "Search engine optimisation settings for this page."
+        }
+      }
+    }
   }
 }

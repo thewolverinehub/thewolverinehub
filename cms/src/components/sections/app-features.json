@@ -1,12 +1,51 @@
 {
   "collectionName": "components_sections_app_features",
-  "info": { "displayName": "App Features", "icon": "apps" },
+  "info": {
+    "displayName": "App Features",
+    "icon": "apps"
+  },
   "options": {},
   "attributes": {
-    "heading": { "type": "string" },
-    "features": { "type": "json" },
-    "comingSoon": { "type": "boolean", "default": false },
-    "visible": { "type": "boolean", "default": true },
-    "anchorId": { "type": "string" }
+    "heading": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Column Heading",
+          "description": "Title above this group of footer links."
+        }
+      }
+    },
+    "features": {
+      "type": "json",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Features List",
+          "description": "Bullet points shown on the pricing card, one per entry."
+        }
+      }
+    },
+    "comingSoon": {
+      "type": "boolean",
+      "default": false
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Visible on Page?",
+          "description": "Untick to hide this section without deleting it."
+        }
+      }
+    },
+    "anchorId": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Section Anchor ID",
+          "description": "Optional HTML anchor for deep-linking, e.g. \"about\". Used in URLs like /page#about."
+        }
+      }
+    }
   }
 }

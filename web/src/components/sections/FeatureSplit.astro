@@ -1,0 +1,133 @@
+---
+import type { StrapiFeatureSplitSection } from '../../lib/strapi/types';
+
+interface Props {
+  section?: Partial<StrapiFeatureSplitSection>;
+}
+
+const { section } = Astro.props;
+
+const eyebrow        = section?.eyebrow       ?? 'Why The Wolverine Hub';
+const heading        = section?.heading        ?? 'Built for the Relentless.';
+const body           = section?.body;
+const media          = section?.media;
+const cta            = section?.cta            ?? { label: 'Our Programs', href: '/programs', variant: 'primary', openInNewTab: false };
+const imagePosition  = section?.imagePosition  ?? 'right';
+const backgroundToken = section?.backgroundToken ?? 'black';
+const anchorId       = section?.anchorId       ?? 'feature';
+
+// Minimal blocks → HTML: handle paragraph nodes only
+function blocksToHtml(blocks: unknown): string {
+  if (!Array.isArray(blocks)) return '';
+  return (blocks as Array<{ type: string; children?: Array<{ text?: string }> }>)
+    .map((node) => {
+      if (node.type === 'paragraph') {
+        const text = (node.children ?? []).map((c) => c.text ?? '').join('');
+        return `<p>${text}</p>`;
+      }
+      return '';
+    })
+    .join('');
+}
+
+const bodyHtml = blocksToHtml(body);
+
+const bgStyle: Record<string, string> = {
+  black:    'var(--color-twh-black)',
+  ink:      'var(--color-twh-ink)',
+  blue:     'var(--color-twh-blue)',
+  'blue-deep': 'var(--color-twh-blue-deep)',
+};
+const bg = bgStyle[backgroundToken] ?? bgStyle.black;
+
+const mediaUrl   = media?.video?.url ?? media?.image?.url;
+const isVideo    = !!media?.video?.url;
+const mediaAlt   = media?.image?.alternativeText ?? heading;
+---
+
+<section
+  class={`twh-split twh-split--${imagePosition}`}
+  id={anchorId}
+  aria-label={heading}
+  style={`background: ${bg};`}
+>
+  <div class="twh-split__inner">
+
+    <!-- Text column -->
+    <div class="twh-split__text">
+      {eyebrow && <span class="twh-split__eyebrow">{eyebrow}</span>}
+      <h2 class="twh-split__heading">{heading}</h2>
+      {bodyHtml ? (
+        <div class="twh-split__body" set:html={bodyHtml} />
+      ) : (
+        <p class="twh-split__body">
+          This is where your body text will appear once set in Strapi. Every word, every detail, powered by the CMS.
+        </p>
+      )}
+      <a
+        href={cta.href}
+        class={`twh-btn twh-btn--${cta.variant} twh-btn--md twh-split__cta`}
+        target={cta.openInNewTab ? '_blank' : undefined}
+        rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
+      >
+        {cta.label}
+      </a>
+    </div>
+
+    <!-- Media column -->
+    <div class="twh-split__media" aria-hidden={!mediaUrl}>
+      {mediaUrl ? (
+        isVideo ? (
+          <video class="twh-split__asset" src={mediaUrl} autoplay muted loop playsinline />
+        ) : (
+          <img class="twh-split__asset" src={mediaUrl} alt={mediaAlt} loading="lazy" />
+        )
+      ) : (
+        <div class="twh-split__placeholder">
+          <span class="twh-split__placeholder-slash" aria-hidden="true">/</span>
+          <span class="twh-split__placeholder-slash" aria-hidden="true">/</span>
+          <span class="twh-split__placeholder-slash" aria-hidden="true">/</span>
+        </div>
+      )}
+      <div class="twh-split__media-overlay" aria-hidden="true"></div>
+    </div>
+
+  </div>
+</section>
+
+<style>@import '../../styles/components/twh-feature-split.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  document.querySelectorAll<HTMLElement>('.twh-split').forEach((section) => {
+    const text  = section.querySelector('.twh-split__text');
+    const media = section.querySelector('.twh-split__media');
+    const isLeft = section.classList.contains('twh-split--left');
+
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      if (text) {
+        gsap.fromTo(text,
+          { x: isLeft ? 40 : -40, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 75%' } }
+        );
+      }
+      if (media) {
+        gsap.fromTo(media,
+          { x: isLeft ? -40 : 40, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 75%' } }
+        );
+      }
+    });
+
+    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+      [text, media].forEach(el => {
+        if (el) { (el as HTMLElement).style.opacity = '1'; }
+      });
+    });
+  });
+</script>

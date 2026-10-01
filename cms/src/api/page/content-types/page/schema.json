@@ -1,16 +1,80 @@
 {
   "kind": "collectionType",
   "collectionName": "pages",
-  "info": { "singularName": "page", "pluralName": "pages", "displayName": "Page" },
-  "options": { "draftAndPublish": true },
+  "info": {
+    "singularName": "page",
+    "pluralName": "pages",
+    "displayName": "Page",
+    "description": "All site pages — Home, Classes, Coaches, Schedule, Programs, Pricing, Gallery, Contact, etc. Add sections to build each page's layout. The slug field is the URL path (e.g. 'home', 'classes', 'contact')."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
   "pluginOptions": {},
   "attributes": {
-    "title": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "title": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Title",
+          "description": "The display title shown on the page and in browser tabs."
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "URL Slug",
+          "description": "URL path segment, auto-generated from the title. E.g. \"our-classes\" → /our-classes."
+        }
+      }
+    },
     "sections": {
       "type": "dynamiczone",
-      "components": ["sections.hero-video","sections.feature-split","sections.triptych","sections.rich-text","sections.cta-banner","sections.newsletter-block","sections.gallery-grid","sections.faq-block","sections.location-block","sections.video-feature"]
+      "components": [
+        "sections.hero-video",
+        "sections.stat-counters",
+        "sections.marquee",
+        "sections.class-rail",
+        "sections.scroll-chapter",
+        "sections.feature-split",
+        "sections.triptych",
+        "sections.program-tiers",
+        "sections.coach-spotlight",
+        "sections.coach-carousel",
+        "sections.pricing-teaser",
+        "sections.app-features",
+        "sections.gallery-grid",
+        "sections.testimonial-slider",
+        "sections.partner-strip",
+        "sections.faq-block",
+        "sections.location-block",
+        "sections.cta-banner",
+        "sections.newsletter-block",
+        "sections.rich-text",
+        "sections.video-feature"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Page Sections",
+          "description": "Build the page layout by adding and reordering sections. Each section type creates a different visual block."
+        }
+      }
     },
-    "seo": { "type": "component", "repeatable": false, "component": "shared.seo" }
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "SEO Settings",
+          "description": "Search engine optimisation settings for this page."
+        }
+      }
+    }
   }
 }

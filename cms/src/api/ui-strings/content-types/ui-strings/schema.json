@@ -1,25 +1,173 @@
 {
   "kind": "singleType",
   "collectionName": "ui_strings",
-  "info": { "singularName": "ui-strings", "pluralName": "ui-strings-settings", "displayName": "UI Strings" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "ui-strings",
+    "pluralName": "ui-strings-settings",
+    "displayName": "UI Strings",
+    "description": "All text labels used across the site UI — button copy, error messages, accessibility labels. Edit here to update wording without a code deploy."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "skipLinkLabel": { "type": "string", "default": "Skip to main content" },
-    "searchPlaceholder": { "type": "string", "default": "Search classes, coaches, programs..." },
-    "filterNoResults": { "type": "string", "default": "No results found." },
-    "loadMoreLabel": { "type": "string", "default": "Load more" },
-    "bookNowLabel": { "type": "string", "default": "Book now" },
-    "viewDetailsLabel": { "type": "string", "default": "View details" },
-    "fullBadge": { "type": "string", "default": "Full" },
-    "spotsLeftTemplate": { "type": "string", "default": "{n} spots left" },
-    "introSkipLabel": { "type": "string", "default": "Skip the ceremony." },
-    "cookieNotice": { "type": "text" },
-    "formSuccessDefault": { "type": "string", "default": "Message received. We will be in touch." },
-    "formErrorDefault": { "type": "string", "default": "Something went wrong. Please try again." },
-    "notFoundHeading": { "type": "string", "default": "Rest Day." },
-    "notFoundBody": { "type": "text" },
-    "errorHeading": { "type": "string", "default": "Something snapped." },
-    "errorBody": { "type": "text" }
+    "skipLinkLabel": {
+      "type": "string",
+      "default": "Skip to main content",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"Skip to Content\" Link Text",
+          "description": "Accessibility link at the top of every page (screen readers)."
+        }
+      }
+    },
+    "searchPlaceholder": {
+      "type": "string",
+      "default": "Search classes, coaches, programs...",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Search Placeholder Text",
+          "description": "Placeholder shown inside the search input field."
+        }
+      }
+    },
+    "filterNoResults": {
+      "type": "string",
+      "default": "No results found.",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"No Results\" Message",
+          "description": "Message shown when a filter or search returns nothing."
+        }
+      }
+    },
+    "loadMoreLabel": {
+      "type": "string",
+      "default": "Load more",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"Load More\" Button Text",
+          "description": "Text on the pagination load-more button."
+        }
+      }
+    },
+    "bookNowLabel": {
+      "type": "string",
+      "default": "Book now",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"Book Now\" Button Text",
+          "description": "Text on booking buttons throughout the site."
+        }
+      }
+    },
+    "viewDetailsLabel": {
+      "type": "string",
+      "default": "View details",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"View Details\" Link Text",
+          "description": "Text on card detail link buttons."
+        }
+      }
+    },
+    "fullBadge": {
+      "type": "string",
+      "default": "Full",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"Class Full\" Badge Text",
+          "description": "Badge shown on fully booked schedule slots."
+        }
+      }
+    },
+    "spotsLeftTemplate": {
+      "type": "string",
+      "default": "{n} spots left",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"Spots Left\" Template",
+          "description": "Template text — use {n} as a placeholder, e.g. \"{n} spots left\"."
+        }
+      }
+    },
+    "introSkipLabel": {
+      "type": "string",
+      "default": "Skip the ceremony.",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "\"Skip Intro\" Button Text",
+          "description": "Text on the button that skips the intro animation."
+        }
+      }
+    },
+    "cookieNotice": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Cookie Notice Text",
+          "description": "Text shown in the cookie consent banner."
+        }
+      }
+    },
+    "formSuccessDefault": {
+      "type": "string",
+      "default": "Message received. We will be in touch.",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Default Form Success Message",
+          "description": "Shown after any form is submitted successfully."
+        }
+      }
+    },
+    "formErrorDefault": {
+      "type": "string",
+      "default": "Something went wrong. Please try again.",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Default Form Error Message",
+          "description": "Shown when a form submission fails."
+        }
+      }
+    },
+    "notFoundHeading": {
+      "type": "string",
+      "default": "Rest Day.",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "404 Page Heading",
+          "description": "Main heading on the \"Page Not Found\" error page."
+        }
+      }
+    },
+    "notFoundBody": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "404 Page Body Text",
+          "description": "Body text on the 404 page."
+        }
+      }
+    },
+    "errorHeading": {
+      "type": "string",
+      "default": "Something snapped.",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Error Page Heading",
+          "description": "Main heading on the generic error page."
+        }
+      }
+    },
+    "errorBody": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Error Page Body Text",
+          "description": "Body text on the error page."
+        }
+      }
+    }
   }
 }

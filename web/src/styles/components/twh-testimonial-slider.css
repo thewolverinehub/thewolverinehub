@@ -1,0 +1,221 @@
+/* ============================================================
+   TESTIMONIAL SLIDER SECTION
+   Component: sections/TestimonialSlider.astro   Prefix: twh-testi
+   ============================================================ */
+
+.twh-testi {
+  background: var(--color-twh-black);
+  padding: var(--spacing-section) 0;
+}
+
+.twh-testi__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 4rem;
+  opacity: 0; /* animated */
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.twh-testi__header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.twh-testi__eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-twh-red);
+  margin-bottom: 0.75rem;
+}
+
+.twh-testi__heading {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-twh-white);
+  margin: 0;
+}
+
+/* ── Slider ──────────────────────────────────────────────── */
+
+.twh-testi__track {
+  position: relative;
+  min-height: 240px;
+}
+
+/* ── Slide ───────────────────────────────────────────────── */
+
+.twh-testi__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.twh-testi__slide.is-active {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Quote */
+.twh-testi__quote {
+  margin: 0;
+  position: relative;
+}
+
+.twh-testi__quotemark {
+  font-family: var(--font-display);
+  font-size: 8rem;
+  line-height: 0.5;
+  color: var(--color-twh-red);
+  opacity: 0.2;
+  display: block;
+  margin-bottom: 0.5rem;
+  user-select: none;
+}
+
+.twh-testi__quote p {
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  line-height: 1.55;
+  color: var(--color-twh-white);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Author */
+.twh-testi__author {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.twh-testi__photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.twh-testi__photo-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-twh-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--color-twh-white);
+  flex-shrink: 0;
+}
+
+.twh-testi__author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.twh-testi__author-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-twh-white);
+  letter-spacing: 0.03em;
+}
+
+.twh-testi__author-title {
+  font-size: 0.75rem;
+  color: var(--color-twh-grey-500);
+  letter-spacing: 0.05em;
+}
+
+.twh-testi__stars {
+  margin-left: auto;
+  display: flex;
+  gap: 0.15rem;
+}
+
+.twh-testi__star {
+  font-size: 1rem;
+  color: var(--color-twh-grey-700);
+}
+
+.twh-testi__star--filled {
+  color: var(--color-twh-yellow);
+}
+
+/* ── Controls ────────────────────────────────────────────── */
+
+.twh-testi__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.twh-testi__btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-twh-grey-700);
+  background: transparent;
+  color: var(--color-twh-grey-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.twh-testi__btn:hover {
+  border-color: var(--color-twh-white);
+  color: var(--color-twh-white);
+}
+
+.twh-testi__dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.twh-testi__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-twh-grey-700);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  padding: 0;
+}
+
+.twh-testi__dot.is-active {
+  background: var(--color-twh-red);
+  transform: scale(1.3);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .twh-testi__inner { padding: 0 1.5rem; }
+  .twh-testi__stars { display: none; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-testi__inner { opacity: 1 !important; transform: none !important; }
+  .twh-testi__slide { transition: none; }
+}

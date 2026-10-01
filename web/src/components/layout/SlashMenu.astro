@@ -1,10 +1,4 @@
 ---
-/**
- * THE SLASH MENU — Primary menu (as per spec §3.3)
- * Three diagonal panels tear across the screen on open.
- * Desktop: giant indexed items left + media preview right.
- * Mobile: bottom sheet.
- */
 import type { StrapiHeader, StrapiGlobal } from '../../lib/strapi/types';
 
 interface Props {
@@ -14,50 +8,73 @@ interface Props {
 }
 
 const { header, global, id = 'main-menu' } = Astro.props;
-const items = header?.menuItems ?? [];
+
+const accentColors = ['#D7141A', '#1B3F94', '#8E0B10', '#FFC20E', '#0B2359', '#3A3A42'];
+
+const fallbackItems = [
+  { label: 'Classes',   href: '/classes',   indexNumber: '01', description: '24 disciplines. Every level.' },
+  { label: 'Schedule',  href: '/schedule',  indexNumber: '02', description: 'Book your next session.' },
+  { label: 'Programs',  href: '/programs',  indexNumber: '03', description: 'Starter · Signature · Transformation.' },
+  { label: 'Coaches',   href: '/coaches',   indexNumber: '04', description: 'Train with the best.' },
+  { label: 'Pricing',   href: '/pricing',   indexNumber: '05', description: 'Passes · Tokens · Add-ons.' },
+  { label: 'Contact',   href: '/contact',   indexNumber: '06', description: 'Find us. Book a trial.' },
+];
+
+const items = (header?.menuItems?.length ?? 0) > 0
+  ? header!.menuItems.map((item, i) => ({
+      label: item.label,
+      href: item.href,
+      indexNumber: item.indexNumber ?? String(i + 1).padStart(2, '0'),
+      description: item.description ?? '',
+      previewImage: item.previewImage?.url,
+      previewVideo: item.previewVideo?.url,
+      subItems: item.subItems ?? [],
+      previewAccent: accentColors[i % accentColors.length],
+    }))
+  : fallbackItems.map((item, i) => ({
+      ...item,
+      previewImage: undefined,
+      previewVideo: undefined,
+      subItems: [],
+      previewAccent: accentColors[i % accentColors.length],
+    }));
 ---
 
-<div
-  class="twh-slash-menu"
-  id={id}
-  role="dialog"
-  aria-modal="true"
-  aria-label="Main navigation"
-  aria-hidden="true"
->
-  <!-- Three diagonal panels (red → blue → yellow) -->
-  <div class="twh-slash-menu__panels" aria-hidden="true">
-    <div class="twh-slash-menu__panel twh-slash-menu__panel--red"></div>
-    <div class="twh-slash-menu__panel twh-slash-menu__panel--blue"></div>
-    <div class="twh-slash-menu__panel twh-slash-menu__panel--yellow"></div>
+<div class="twh-sm" id={id} role="dialog" aria-modal="true" aria-label="Main navigation" aria-hidden="true">
+
+  <div class="twh-sm__panels" aria-hidden="true">
+    <div class="twh-sm__panel twh-sm__panel--1"></div>
+    <div class="twh-sm__panel twh-sm__panel--2"></div>
+    <div class="twh-sm__panel twh-sm__panel--3"></div>
   </div>
 
-  <!-- Content -->
-  <div class="twh-slash-menu__content">
+  <!-- Close button -->
+  <button class="twh-sm__close" data-menu-close type="button" aria-label="Close menu">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <path d="M3 3L19 19M19 3L3 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </button>
 
-    <!-- Desktop: left column — giant nav items -->
-    <nav class="twh-slash-menu__nav" aria-label="Primary navigation">
-      <ul class="twh-slash-menu__list" role="list">
-        {items.map((item, i) => (
-          <li class="twh-slash-menu__item">
+  <div class="twh-sm__body">
+    <nav class="twh-sm__nav" aria-label="Primary navigation">
+      <ul class="twh-sm__list" role="list">
+        {items.map((item) => (
+          <li class="twh-sm__item">
             <a
               href={item.href}
-              class="twh-slash-menu__link"
-              data-index={String(i + 1).padStart(2, '0')}
-              data-preview-image={item.previewImage?.url}
-              data-preview-video={item.previewVideo?.url}
+              class="twh-sm__link"
+              data-preview-image={item.previewImage}
+              data-preview-video={item.previewVideo}
+              data-preview-accent={item.previewAccent}
             >
-              <span class="twh-slash-menu__link-index">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span class="twh-slash-menu__link-label">{item.label}</span>
+              <span class="twh-sm__idx">{item.indexNumber}</span>
+              <span class="twh-sm__name">{item.label}</span>
+              {item.description && <span class="twh-sm__desc">{item.description}</span>}
             </a>
-            {item.subItems && item.subItems.length > 0 && (
-              <ul class="twh-slash-menu__subitems" role="list">
+            {item.subItems.length > 0 && (
+              <ul class="twh-sm__sub" role="list">
                 {item.subItems.map((sub) => (
-                  <li>
-                    <a href={sub.href} class="twh-slash-menu__sublink">{sub.label}</a>
-                  </li>
+                  <li><a href={sub.href} class="twh-sm__sublink">{sub.label}</a></li>
                 ))}
               </ul>
             )}
@@ -66,74 +83,37 @@ const items = header?.menuItems ?? [];
       </ul>
     </nav>
 
-    <!-- Desktop: right column — media preview (slash mask) -->
-    <div class="twh-slash-menu__preview" aria-hidden="true">
-      <div class="twh-slash-menu__preview-mask">
-        <div class="twh-slash-menu__preview-inner" id="menu-preview">
-          <div class="twh-slash-menu__preview-placeholder">
-            <span>/</span>
-          </div>
+    <div class="twh-sm__preview" aria-hidden="true">
+      <div class="twh-sm__preview-mask">
+        <div class="twh-sm__preview-default">
+          <span class="twh-sm__preview-slash twh-sm__preview-slash--1"></span>
+          <span class="twh-sm__preview-slash twh-sm__preview-slash--2"></span>
+          <span class="twh-sm__preview-slash twh-sm__preview-slash--3"></span>
         </div>
+        <div class="twh-sm__preview-media" id="sm-preview-media"></div>
       </div>
     </div>
-
   </div>
 
-  <!-- Bottom panel: next class widget + socials + CTA -->
-  <div class="twh-slash-menu__bottom">
-    {header?.menuWidgetEnabled && (
-      <div class="twh-slash-menu__widget">
-        <span class="twh-slash-menu__widget-label">{header.menuWidgetLabel ?? 'Next class'}</span>
-        <span class="twh-slash-menu__widget-info" id="menu-next-class">— Loading</span>
-      </div>
-    )}
-    <div class="twh-slash-menu__bottom-socials">
-      {global?.instagram && <a href={global.instagram} target="_blank" rel="noopener noreferrer" class="twh-slash-menu__bottom-link">IG</a>}
-      {global?.facebook && <a href={global.facebook} target="_blank" rel="noopener noreferrer" class="twh-slash-menu__bottom-link">FB</a>}
-      {global?.youtube && <a href={global.youtube} target="_blank" rel="noopener noreferrer" class="twh-slash-menu__bottom-link">YT</a>}
+  <div class="twh-sm__bar">
+    <div class="twh-sm__socials">
+      {global?.instagram && <a href={global.instagram} target="_blank" rel="noopener noreferrer" class="twh-sm__social">IG</a>}
+      {global?.facebook  && <a href={global.facebook}  target="_blank" rel="noopener noreferrer" class="twh-sm__social">FB</a>}
+      {global?.youtube   && <a href={global.youtube}   target="_blank" rel="noopener noreferrer" class="twh-sm__social">YT</a>}
     </div>
-    {header?.primaryCta && (
-      <a
-        href={header.primaryCta.href}
-        class="twh-btn twh-btn--primary twh-btn--sm"
-      >
-        {header.primaryCta.label}
-      </a>
-    )}
-    {global?.email && (
-      <a href={`mailto:${global.email}`} class="twh-slash-menu__bottom-link twh-slash-menu__bottom-link--contact">
-        {global.email}
-      </a>
-    )}
+    {global?.email && <a href={`mailto:${global.email}`} class="twh-sm__contact">{global.email}</a>}
   </div>
-
-  <!-- Mobile close -->
-  <button
-    class="twh-slash-menu__mobile-close sr-only focus:not-sr-only"
-    data-menu-close
-    aria-label="Close menu"
-    type="button"
-  >
-    Close
-  </button>
-
 </div>
 
-<!-- Mobile: bottom pill -->
-<div class="twh-mobile-pill" aria-hidden="true">
-  <button
-    class="twh-mobile-pill__btn"
-    id="mobile-menu-trigger"
-    aria-controls={id}
-    aria-expanded="false"
-    aria-label="Open menu"
-    type="button"
-  >
+<div class="twh-sm-pill" id="mobile-pill">
+  <button class="twh-sm-pill__btn" id="mobile-menu-trigger" aria-controls={id} aria-expanded="false" aria-label="Open menu" type="button">
+    <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true">
+      <rect width="16" height="2" rx="1" fill="currentColor"/>
+      <rect y="4.5" width="12" height="2" rx="1" fill="currentColor"/>
+      <rect y="9" width="16" height="2" rx="1" fill="currentColor"/>
+    </svg>
     <span>Menu</span>
-    <span class="twh-mobile-pill__icon" aria-hidden="true">↑</span>
   </button>
 </div>
 
-<style>
-  @import '../../styles/components/twh-slash-menu.css';
-</style>
+<style>@import '../../styles/components/twh-slash-menu.css';</style>

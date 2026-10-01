@@ -1,21 +1,117 @@
 {
   "collectionName": "components_shared_seos",
-  "info": { "displayName": "SEO", "icon": "search" },
+  "info": {
+    "displayName": "SEO",
+    "icon": "search"
+  },
   "options": {},
   "attributes": {
-    "metaTitle": { "type": "string", "required": true, "maxLength": 60 },
-    "metaDescription": { "type": "text", "required": true, "maxLength": 160 },
-    "keywords": { "type": "text" },
-    "canonicalURL": { "type": "string" },
-    "metaRobots": { "type": "string", "default": "index, follow" },
-    "ogTitle": { "type": "string", "maxLength": 60 },
-    "ogDescription": { "type": "text", "maxLength": 200 },
-    "ogImage": { "type": "media", "multiple": false, "required": false, "allowedTypes": ["images"] },
+    "metaTitle": {
+      "type": "string",
+      "required": true,
+      "maxLength": 60,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Page Title (SEO)",
+          "description": "Title shown in browser tabs and Google results. Keep under 60 characters."
+        }
+      }
+    },
+    "metaDescription": {
+      "type": "text",
+      "required": true,
+      "maxLength": 160,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Meta Description",
+          "description": "Short description shown in Google results. Keep under 160 characters."
+        }
+      }
+    },
+    "keywords": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Keywords",
+          "description": "Comma-separated SEO keywords (optional — not used by most search engines)."
+        }
+      }
+    },
+    "canonicalURL": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Canonical URL",
+          "description": "Preferred URL if this content exists at multiple paths. Leave blank for default."
+        }
+      }
+    },
+    "metaRobots": {
+      "type": "string",
+      "default": "index, follow",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Robots Directive",
+          "description": "Controls crawler access, e.g. \"noindex, nofollow\". Leave blank for normal indexing."
+        }
+      }
+    },
+    "ogTitle": {
+      "type": "string",
+      "maxLength": 60,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Social Share Title",
+          "description": "Title when sharing on social media. Defaults to Page Title if empty."
+        }
+      }
+    },
+    "ogDescription": {
+      "type": "text",
+      "maxLength": 200,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Social Share Description",
+          "description": "Description when sharing. Defaults to Meta Description if empty."
+        }
+      }
+    },
+    "ogImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Social Share Image",
+          "description": "Image shown when sharing on social media. Recommended: 1200 × 630 px."
+        }
+      }
+    },
     "twitterCard": {
       "type": "enumeration",
-      "enum": ["summary", "summary_large_image"],
-      "default": "summary_large_image"
+      "enum": [
+        "summary",
+        "summary_large_image"
+      ],
+      "default": "summary_large_image",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Twitter / X Card Type",
+          "description": "\"Summary\" = small image, \"Summary Large Image\" = big banner."
+        }
+      }
     },
-    "structuredData": { "type": "json" }
+    "structuredData": {
+      "type": "json",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Structured Data (JSON-LD)",
+          "description": "Advanced: paste a JSON-LD object for rich search result snippets."
+        }
+      }
+    }
   }
 }

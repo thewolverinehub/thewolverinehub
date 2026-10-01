@@ -1,15 +1,43 @@
 {
   "kind": "collectionType",
   "collectionName": "newsletter_subscribers",
-  "info": { "singularName": "newsletter-subscriber", "pluralName": "newsletter-subscribers", "displayName": "Newsletter Subscriber" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "newsletter-subscriber",
+    "pluralName": "newsletter-subscribers",
+    "displayName": "Newsletter Subscriber",
+    "description": "An email address subscribed via the newsletter block."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "email": { "type": "email", "required": true, "unique": true },
-    "confirmed": { "type": "boolean", "default": false },
-    "confirmToken": { "type": "string" },
-    "confirmedAt": { "type": "datetime" },
-    "ipHash": { "type": "string" },
-    "source": { "type": "string" }
+    "email": {
+      "type": "email",
+      "required": true,
+      "unique": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Contact Email",
+          "description": "Main contact email address displayed on the site."
+        }
+      }
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "confirmToken": {
+      "type": "string"
+    },
+    "confirmedAt": {
+      "type": "datetime"
+    },
+    "ipHash": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    }
   }
 }

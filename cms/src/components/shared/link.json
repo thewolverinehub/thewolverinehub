@@ -1,10 +1,40 @@
 {
   "collectionName": "components_shared_links",
-  "info": { "displayName": "Link", "icon": "link" },
+  "info": {
+    "displayName": "Link",
+    "icon": "link"
+  },
   "options": {},
   "attributes": {
-    "label": { "type": "string", "required": true },
-    "href": { "type": "string", "required": true },
-    "openInNewTab": { "type": "boolean", "default": false }
+    "label": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Button Text",
+          "description": "Text displayed on the button (e.g. \"Start Training\")."
+        }
+      }
+    },
+    "href": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Destination URL",
+          "description": "Where the button links. Use \"/\" for homepage or a full URL for external links."
+        }
+      }
+    },
+    "openInNewTab": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Open in New Tab?",
+          "description": "Tick this for external links so the visitor stays on the site."
+        }
+      }
+    }
   }
 }

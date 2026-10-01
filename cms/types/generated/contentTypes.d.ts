@@ -446,6 +446,7 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
 export interface ApiAddOnAddOn extends Struct.CollectionTypeSchema {
   collectionName: 'add_ons';
   info: {
+    description: 'An optional add-on product (e.g. personal training session, nutrition consult).';
     displayName: 'Add-on';
     pluralName: 'add-ons';
     singularName: 'add-on';
@@ -457,19 +458,52 @@ export interface ApiAddOnAddOn extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    description: Schema.Attribute.Text;
+    description: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Detailed description with rich text formatting.';
+          label: 'Description';
+        };
+      }>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::add-on.add-on'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    payHereItemName: Schema.Attribute.String;
-    priceLKR: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
+    payHereItemName: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short item name sent to the PayHere payment gateway. No special characters.';
+          label: 'PayHere Item Name';
+        };
+      }>;
+    priceLKR: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Price in Sri Lankan Rupees. Do not include commas or currency symbols.';
+          label: 'Price (LKR)';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     sessions: Schema.Attribute.Integer & Schema.Attribute.Required;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -480,6 +514,7 @@ export interface ApiAddOnAddOn extends Struct.CollectionTypeSchema {
 export interface ApiAmenityAmenity extends Struct.CollectionTypeSchema {
   collectionName: 'amenities';
   info: {
+    description: 'A gym facility or amenity (e.g. Showers, Sauna, Parking) shown on the Contact/About page.';
     displayName: 'Amenity';
     pluralName: 'amenities';
     singularName: 'amenity';
@@ -491,16 +526,36 @@ export interface ApiAmenityAmenity extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    icon: Schema.Attribute.Media<'images'>;
+    icon: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Small decorative icon image.';
+          label: 'Icon';
+        };
+      }>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::amenity.amenity'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -510,6 +565,7 @@ export interface ApiAmenityAmenity extends Struct.CollectionTypeSchema {
 export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
   collectionName: 'authors';
   info: {
+    description: 'A blog post author \u2014 name, bio, photo, and links.';
     displayName: 'Author';
     pluralName: 'authors';
     singularName: 'author';
@@ -518,7 +574,13 @@ export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    bio: Schema.Attribute.Text;
+    bio: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full biography with rich text formatting.';
+          label: 'Full Biography';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -528,10 +590,30 @@ export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
       'api::author.author'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    photo: Schema.Attribute.Media<'images'>;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
+    photo: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Portrait or profile photo.';
+          label: 'Photo';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -541,6 +623,7 @@ export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
 export interface ApiClassClass extends Struct.CollectionTypeSchema {
   collectionName: 'classes';
   info: {
+    description: 'A training class (e.g. Muay Thai, CrossFit, Yoga). Each class has a thumbnail, description, intensity level, and links to schedule slots.';
     displayName: 'Class';
     pluralName: 'classes';
     singularName: 'class';
@@ -552,33 +635,116 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    description: Schema.Attribute.Blocks;
+    description: Schema.Attribute.Blocks &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Detailed description with rich text formatting.';
+          label: 'Description';
+        };
+      }>;
     discipline: Schema.Attribute.Relation<
       'manyToOne',
       'api::discipline.discipline'
-    >;
-    durationMinutes: Schema.Attribute.Integer & Schema.Attribute.Required;
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The martial art or training style this class belongs to.';
+          label: 'Discipline';
+        };
+      }>;
+    durationMinutes: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Class length in minutes, e.g. 60 for a one-hour class.';
+          label: 'Duration (minutes)';
+        };
+      }>;
     featuredVideo: Schema.Attribute.Media<'videos'>;
     intensity: Schema.Attribute.Enumeration<
       ['low', 'medium', 'high', 'extreme']
     > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'How physically demanding this class is: Low, Medium, High, or Extreme.';
+          label: 'Intensity Level';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'medium'>;
-    isFree: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isFree: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Tick if this class is free and does not require a membership or pass.';
+          label: 'Free Class?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     level: Schema.Attribute.Enumeration<
       ['beginner', 'intermediate', 'advanced', 'all']
     > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Who this class suits: Beginner, Intermediate, Advanced, or All levels.';
+          label: 'Experience Level';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'all'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::class.class'> &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    previewVideo: Schema.Attribute.Media<'videos'>;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
+    previewVideo: Schema.Attribute.Media<'videos'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short looping video shown when hovering over this item.';
+          label: 'Hover Preview Video';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    tagline: Schema.Attribute.String;
-    thumbnail: Schema.Attribute.Media<'images'>;
+    seo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Search engine optimisation settings for this page.';
+          label: 'SEO Settings';
+        };
+      }>;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
+    tagline: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short punchy line shown beneath the title (one sentence max).';
+          label: 'Tagline';
+        };
+      }>;
+    thumbnail: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Small preview image used in grids, cards, and listings.';
+          label: 'Thumbnail';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -586,62 +752,10 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiClassesPageClassesPage extends Struct.SingleTypeSchema {
-  collectionName: 'classes_pages';
-  info: {
-    displayName: 'Classes Page';
-    pluralName: 'classes-pages';
-    singularName: 'classes-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::classes-page.classes-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiCoachCoach extends Struct.CollectionTypeSchema {
   collectionName: 'coaches';
   info: {
+    description: 'A coach profile. Includes photo, bio, specialities, disciplines, and social links.';
     displayName: 'Coach';
     pluralName: 'coaches';
     singularName: 'coach';
@@ -650,144 +764,121 @@ export interface ApiCoachCoach extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    bio: Schema.Attribute.Blocks;
+    bio: Schema.Attribute.Blocks &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full biography with rich text formatting.';
+          label: 'Full Biography';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     disciplines: Schema.Attribute.Relation<
       'manyToMany',
       'api::discipline.discipline'
-    >;
-    instagram: Schema.Attribute.String;
-    isHeadCoach: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Martial arts or training styles taught by this coach.';
+          label: 'Disciplines';
+        };
+      }>;
+    instagram: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Instagram handle without the @ symbol.';
+          label: 'Instagram Username';
+        };
+      }>;
+    isHeadCoach: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Mark as Head Coach to feature this person prominently on the Coaches page.';
+          label: 'Head Coach?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::coach.coach'> &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    photo: Schema.Attribute.Media<'images'>;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
+    photo: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Portrait or profile photo.';
+          label: 'Photo';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    role: Schema.Attribute.String;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    shortBio: Schema.Attribute.Text;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    specialties: Schema.Attribute.JSON;
+    role: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Job title shown on the coach card, e.g. "Head Boxing Coach".';
+          label: 'Role / Title';
+        };
+      }>;
+    seo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Search engine optimisation settings for this page.';
+          label: 'SEO Settings';
+        };
+      }>;
+    shortBio: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Brief bio for card previews \u2014 1 to 2 sentences.';
+          label: 'Short Bio';
+        };
+      }>;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
+    specialties: Schema.Attribute.JSON &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Key skills or techniques \u2014 enter one per line.';
+          label: 'Specialties';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    yearsExperience: Schema.Attribute.Integer;
-  };
-}
-
-export interface ApiCoachesPageCoachesPage extends Struct.SingleTypeSchema {
-  collectionName: 'coaches_pages';
-  info: {
-    displayName: 'Coaches Page';
-    pluralName: 'coaches-pages';
-    singularName: 'coaches-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::coaches-page.coaches-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiContactPageContactPage extends Struct.SingleTypeSchema {
-  collectionName: 'contact_pages';
-  info: {
-    displayName: 'Contact Page';
-    pluralName: 'contact-pages';
-    singularName: 'contact-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::contact-page.contact-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
+    yearsExperience: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Total years of coaching or competition experience.';
+          label: 'Years of Experience';
+        };
+      }>;
   };
 }
 
 export interface ApiDisciplineDiscipline extends Struct.CollectionTypeSchema {
   collectionName: 'disciplines';
   info: {
+    description: 'A training discipline (e.g. Boxing, HIIT) used to categorise classes and coaches.';
     displayName: 'Discipline';
     pluralName: 'disciplines';
     singularName: 'discipline';
@@ -796,73 +887,46 @@ export interface ApiDisciplineDiscipline extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    colour: Schema.Attribute.String;
+    colour: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Colour used to style this card: Yellow, Blue, Red, or White.';
+          label: 'Accent Colour';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    icon: Schema.Attribute.Media<'images'>;
+    icon: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Small decorative icon image.';
+          label: 'Icon';
+        };
+      }>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::discipline.discipline'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiErrorPageErrorPage extends Struct.SingleTypeSchema {
-  collectionName: 'error_pages';
-  info: {
-    displayName: '500 Error Page';
-    pluralName: 'error-pages';
-    singularName: 'error-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::error-page.error-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -872,6 +936,7 @@ export interface ApiErrorPageErrorPage extends Struct.SingleTypeSchema {
 export interface ApiFaqCategoryFaqCategory extends Struct.CollectionTypeSchema {
   collectionName: 'faq_categories';
   info: {
+    description: 'Groups FAQs on the FAQ page (e.g. Membership, Classes, Facilities).';
     displayName: 'FAQ Category';
     pluralName: 'faq-categories';
     singularName: 'faq-category';
@@ -889,63 +954,31 @@ export interface ApiFaqCategoryFaqCategory extends Struct.CollectionTypeSchema {
       'api::faq-category.faq-category'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiFaqPageFaqPage extends Struct.SingleTypeSchema {
-  collectionName: 'faq_pages';
-  info: {
-    displayName: 'FAQ Page';
-    pluralName: 'faq-pages';
-    singularName: 'faq-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::faq-page.faq-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -955,6 +988,7 @@ export interface ApiFaqPageFaqPage extends Struct.SingleTypeSchema {
 export interface ApiFaqFaq extends Struct.CollectionTypeSchema {
   collectionName: 'faqs';
   info: {
+    description: 'A frequently asked question with rich-text answer. Assign to a category for grouping.';
     displayName: 'FAQ';
     pluralName: 'faqs';
     singularName: 'faq';
@@ -963,21 +997,55 @@ export interface ApiFaqFaq extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    answer: Schema.Attribute.Blocks & Schema.Attribute.Required;
+    answer: Schema.Attribute.Blocks &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full answer with rich text formatting. You can add bullet lists, bold text, and links.';
+          label: 'Answer';
+        };
+      }>;
     category: Schema.Attribute.Relation<
       'manyToOne',
       'api::faq-category.faq-category'
-    >;
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Groups this question with related FAQs on the FAQ page.';
+          label: 'FAQ Category';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isFeatured: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Featured items appear in homepage sections and spotlights.';
+          label: 'Featured?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::faq.faq'> &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    question: Schema.Attribute.String & Schema.Attribute.Required;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    question: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The frequently asked question, written as the visitor would phrase it.';
+          label: 'Question';
+        };
+      }>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -987,6 +1055,7 @@ export interface ApiFaqFaq extends Struct.CollectionTypeSchema {
 export interface ApiFooterFooter extends Struct.SingleTypeSchema {
   collectionName: 'footers';
   info: {
+    description: 'Footer content: navigation columns, newsletter signup, legal links, copyright text, and wordmark.';
     displayName: 'Footer';
     pluralName: 'footers';
     singularName: 'footer';
@@ -995,13 +1064,31 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    columns: Schema.Attribute.Component<'navigation.footer-column', true>;
-    copyrightText: Schema.Attribute.String;
+    columns: Schema.Attribute.Component<'navigation.footer-column', true> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Groups of links in the footer. Drag to reorder.';
+          label: 'Footer Link Columns';
+        };
+      }>;
+    copyrightText: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Copyright notice in the bottom bar. Use {year} as a placeholder for the current year, e.g. "\u00A9 {year} The Wolverine Hub".';
+          label: 'Copyright Line';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     ctaBlock: Schema.Attribute.Component<'sections.cta-banner', false>;
-    legalLinks: Schema.Attribute.Component<'shared.link', true>;
+    legalLinks: Schema.Attribute.Component<'shared.link', true> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Links shown in the footer bottom bar \u2014 Privacy Policy, Terms, etc.';
+          label: 'Legal Links';
+        };
+      }>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1009,14 +1096,38 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     newsletterEnabled: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Display the email sign-up form in the footer.';
+          label: 'Show Newsletter Sign-up?';
+        };
+      }> &
       Schema.Attribute.DefaultTo<true>;
-    newsletterHeading: Schema.Attribute.String;
-    newsletterSubheading: Schema.Attribute.Text;
+    newsletterHeading: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Heading above the newsletter form (e.g. "Stay in the Loop").';
+          label: 'Newsletter Heading';
+        };
+      }>;
+    newsletterSubheading: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short description below the newsletter heading.';
+          label: 'Newsletter Subheading';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     wordmarkText: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Large brand text shown as a background watermark in the footer.';
+          label: 'Footer Wordmark';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'THE WOLVERINE HUB'>;
   };
 }
@@ -1024,6 +1135,7 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
 export interface ApiFormForm extends Struct.CollectionTypeSchema {
   collectionName: 'forms';
   info: {
+    description: 'A form definition for contact and lead-capture forms. Configure fields and destination here.';
     displayName: 'Form';
     pluralName: 'forms';
     singularName: 'form';
@@ -1054,6 +1166,7 @@ export interface ApiFormForm extends Struct.CollectionTypeSchema {
 export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
   collectionName: 'gallery_items';
   info: {
+    description: 'A photo or video for the gallery. Add a caption and category for filtering.';
     displayName: 'Gallery Item';
     pluralName: 'gallery-items';
     singularName: 'gallery-item';
@@ -1062,8 +1175,21 @@ export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    alt: Schema.Attribute.String & Schema.Attribute.Required;
-    caption: Schema.Attribute.String;
+    alt: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Describe the image for screen readers and search engines.';
+          label: 'Alt Text';
+        };
+      }>;
+    caption: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short caption displayed below the image.';
+          label: 'Caption';
+        };
+      }>;
     category: Schema.Attribute.Enumeration<
       [
         'training',
@@ -1074,11 +1200,24 @@ export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
         'food',
         'event',
       ]
-    >;
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Groups this question with related FAQs on the FAQ page.';
+          label: 'FAQ Category';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isFeatured: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Featured items appear in homepage sections and spotlights.';
+          label: 'Featured?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1086,62 +1225,22 @@ export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     media: Schema.Attribute.Media<'images' | 'videos'> &
-      Schema.Attribute.Required;
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Image or video file.';
+          label: 'Media Asset';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiGalleryPageGalleryPage extends Struct.SingleTypeSchema {
-  collectionName: 'gallery_pages';
-  info: {
-    displayName: 'Gallery Page';
-    pluralName: 'gallery-pages';
-    singularName: 'gallery-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::gallery-page.gallery-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1151,7 +1250,7 @@ export interface ApiGalleryPageGalleryPage extends Struct.SingleTypeSchema {
 export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   collectionName: 'globals';
   info: {
-    description: 'Site-wide settings, contact info, SEO defaults, experience toggles';
+    description: 'Site-wide settings: logo, contact details, social links, SEO defaults, and experience feature flags.';
     displayName: 'Global';
     pluralName: 'globals';
     singularName: 'global';
@@ -1160,60 +1259,211 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    address: Schema.Attribute.Text;
-    companyNumber: Schema.Attribute.String;
+    address: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full postal address shown on the Contact page.';
+          label: 'Physical Address';
+        };
+      }>;
+    companyNumber: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Used in legal footer notices.';
+          label: 'Company Registration Number';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    defaultSeo: Schema.Attribute.Component<'shared.seo', false>;
-    email: Schema.Attribute.Email;
+    defaultSeo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Fallback SEO used when a page has no specific SEO fields set.';
+          label: 'Default SEO Settings';
+        };
+      }>;
+    email: Schema.Attribute.Email &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main contact email address displayed on the site.';
+          label: 'Contact Email';
+        };
+      }>;
     experienceCustomCursor: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Show a custom cursor on desktop (auto-disabled on touch devices).';
+          label: 'Enable Custom Cursor';
+        };
+      }> &
       Schema.Attribute.DefaultTo<true>;
     experienceIntroAnimation: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Show the full-screen cinematic intro on first visit.';
+          label: 'Enable Intro Animation';
+        };
+      }> &
       Schema.Attribute.DefaultTo<true>;
     experienceMotionIntensity: Schema.Attribute.Enumeration<
       ['full', 'lite', 'minimal']
     > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full = all animations active. Lite = reduced animations. Minimal = static layout only.';
+          label: 'Motion Intensity';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'full'>;
     experienceSmoothScroll: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Enable GSAP ScrollSmoother on desktop browsers.';
+          label: 'Enable Smooth Scroll';
+        };
+      }> &
       Schema.Attribute.DefaultTo<true>;
     experienceSoundDefault: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Play ambient sound automatically on load. Not recommended \u2014 leave off unless specifically needed.';
+          label: 'Sound On by Default';
+        };
+      }> &
       Schema.Attribute.DefaultTo<false>;
     experienceWebgl: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Enable 3D / shader effects in the hero section. Disabling improves performance on low-end devices.';
+          label: 'Enable WebGL Effects';
+        };
+      }> &
       Schema.Attribute.DefaultTo<true>;
-    facebook: Schema.Attribute.String;
-    favicon: Schema.Attribute.Media<'images'>;
-    hoursJson: Schema.Attribute.JSON;
-    instagram: Schema.Attribute.String;
+    facebook: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full Facebook page URL.';
+          label: 'Facebook Page URL';
+        };
+      }>;
+    favicon: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Browser tab icon. Recommended: 32 \u00D7 32 px ICO or PNG.';
+          label: 'Favicon';
+        };
+      }>;
+    hoursJson: Schema.Attribute.JSON &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Opening hours as a JSON object, e.g. {"Monday": "6am\u20139pm", "Tuesday": "6am\u20139pm"}.';
+          label: 'Opening Hours (JSON)';
+        };
+      }>;
+    instagram: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Instagram handle without the @ symbol.';
+          label: 'Instagram Username';
+        };
+      }>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::global.global'
     > &
       Schema.Attribute.Private;
-    logoDark: Schema.Attribute.Media<'images'>;
-    logoLight: Schema.Attribute.Media<'images'>;
-    logoMonogram: Schema.Attribute.Media<'images'>;
-    mapLink: Schema.Attribute.String;
-    phone: Schema.Attribute.String;
+    logoDark: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full logo for use on light backgrounds (transparent PNG or SVG).';
+          label: 'Logo \u2013 Dark Version';
+        };
+      }>;
+    logoLight: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full logo for use on dark backgrounds (transparent PNG or SVG).';
+          label: 'Logo \u2013 Light Version';
+        };
+      }>;
+    logoMonogram: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Small square icon version of the logo used in the mobile header and favicons.';
+          label: 'Logo \u2013 Monogram / Icon';
+        };
+      }>;
+    mapLink: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Link to the location on Google Maps.';
+          label: 'Google Maps URL';
+        };
+      }>;
+    phone: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Contact phone number including country code, e.g. +94 77 123 4567.';
+          label: 'Phone Number';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     siteName: Schema.Attribute.String &
       Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Official site name shown in browser tabs and SEO (e.g. "The Wolverine Hub").';
+          label: 'Site Name';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'The Wolverine Hub'>;
-    siteTagline: Schema.Attribute.String;
-    tiktok: Schema.Attribute.String;
-    twitterHandle: Schema.Attribute.String;
+    siteTagline: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short tagline shown under the logo in some layouts.';
+          label: 'Brand Tagline';
+        };
+      }>;
+    tiktok: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'TikTok handle without the @ symbol.';
+          label: 'TikTok Username';
+        };
+      }>;
+    twitterHandle: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Twitter/X username without the @ symbol.';
+          label: 'Twitter / X Handle';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    whatsapp: Schema.Attribute.String;
-    youtube: Schema.Attribute.String;
+    whatsapp: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'WhatsApp number including country code with no spaces, e.g. +94771234567.';
+          label: 'WhatsApp Number';
+        };
+      }>;
+    youtube: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full YouTube channel URL.';
+          label: 'YouTube Channel URL';
+        };
+      }>;
   };
 }
 
 export interface ApiHeaderHeader extends Struct.SingleTypeSchema {
   collectionName: 'headers';
   info: {
+    description: 'Navigation menu links, announcement bar, and top-bar call-to-action button.';
     displayName: 'Header';
     pluralName: 'headers';
     singularName: 'header';
@@ -1225,11 +1475,35 @@ export interface ApiHeaderHeader extends Struct.SingleTypeSchema {
     announcementBarColour: Schema.Attribute.Enumeration<
       ['yellow', 'red', 'blue']
     > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Background colour of the announcement bar.';
+          label: 'Announcement Bar Colour';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'yellow'>;
     announcementBarEnabled: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Display the strip banner above the header.';
+          label: 'Show Announcement Bar?';
+        };
+      }> &
       Schema.Attribute.DefaultTo<false>;
-    announcementBarLink: Schema.Attribute.String;
-    announcementBarText: Schema.Attribute.String;
+    announcementBarLink: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Optional destination URL. Leave blank for no link.';
+          label: 'Announcement Link URL';
+        };
+      }>;
+    announcementBarText: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Message shown in the announcement bar (keep short \u2014 one line).';
+          label: 'Announcement Text';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1239,119 +1513,21 @@ export interface ApiHeaderHeader extends Struct.SingleTypeSchema {
       'api::header.header'
     > &
       Schema.Attribute.Private;
-    menuItems: Schema.Attribute.Component<'navigation.menu-item', true>;
-    menuWidgetEnabled: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<true>;
-    menuWidgetLabel: Schema.Attribute.String &
-      Schema.Attribute.DefaultTo<'Next class'>;
-    primaryCta: Schema.Attribute.Component<'shared.cta-button', false>;
+    menuItems: Schema.Attribute.Component<'navigation.menu-item', true> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'All links shown in the main navigation. Drag to reorder.';
+          label: 'Navigation Menu Items';
+        };
+      }>;
+    primaryCta: Schema.Attribute.Component<'shared.cta-button', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main call-to-action button. Leave empty to hide it.';
+          label: 'Primary Action Button';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiHomePageHomePage extends Struct.SingleTypeSchema {
-  collectionName: 'home_pages';
-  info: {
-    displayName: 'Home Page';
-    pluralName: 'home-pages';
-    singularName: 'home-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::home-page.home-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiJournalPageJournalPage extends Struct.SingleTypeSchema {
-  collectionName: 'journal_pages';
-  info: {
-    displayName: 'Journal Page';
-    pluralName: 'journal-pages';
-    singularName: 'journal-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::journal-page.journal-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1361,6 +1537,7 @@ export interface ApiJournalPageJournalPage extends Struct.SingleTypeSchema {
 export interface ApiLeadLead extends Struct.CollectionTypeSchema {
   collectionName: 'leads';
   info: {
+    description: 'An enquiry or lead captured from a site contact form.';
     displayName: 'Lead';
     pluralName: 'leads';
     singularName: 'lead';
@@ -1372,7 +1549,14 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    email: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main contact email address displayed on the site.';
+          label: 'Contact Email';
+        };
+      }>;
     fields: Schema.Attribute.JSON;
     formKey: Schema.Attribute.String & Schema.Attribute.Required;
     ipHash: Schema.Attribute.String;
@@ -1380,8 +1564,21 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::lead.lead'> &
       Schema.Attribute.Private;
     message: Schema.Attribute.Text;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    phone: Schema.Attribute.String;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
+    phone: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Contact phone number including country code, e.g. +94 77 123 4567.';
+          label: 'Phone Number';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     status: Schema.Attribute.Enumeration<
       ['new', 'contacted', 'converted', 'closed']
@@ -1396,6 +1593,7 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
 export interface ApiLegalPageLegalPage extends Struct.CollectionTypeSchema {
   collectionName: 'legal_pages';
   info: {
+    description: 'Legal documents \u2014 Privacy Policy, Terms of Service, etc. Each has a title, slug, and rich-text content body.';
     displayName: 'Legal Page';
     pluralName: 'legal-pages';
     singularName: 'legal-page';
@@ -1404,7 +1602,14 @@ export interface ApiLegalPageLegalPage extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    content: Schema.Attribute.Blocks & Schema.Attribute.Required;
+    content: Schema.Attribute.Blocks &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main body of this entry \u2014 supports rich text, images, and embeds.';
+          label: 'Body Content';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1416,9 +1621,29 @@ export interface ApiLegalPageLegalPage extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
+    seo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Search engine optimisation settings for this page.';
+          label: 'SEO Settings';
+        };
+      }>;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The display title shown on the page and in browser tabs.';
+          label: 'Title';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1429,6 +1654,7 @@ export interface ApiNewsletterSubscriberNewsletterSubscriber
   extends Struct.CollectionTypeSchema {
   collectionName: 'newsletter_subscribers';
   info: {
+    description: 'An email address subscribed via the newsletter block.';
     displayName: 'Newsletter Subscriber';
     pluralName: 'newsletter-subscribers';
     singularName: 'newsletter-subscriber';
@@ -1445,7 +1671,13 @@ export interface ApiNewsletterSubscriberNewsletterSubscriber
       Schema.Attribute.Private;
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
-      Schema.Attribute.Unique;
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main contact email address displayed on the site.';
+          label: 'Contact Email';
+        };
+      }>;
     ipHash: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1461,62 +1693,10 @@ export interface ApiNewsletterSubscriberNewsletterSubscriber
   };
 }
 
-export interface ApiNotFoundPageNotFoundPage extends Struct.SingleTypeSchema {
-  collectionName: 'not_found_pages';
-  info: {
-    displayName: '404 Page';
-    pluralName: 'not-found-pages';
-    singularName: 'not-found-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::not-found-page.not-found-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiPagePage extends Struct.CollectionTypeSchema {
   collectionName: 'pages';
   info: {
+    description: "All site pages \u2014 Home, Classes, Coaches, Schedule, Programs, Pricing, Gallery, Contact, etc. Add sections to build each page's layout. The slug field is the URL path (e.g. 'home', 'classes', 'contact').";
     displayName: 'Page';
     pluralName: 'pages';
     singularName: 'page';
@@ -1535,20 +1715,57 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
     sections: Schema.Attribute.DynamicZone<
       [
         'sections.hero-video',
+        'sections.stat-counters',
+        'sections.marquee',
+        'sections.class-rail',
+        'sections.scroll-chapter',
         'sections.feature-split',
         'sections.triptych',
-        'sections.rich-text',
-        'sections.cta-banner',
-        'sections.newsletter-block',
+        'sections.program-tiers',
+        'sections.coach-spotlight',
+        'sections.coach-carousel',
+        'sections.pricing-teaser',
+        'sections.app-features',
         'sections.gallery-grid',
+        'sections.testimonial-slider',
+        'sections.partner-strip',
         'sections.faq-block',
         'sections.location-block',
+        'sections.cta-banner',
+        'sections.newsletter-block',
+        'sections.rich-text',
         'sections.video-feature',
       ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Build the page layout by adding and reordering sections. Each section type creates a different visual block.';
+          label: 'Page Sections';
+        };
+      }>;
+    seo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Search engine optimisation settings for this page.';
+          label: 'SEO Settings';
+        };
+      }>;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The display title shown on the page and in browser tabs.';
+          label: 'Title';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1558,6 +1775,7 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
 export interface ApiPartnerPartner extends Struct.CollectionTypeSchema {
   collectionName: 'partners';
   info: {
+    description: 'A brand partner or sponsor shown in the Partner Strip section.';
     displayName: 'Partner';
     pluralName: 'partners';
     singularName: 'partner';
@@ -1576,19 +1794,40 @@ export interface ApiPartnerPartner extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     logo: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    url: Schema.Attribute.String;
+    url: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full URL including https://';
+          label: 'Website URL';
+        };
+      }>;
   };
 }
 
 export interface ApiPassPass extends Struct.CollectionTypeSchema {
   collectionName: 'passes';
   info: {
+    description: 'A class pass product \u2014 number of sessions, validity period, and price.';
     displayName: 'Pass';
     pluralName: 'passes';
     singularName: 'pass';
@@ -1600,21 +1839,67 @@ export interface ApiPassPass extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    duration: Schema.Attribute.String & Schema.Attribute.Required;
-    durationDays: Schema.Attribute.Integer;
-    isPurchasable: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    duration: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Human-readable duration shown to customers, e.g. "1 Month" or "3 Months".';
+          label: 'Duration Label';
+        };
+      }>;
+    durationDays: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Exact number of days \u2014 used to calculate pass expiry.';
+          label: 'Duration in Days';
+        };
+      }>;
+    isPurchasable: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'If unticked, this pass is hidden from the pricing page.';
+          label: 'Available for Purchase?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::pass.pass'> &
       Schema.Attribute.Private;
-    payHereItemName: Schema.Attribute.String;
-    priceLKR: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    payHereItemName: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short item name sent to the PayHere payment gateway. No special characters.';
+          label: 'PayHere Item Name';
+        };
+      }>;
+    priceLKR: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Price in Sri Lankan Rupees. Do not include commas or currency symbols.';
+          label: 'Price (LKR)';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     tier: Schema.Attribute.Relation<
       'manyToOne',
       'api::pricing-tier.pricing-tier'
     > &
-      Schema.Attribute.Required;
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The membership tier this pass belongs to.';
+          label: 'Pricing Tier';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1625,6 +1910,7 @@ export interface ApiPostCategoryPostCategory
   extends Struct.CollectionTypeSchema {
   collectionName: 'post_categories';
   info: {
+    description: 'A category for grouping blog/journal articles.';
     displayName: 'Post Category';
     pluralName: 'post-categories';
     singularName: 'post-category';
@@ -1642,9 +1928,23 @@ export interface ApiPostCategoryPostCategory
       'api::post-category.post-category'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1654,6 +1954,7 @@ export interface ApiPostCategoryPostCategory
 export interface ApiPostPost extends Struct.CollectionTypeSchema {
   collectionName: 'posts';
   info: {
+    description: 'A journal/blog article with rich-text content, cover image, author, and category.';
     displayName: 'Post';
     pluralName: 'posts';
     singularName: 'post';
@@ -1662,80 +1963,97 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    author: Schema.Attribute.Relation<'manyToOne', 'api::author.author'>;
+    author: Schema.Attribute.Relation<'manyToOne', 'api::author.author'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The person who wrote this post.';
+          label: 'Author';
+        };
+      }>;
     category: Schema.Attribute.Relation<
       'manyToOne',
       'api::post-category.post-category'
-    >;
-    content: Schema.Attribute.Blocks & Schema.Attribute.Required;
-    coverImage: Schema.Attribute.Media<'images'>;
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Groups this question with related FAQs on the FAQ page.';
+          label: 'FAQ Category';
+        };
+      }>;
+    content: Schema.Attribute.Blocks &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main body of this entry \u2014 supports rich text, images, and embeds.';
+          label: 'Body Content';
+        };
+      }>;
+    coverImage: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full-width feature image shown at the top of the page or post.';
+          label: 'Cover Image';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isFeatured: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Featured items appear in homepage sections and spotlights.';
+          label: 'Featured?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::post.post'> &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    readingTimeMinutes: Schema.Attribute.Integer;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
-    summary: Schema.Attribute.Text;
-    tags: Schema.Attribute.JSON;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiPricingPagePricingPage extends Struct.SingleTypeSchema {
-  collectionName: 'pricing_pages';
-  info: {
-    displayName: 'Pricing Page';
-    pluralName: 'pricing-pages';
-    singularName: 'pricing-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::pricing-page.pricing-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
+    readingTimeMinutes: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Estimated reading time. Leave blank to auto-calculate from word count.';
+          label: 'Reading Time (minutes)';
+        };
+      }>;
+    seo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Search engine optimisation settings for this page.';
+          label: 'SEO Settings';
+        };
+      }>;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    summary: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short summary shown in listings and search results (1\u20132 sentences, plain text).';
+          label: 'Summary';
+        };
+      }>;
+    tags: Schema.Attribute.JSON &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Keywords for filtering and discovery \u2014 enter one tag per entry.';
+          label: 'Tags';
+        };
+      }>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The display title shown on the page and in browser tabs.';
+          label: 'Title';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1745,6 +2063,7 @@ export interface ApiPricingPagePricingPage extends Struct.SingleTypeSchema {
 export interface ApiPricingTierPricingTier extends Struct.CollectionTypeSchema {
   collectionName: 'pricing_tiers';
   info: {
+    description: 'A pricing plan shown on the Pricing page. Contains name, tagline, feature list, and colour.';
     displayName: 'Pricing Tier';
     pluralName: 'pricing-tiers';
     singularName: 'pricing-tier';
@@ -1754,24 +2073,76 @@ export interface ApiPricingTierPricingTier extends Struct.CollectionTypeSchema {
   };
   attributes: {
     colour: Schema.Attribute.Enumeration<['yellow', 'blue', 'red', 'white']> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Colour used to style this card: Yellow, Blue, Red, or White.';
+          label: 'Accent Colour';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'yellow'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    description: Schema.Attribute.Text;
-    features: Schema.Attribute.JSON;
-    isMostPopular: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    description: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Detailed description with rich text formatting.';
+          label: 'Description';
+        };
+      }>;
+    features: Schema.Attribute.JSON &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Bullet points shown on the pricing card, one per entry.';
+          label: 'Features List';
+        };
+      }>;
+    isMostPopular: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Adds a "Most Popular" badge to highlight this tier.';
+          label: 'Most Popular?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::pricing-tier.pricing-tier'
     > &
       Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    tagline: Schema.Attribute.String;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
+    tagline: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short punchy line shown beneath the title (one sentence max).';
+          label: 'Tagline';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1781,6 +2152,7 @@ export interface ApiPricingTierPricingTier extends Struct.CollectionTypeSchema {
 export interface ApiProgramProgram extends Struct.CollectionTypeSchema {
   collectionName: 'programs';
   info: {
+    description: 'A training program tier (e.g. Starter, Signature, Transformation). Contains pricing, description, and key features.';
     displayName: 'Program';
     pluralName: 'programs';
     singularName: 'program';
@@ -1793,10 +2165,23 @@ export interface ApiProgramProgram extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'LKR'>;
-    description: Schema.Attribute.Blocks;
+    description: Schema.Attribute.Blocks &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Detailed description with rich text formatting.';
+          label: 'Description';
+        };
+      }>;
     fromPrice: Schema.Attribute.Decimal;
     heroImage: Schema.Attribute.Media<'images'>;
-    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isFeatured: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Featured items appear in homepage sections and spotlights.';
+          label: 'Featured?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     isLimitedAvailability: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1806,70 +2191,56 @@ export interface ApiProgramProgram extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     minimumCommitment: Schema.Attribute.String;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full display name.';
+          label: 'Name';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     questionnaireFields: Schema.Attribute.JSON;
     requiresQuestionnaire: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
+    seo: Schema.Attribute.Component<'shared.seo', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Search engine optimisation settings for this page.';
+          label: 'SEO Settings';
+        };
+      }>;
     shortDescription: Schema.Attribute.Text;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    tagline: Schema.Attribute.String;
-    thumbnail: Schema.Attribute.Media<'images'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiProgramsPageProgramsPage extends Struct.SingleTypeSchema {
-  collectionName: 'programs_pages';
-  info: {
-    displayName: 'Programs Page';
-    pluralName: 'programs-pages';
-    singularName: 'programs-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::programs-page.programs-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
+    slug: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
+          label: 'URL Slug';
+        };
+      }>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
+    tagline: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short punchy line shown beneath the title (one sentence max).';
+          label: 'Tagline';
+        };
+      }>;
+    thumbnail: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Small preview image used in grids, cards, and listings.';
+          label: 'Thumbnail';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1879,6 +2250,7 @@ export interface ApiProgramsPageProgramsPage extends Struct.SingleTypeSchema {
 export interface ApiRedirectRedirect extends Struct.CollectionTypeSchema {
   collectionName: 'redirects';
   info: {
+    description: 'A URL redirect rule. Use permanent (301) for SEO-safe redirects.';
     displayName: 'Redirect';
     pluralName: 'redirects';
     singularName: 'redirect';
@@ -1890,8 +2262,22 @@ export interface ApiRedirectRedirect extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    from: Schema.Attribute.String & Schema.Attribute.Required;
-    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    from: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The old URL path to redirect away from, e.g. /old-page.';
+          label: 'Old URL (redirect from)';
+        };
+      }>;
+    isActive: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Only active slots are shown on the public schedule page.';
+          label: 'Active on Schedule?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1900,61 +2286,21 @@ export interface ApiRedirectRedirect extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     statusCode: Schema.Attribute.Enumeration<['permanent', 'temporary']> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Permanent (301) = moved forever. Temporary (302) = short-term redirect.';
+          label: 'Redirect Type';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'permanent'>;
-    to: Schema.Attribute.String & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiSchedulePageSchedulePage extends Struct.SingleTypeSchema {
-  collectionName: 'schedule_pages';
-  info: {
-    displayName: 'Schedule Page';
-    pluralName: 'schedule-pages';
-    singularName: 'schedule-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::schedule-page.schedule-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
+    to: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The destination URL, e.g. /new-page or a full https:// URL.';
+          label: 'New URL (redirect to)';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1965,6 +2311,7 @@ export interface ApiScheduleSlotScheduleSlot
   extends Struct.CollectionTypeSchema {
   collectionName: 'schedule_slots';
   info: {
+    description: 'A recurring class slot on the weekly timetable \u2014 weekday, start/end time, class, coach, and capacity.';
     displayName: 'Schedule Slot';
     pluralName: 'schedule-slots';
     singularName: 'schedule-slot';
@@ -1973,25 +2320,77 @@ export interface ApiScheduleSlotScheduleSlot
     draftAndPublish: false;
   };
   attributes: {
-    capacity: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<20>;
+    capacity: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Maximum number of participants allowed per session.';
+          label: 'Maximum Capacity';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<20>;
     class: Schema.Attribute.Relation<'manyToOne', 'api::class.class'> &
-      Schema.Attribute.Required;
-    coach: Schema.Attribute.Relation<'manyToOne', 'api::coach.coach'>;
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Which class is scheduled in this time slot.';
+          label: 'Class';
+        };
+      }>;
+    coach: Schema.Attribute.Relation<'manyToOne', 'api::coach.coach'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Coach leading this session (optional).';
+          label: 'Coach';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    endTime: Schema.Attribute.Time & Schema.Attribute.Required;
-    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    endTime: Schema.Attribute.Time &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Time the class ends in 24-hour format, e.g. 07:00.';
+          label: 'End Time';
+        };
+      }>;
+    isActive: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Only active slots are shown on the public schedule page.';
+          label: 'Active on Schedule?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::schedule-slot.schedule-slot'
     > &
       Schema.Attribute.Private;
-    notes: Schema.Attribute.Text;
+    notes: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Private notes for the team \u2014 not shown on the public website.';
+          label: 'Internal Notes';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    room: Schema.Attribute.String;
-    startTime: Schema.Attribute.Time & Schema.Attribute.Required;
+    room: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Which part of the gym this runs in, e.g. "Main Floor" or "Boxing Ring".';
+          label: 'Room / Area';
+        };
+      }>;
+    startTime: Schema.Attribute.Time &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Time the class begins in 24-hour format, e.g. 06:00.';
+          label: 'Start Time';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2006,13 +2405,20 @@ export interface ApiScheduleSlotScheduleSlot
         'sunday',
       ]
     > &
-      Schema.Attribute.Required;
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Which day this slot runs every week.';
+          label: 'Day of Week';
+        };
+      }>;
   };
 }
 
 export interface ApiStatStat extends Struct.CollectionTypeSchema {
   collectionName: 'stats';
   info: {
+    description: "A key statistic for the Stat Counters section (e.g. '24 disciplines', '5 coaches').";
     displayName: 'Stat';
     pluralName: 'stats';
     singularName: 'stat';
@@ -2024,24 +2430,58 @@ export interface ApiStatStat extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    label: Schema.Attribute.String & Schema.Attribute.Required;
+    label: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short descriptor shown beneath the number, e.g. "Disciplines", "Expert Coaches", "Members trained".';
+          label: 'Stat Label';
+        };
+      }>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::stat.stat'> &
       Schema.Attribute.Private;
-    prefix: Schema.Attribute.String;
+    prefix: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Text before the number, e.g. "Over" or "~".';
+          label: 'Prefix';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    suffix: Schema.Attribute.String;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
+    suffix: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Text after the number, e.g. "+" or "classes".';
+          label: 'Suffix';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    value: Schema.Attribute.String & Schema.Attribute.Required;
+    value: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The number or text shown in large format, e.g. "24" or "500+".';
+          label: 'Stat Value';
+        };
+      }>;
   };
 }
 
 export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
   collectionName: 'testimonials';
   info: {
+    description: 'A member testimonial \u2014 quote, photo, name, and optional rating.';
     displayName: 'Testimonial';
     pluralName: 'testimonials';
     singularName: 'testimonial';
@@ -2050,8 +2490,21 @@ export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    authorName: Schema.Attribute.String & Schema.Attribute.Required;
-    authorTitle: Schema.Attribute.String;
+    authorName: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full name of the person giving the testimonial.';
+          label: "Member's Name";
+        };
+      }>;
+    authorTitle: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short context, e.g. "Boxing member since 2022" or "Lost 12 kg in 4 months".';
+          label: 'Member Description';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2065,18 +2518,50 @@ export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
         'general-fitness',
         'competition',
       ]
-    >;
-    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: "Member's primary training goal, e.g. Weight Loss, Competition Prep.";
+          label: 'Training Goal';
+        };
+      }>;
+    isFeatured: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Featured items appear in homepage sections and spotlights.';
+          label: 'Featured?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::testimonial.testimonial'
     > &
       Schema.Attribute.Private;
-    photo: Schema.Attribute.Media<'images'>;
+    photo: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Portrait or profile photo.';
+          label: 'Photo';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    quote: Schema.Attribute.Text & Schema.Attribute.Required;
+    quote: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: "The member's own words. No need to add quote marks \u2014 they're added automatically.";
+          label: 'Testimonial Quote';
+        };
+      }>;
     rating: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Rating out of 5.';
+          label: 'Star Rating';
+        };
+      }> &
       Schema.Attribute.SetMinMax<
         {
           max: 5;
@@ -2091,63 +2576,10 @@ export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiTestimonialsPageTestimonialsPage
-  extends Struct.SingleTypeSchema {
-  collectionName: 'testimonials_pages';
-  info: {
-    displayName: 'Testimonials Page';
-    pluralName: 'testimonials-pages';
-    singularName: 'testimonials-page';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::testimonials-page.testimonials-page'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero-video',
-        'sections.stat-counters',
-        'sections.marquee',
-        'sections.class-rail',
-        'sections.scroll-chapter',
-        'sections.feature-split',
-        'sections.triptych',
-        'sections.program-tiers',
-        'sections.coach-spotlight',
-        'sections.coach-carousel',
-        'sections.pricing-teaser',
-        'sections.app-features',
-        'sections.gallery-grid',
-        'sections.testimonial-slider',
-        'sections.partner-strip',
-        'sections.faq-block',
-        'sections.location-block',
-        'sections.cta-banner',
-        'sections.newsletter-block',
-        'sections.rich-text',
-        'sections.video-feature',
-      ]
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiTokenPackTokenPack extends Struct.CollectionTypeSchema {
   collectionName: 'token_packs';
   info: {
+    description: 'A token bundle product that members purchase to book individual classes.';
     displayName: 'Token Pack';
     pluralName: 'token-packs';
     singularName: 'token-pack';
@@ -2165,10 +2597,30 @@ export interface ApiTokenPackTokenPack extends Struct.CollectionTypeSchema {
       'api::token-pack.token-pack'
     > &
       Schema.Attribute.Private;
-    payHereItemName: Schema.Attribute.String;
-    priceLKR: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    payHereItemName: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short item name sent to the PayHere payment gateway. No special characters.';
+          label: 'PayHere Item Name';
+        };
+      }>;
+    priceLKR: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Price in Sri Lankan Rupees. Do not include commas or currency symbols.';
+          label: 'Price (LKR)';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
+          label: 'Sort Order';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<0>;
     tokens: Schema.Attribute.Integer & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -2180,6 +2632,7 @@ export interface ApiTokenPackTokenPack extends Struct.CollectionTypeSchema {
 export interface ApiUiStringsUiStrings extends Struct.SingleTypeSchema {
   collectionName: 'ui_strings';
   info: {
+    description: 'All text labels used across the site UI \u2014 button copy, error messages, accessibility labels. Edit here to update wording without a code deploy.';
     displayName: 'UI Strings';
     pluralName: 'ui-strings-settings';
     singularName: 'ui-strings';
@@ -2189,24 +2642,85 @@ export interface ApiUiStringsUiStrings extends Struct.SingleTypeSchema {
   };
   attributes: {
     bookNowLabel: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Text on booking buttons throughout the site.';
+          label: '"Book Now" Button Text';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Book now'>;
-    cookieNotice: Schema.Attribute.Text;
+    cookieNotice: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Text shown in the cookie consent banner.';
+          label: 'Cookie Notice Text';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    errorBody: Schema.Attribute.Text;
+    errorBody: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Body text on the error page.';
+          label: 'Error Page Body Text';
+        };
+      }>;
     errorHeading: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main heading on the generic error page.';
+          label: 'Error Page Heading';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Something snapped.'>;
     filterNoResults: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Message shown when a filter or search returns nothing.';
+          label: '"No Results" Message';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'No results found.'>;
     formErrorDefault: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Shown when a form submission fails.';
+          label: 'Default Form Error Message';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Something went wrong. Please try again.'>;
     formSuccessDefault: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Shown after any form is submitted successfully.';
+          label: 'Default Form Success Message';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Message received. We will be in touch.'>;
-    fullBadge: Schema.Attribute.String & Schema.Attribute.DefaultTo<'Full'>;
+    fullBadge: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Badge shown on fully booked schedule slots.';
+          label: '"Class Full" Badge Text';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<'Full'>;
     introSkipLabel: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Text on the button that skips the intro animation.';
+          label: '"Skip Intro" Button Text';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Skip the ceremony.'>;
     loadMoreLabel: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Text on the pagination load-more button.';
+          label: '"Load More" Button Text';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Load more'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -2214,20 +2728,56 @@ export interface ApiUiStringsUiStrings extends Struct.SingleTypeSchema {
       'api::ui-strings.ui-strings'
     > &
       Schema.Attribute.Private;
-    notFoundBody: Schema.Attribute.Text;
+    notFoundBody: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Body text on the 404 page.';
+          label: '404 Page Body Text';
+        };
+      }>;
     notFoundHeading: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Main heading on the "Page Not Found" error page.';
+          label: '404 Page Heading';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Rest Day.'>;
     publishedAt: Schema.Attribute.DateTime;
     searchPlaceholder: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Placeholder shown inside the search input field.';
+          label: 'Search Placeholder Text';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Search classes, coaches, programs...'>;
     skipLinkLabel: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Accessibility link at the top of every page (screen readers).';
+          label: '"Skip to Content" Link Text';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'Skip to main content'>;
     spotsLeftTemplate: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Template text \u2014 use {n} as a placeholder, e.g. "{n} spots left".';
+          label: '"Spots Left" Template';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'{n} spots left'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     viewDetailsLabel: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Text on card detail link buttons.';
+          label: '"View Details" Link Text';
+        };
+      }> &
       Schema.Attribute.DefaultTo<'View details'>;
   };
 }
@@ -2747,42 +3297,29 @@ declare module '@strapi/strapi' {
       'api::amenity.amenity': ApiAmenityAmenity;
       'api::author.author': ApiAuthorAuthor;
       'api::class.class': ApiClassClass;
-      'api::classes-page.classes-page': ApiClassesPageClassesPage;
       'api::coach.coach': ApiCoachCoach;
-      'api::coaches-page.coaches-page': ApiCoachesPageCoachesPage;
-      'api::contact-page.contact-page': ApiContactPageContactPage;
       'api::discipline.discipline': ApiDisciplineDiscipline;
-      'api::error-page.error-page': ApiErrorPageErrorPage;
       'api::faq-category.faq-category': ApiFaqCategoryFaqCategory;
-      'api::faq-page.faq-page': ApiFaqPageFaqPage;
       'api::faq.faq': ApiFaqFaq;
       'api::footer.footer': ApiFooterFooter;
       'api::form.form': ApiFormForm;
       'api::gallery-item.gallery-item': ApiGalleryItemGalleryItem;
-      'api::gallery-page.gallery-page': ApiGalleryPageGalleryPage;
       'api::global.global': ApiGlobalGlobal;
       'api::header.header': ApiHeaderHeader;
-      'api::home-page.home-page': ApiHomePageHomePage;
-      'api::journal-page.journal-page': ApiJournalPageJournalPage;
       'api::lead.lead': ApiLeadLead;
       'api::legal-page.legal-page': ApiLegalPageLegalPage;
       'api::newsletter-subscriber.newsletter-subscriber': ApiNewsletterSubscriberNewsletterSubscriber;
-      'api::not-found-page.not-found-page': ApiNotFoundPageNotFoundPage;
       'api::page.page': ApiPagePage;
       'api::partner.partner': ApiPartnerPartner;
       'api::pass.pass': ApiPassPass;
       'api::post-category.post-category': ApiPostCategoryPostCategory;
       'api::post.post': ApiPostPost;
-      'api::pricing-page.pricing-page': ApiPricingPagePricingPage;
       'api::pricing-tier.pricing-tier': ApiPricingTierPricingTier;
       'api::program.program': ApiProgramProgram;
-      'api::programs-page.programs-page': ApiProgramsPageProgramsPage;
       'api::redirect.redirect': ApiRedirectRedirect;
-      'api::schedule-page.schedule-page': ApiSchedulePageSchedulePage;
       'api::schedule-slot.schedule-slot': ApiScheduleSlotScheduleSlot;
       'api::stat.stat': ApiStatStat;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
-      'api::testimonials-page.testimonials-page': ApiTestimonialsPageTestimonialsPage;
       'api::token-pack.token-pack': ApiTokenPackTokenPack;
       'api::ui-strings.ui-strings': ApiUiStringsUiStrings;
       'plugin::content-releases.release': PluginContentReleasesRelease;

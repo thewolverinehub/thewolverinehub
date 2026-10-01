@@ -4,7 +4,7 @@ import type {
   StrapiClass, StrapiCoach, StrapiScheduleSlot, StrapiPricingTier,
   StrapiPass, StrapiTestimonial, StrapiFaq, StrapiFaqCategory,
   StrapiPost, StrapiGalleryItem, StrapiRedirect,
-  StrapiPageBase,
+  StrapiPage,
 } from './types';
 import { cache } from '../cache';
 
@@ -24,8 +24,8 @@ export const getFooter = () =>
 export const getUiStrings = () =>
   cache('ui-strings', () => fetchSingle<StrapiUiStrings>('ui-strings'), TTL);
 
-export const getPage = (slug: string) =>
-  cache(`page:${slug}`, () => fetchSingle<StrapiPageBase>(slug.replace('/', '')), TTL);
+export const getPageBySlug = (slug: string) =>
+  cache(`page:${slug}`, () => fetchOne<StrapiPage>('pages', slug), TTL);
 
 /* ── Collections ─────────────────────────────────────────── */
 

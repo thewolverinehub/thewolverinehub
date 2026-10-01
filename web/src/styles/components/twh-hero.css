@@ -1,0 +1,252 @@
+/* ============================================================
+   HERO VIDEO SECTION
+   Component: sections/HeroVideo.astro   Prefix: twh-hero
+   ============================================================ */
+
+.twh-hero {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding-bottom: 6rem;
+}
+
+/* ── Background ──────────────────────────────────────────── */
+
+.twh-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.twh-hero__video,
+.twh-hero__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Gradient placeholder when no video/image */
+.twh-hero__gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 110%, rgba(215, 20, 26, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% -10%, rgba(27, 63, 148, 0.12) 0%, transparent 60%),
+    var(--color-twh-black);
+}
+
+/* Dark vignette over the video/image */
+.twh-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(10,10,11,0.95) 0%, rgba(10,10,11,0.4) 50%, rgba(10,10,11,0.2) 100%),
+    linear-gradient(to right, rgba(10,10,11,0.5) 0%, transparent 60%);
+}
+
+/* ── Decorative slash marks ──────────────────────────────── */
+
+.twh-hero__slashes {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.twh-hero__slash {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: skewX(-35deg);
+  transform-origin: center bottom;
+}
+
+.twh-hero__slash--1 {
+  right: 22%;
+  background: linear-gradient(to bottom, transparent, rgba(215, 20, 26, 0.25) 50%, transparent);
+  opacity: 0;
+  animation: twh-slash-in 1.2s var(--ease-snappy) 0.8s forwards;
+}
+
+.twh-hero__slash--2 {
+  right: 18%;
+  background: linear-gradient(to bottom, transparent, rgba(215, 20, 26, 0.15) 50%, transparent);
+  opacity: 0;
+  animation: twh-slash-in 1.2s var(--ease-snappy) 1s forwards;
+}
+
+.twh-hero__slash--3 {
+  right: 14%;
+  background: linear-gradient(to bottom, transparent, rgba(215, 20, 26, 0.08) 50%, transparent);
+  opacity: 0;
+  animation: twh-slash-in 1.2s var(--ease-snappy) 1.2s forwards;
+}
+
+@keyframes twh-slash-in {
+  from { opacity: 0; transform: skewX(-35deg) scaleY(0.3); }
+  to   { opacity: 1; transform: skewX(-35deg) scaleY(1); }
+}
+
+/* ── Content ─────────────────────────────────────────────── */
+
+.twh-hero__content {
+  position: relative;
+  z-index: 2;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 4rem;
+  width: 100%;
+}
+
+/* Location badge */
+.twh-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-400);
+  margin-bottom: 1.5rem;
+  opacity: 0; /* animated in by GSAP */
+}
+
+.twh-hero__badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-twh-yellow);
+  flex-shrink: 0;
+  animation: twh-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes twh-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* Main headline */
+.twh-hero__headline {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 10vw, 9rem);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--color-twh-white);
+  margin: 0 0 2rem;
+  max-width: 14ch;
+  overflow: hidden;
+  opacity: 0; /* animated in by GSAP */
+}
+
+.twh-hero__highlight {
+  color: var(--color-twh-yellow);
+  display: inline-block;
+}
+
+/* Sub text */
+.twh-hero__sub {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  color: var(--color-twh-grey-400);
+  max-width: 44ch;
+  line-height: 1.6;
+  margin: 0 0 2.5rem;
+  opacity: 0; /* animated in by GSAP */
+}
+
+/* CTA row */
+.twh-hero__ctas {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.twh-hero__cta {
+  opacity: 0; /* animated in by GSAP */
+}
+
+/* ── Scroll cue ──────────────────────────────────────────── */
+
+.twh-hero__scroll {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+  opacity: 0; /* animated in by GSAP */
+}
+
+.twh-hero__scroll-line {
+  display: block;
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, var(--color-twh-grey-600));
+  animation: twh-scroll-line 2s ease-in-out infinite;
+}
+
+@keyframes twh-scroll-line {
+  0%   { transform: scaleY(0); transform-origin: top; }
+  50%  { transform: scaleY(1); transform-origin: top; }
+  51%  { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+.twh-hero__scroll-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-600);
+  font-family: var(--font-body);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .twh-hero__content { padding: 0 2rem; }
+}
+
+@media (max-width: 767px) {
+  .twh-hero {
+    padding-bottom: 7rem; /* account for mobile pill */
+  }
+
+  .twh-hero__content { padding: 0 1.5rem; }
+
+  .twh-hero__slash--2,
+  .twh-hero__slash--3 { display: none; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-hero__slash,
+  .twh-hero__scroll-line,
+  .twh-hero__badge-dot {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .twh-hero__badge,
+  .twh-hero__headline,
+  .twh-hero__sub,
+  .twh-hero__cta,
+  .twh-hero__scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -1,12 +1,48 @@
 {
   "collectionName": "components_sections_location_blocks",
-  "info": { "displayName": "Location Block", "icon": "pinMap" },
+  "info": {
+    "displayName": "Location Block",
+    "icon": "pinMap"
+  },
   "options": {},
   "attributes": {
-    "heading": { "type": "string" },
-    "mapEmbedUrl": { "type": "string" },
-    "mapImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "visible": { "type": "boolean", "default": true },
-    "anchorId": { "type": "string" }
+    "heading": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Column Heading",
+          "description": "Title above this group of footer links."
+        }
+      }
+    },
+    "mapEmbedUrl": {
+      "type": "string"
+    },
+    "mapImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Visible on Page?",
+          "description": "Untick to hide this section without deleting it."
+        }
+      }
+    },
+    "anchorId": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Section Anchor ID",
+          "description": "Optional HTML anchor for deep-linking, e.g. \"about\". Used in URLs like /page#about."
+        }
+      }
+    }
   }
 }

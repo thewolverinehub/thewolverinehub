@@ -1,17 +1,81 @@
 {
   "kind": "singleType",
   "collectionName": "headers",
-  "info": { "singularName": "header", "pluralName": "headers", "displayName": "Header" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "header",
+    "pluralName": "headers",
+    "displayName": "Header",
+    "description": "Navigation menu links, announcement bar, and top-bar call-to-action button."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "menuItems": { "type": "component", "repeatable": true, "component": "navigation.menu-item" },
-    "primaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
-    "announcementBarEnabled": { "type": "boolean", "default": false },
-    "announcementBarText": { "type": "string" },
-    "announcementBarLink": { "type": "string" },
-    "announcementBarColour": { "type": "enumeration", "enum": ["yellow", "red", "blue"], "default": "yellow" },
-    "menuWidgetLabel": { "type": "string", "default": "Next class" },
-    "menuWidgetEnabled": { "type": "boolean", "default": true }
+    "menuItems": {
+      "type": "component",
+      "repeatable": true,
+      "component": "navigation.menu-item",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Navigation Menu Items",
+          "description": "All links shown in the main navigation. Drag to reorder."
+        }
+      }
+    },
+    "primaryCta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.cta-button",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Primary Action Button",
+          "description": "Main call-to-action button. Leave empty to hide it."
+        }
+      }
+    },
+    "announcementBarEnabled": {
+      "type": "boolean",
+      "default": false,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Show Announcement Bar?",
+          "description": "Display the strip banner above the header."
+        }
+      }
+    },
+    "announcementBarText": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Announcement Text",
+          "description": "Message shown in the announcement bar (keep short — one line)."
+        }
+      }
+    },
+    "announcementBarLink": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Announcement Link URL",
+          "description": "Optional destination URL. Leave blank for no link."
+        }
+      }
+    },
+    "announcementBarColour": {
+      "type": "enumeration",
+      "enum": [
+        "yellow",
+        "red",
+        "blue"
+      ],
+      "default": "yellow",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Announcement Bar Colour",
+          "description": "Background colour of the announcement bar."
+        }
+      }
+    }
   }
 }

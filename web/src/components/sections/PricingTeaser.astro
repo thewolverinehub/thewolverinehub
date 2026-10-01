@@ -1,0 +1,133 @@
+---
+import type { StrapiPricingTeaserSection, StrapiPricingTier, StrapiPass } from '../../lib/strapi/types';
+import { getPricingTiers, getPasses } from '../../lib/strapi/queries';
+
+interface Props {
+  section?: Partial<StrapiPricingTeaserSection>;
+}
+
+const { section } = Astro.props;
+
+const heading   = section?.heading    ?? 'Simple, Honest Pricing.';
+const subheading = section?.subheading ?? 'Pick a tier. Book your first class. No lock-ins.';
+const cta       = section?.cta        ?? { label: 'See All Plans', href: '/pricing', variant: 'primary', openInNewTab: false };
+const anchorId  = section?.anchorId   ?? 'pricing';
+
+let tiers: StrapiPricingTier[] = [];
+let passes: StrapiPass[] = [];
+try {
+  [tiers, passes] = await Promise.all([getPricingTiers(), getPasses()]);
+} catch { /* CMS offline */ }
+
+const fallbackTiers: StrapiPricingTier[] = [
+  { documentId: '1', name: 'Starter',      slug: 'starter',      tagline: 'Perfect for your first month', features: ['2 classes/week', 'Access to open gym', 'Beginner workshops'], isMostPopular: false, colour: 'blue',   sortOrder: 1 },
+  { documentId: '2', name: 'Signature',    slug: 'signature',    tagline: 'For the committed athlete',    features: ['Unlimited classes', 'Priority booking', 'Nutrition guide', 'Monthly check-in'], isMostPopular: true, colour: 'yellow', sortOrder: 2 },
+  { documentId: '3', name: 'Transformation', slug: 'transformation', tagline: 'Elite coaching + access', features: ['Everything in Signature', '1-on-1 sessions/month', 'Body composition analysis', 'Custom training plan'], isMostPopular: false, colour: 'red', sortOrder: 3 },
+];
+
+const displayTiers = tiers.length > 0 ? tiers : fallbackTiers;
+
+// Find the cheapest monthly pass for each tier
+function cheapestPrice(tierId: string): string | null {
+  const tierPasses = passes.filter((p) => p.tier?.documentId === tierId && p.isPurchasable);
+  if (tierPasses.length === 0) return null;
+  const min = Math.min(...tierPasses.map((p) => p.priceLKR));
+  return `LKR ${min.toLocaleString()}`;
+}
+
+const tierColour: Record<string, { bg: string; text: string; border: string }> = {
+  yellow: { bg: 'var(--color-twh-yellow)',    text: 'var(--color-twh-black)',  border: 'var(--color-twh-yellow)' },
+  blue:   { bg: 'var(--color-twh-blue)',      text: 'var(--color-twh-white)',  border: 'var(--color-twh-blue)' },
+  red:    { bg: 'var(--color-twh-red)',        text: 'var(--color-twh-white)',  border: 'var(--color-twh-red)' },
+  white:  { bg: 'var(--color-twh-white)',      text: 'var(--color-twh-black)',  border: 'var(--color-twh-white)' },
+};
+---
+
+<section class="twh-pricing" id={anchorId} aria-label="Pricing">
+  <div class="twh-pricing__inner">
+    <header class="twh-pricing__header">
+      <h2 class="twh-pricing__heading">{heading}</h2>
+      {subheading && <p class="twh-pricing__sub">{subheading}</p>}
+    </header>
+
+    <div class="twh-pricing__tiers">
+      {displayTiers.map((tier) => {
+        const price  = cheapestPrice(tier.documentId);
+        const colors = tierColour[tier.colour] ?? tierColour.blue;
+        return (
+          <div class={`twh-pricing__tier${tier.isMostPopular ? ' twh-pricing__tier--popular' : ''}`}>
+            {tier.isMostPopular && (
+              <div class="twh-pricing__popular-label" style={`background: ${colors.bg}; color: ${colors.text};`}>
+                Most Popular
+              </div>
+            )}
+            <div class="twh-pricing__tier-body" style={`border-color: ${tier.isMostPopular ? colors.border : 'var(--color-twh-grey-800)'};`}>
+              <div class="twh-pricing__slash-accent" aria-hidden="true" style={`color: ${colors.bg};`}>/</div>
+              <h3 class="twh-pricing__tier-name">{tier.name}</h3>
+              {tier.tagline && <p class="twh-pricing__tier-tagline">{tier.tagline}</p>}
+              {price ? (
+                <div class="twh-pricing__price">
+                  <span class="twh-pricing__price-from">from</span>
+                  <span class="twh-pricing__price-amount" style={`color: ${colors.bg};`}>{price}</span>
+                  <span class="twh-pricing__price-period">/month</span>
+                </div>
+              ) : (
+                <div class="twh-pricing__price">
+                  <a href="/pricing" class="twh-pricing__price-link" style={`color: ${colors.bg};`}>See prices →</a>
+                </div>
+              )}
+              {tier.features && tier.features.length > 0 && (
+                <ul class="twh-pricing__features" role="list">
+                  {tier.features.map((f) => (
+                    <li class="twh-pricing__feature">
+                      <span class="twh-pricing__feature-check" aria-hidden="true" style={`color: ${colors.bg};`}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <div class="twh-pricing__footer">
+      <a href={cta.href} class={`twh-btn twh-btn--${cta.variant} twh-btn--md`}>
+        {cta.label}
+      </a>
+      <p class="twh-pricing__footer-note">No lock-in contracts. Cancel anytime.</p>
+    </div>
+  </div>
+</section>
+
+<style>@import '../../styles/components/twh-pricing-teaser.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector('.twh-pricing');
+  if (section) {
+    const header = section.querySelector('.twh-pricing__header');
+    const tiers  = section.querySelectorAll('.twh-pricing__tier');
+    const footer = section.querySelector('.twh-pricing__footer');
+
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: section, start: 'top 75%' },
+      });
+
+      if (header) tl.fromTo(header, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' });
+      tl.fromTo(tiers, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out' }, '-=0.3');
+      if (footer) tl.fromTo(footer, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' }, '-=0.2');
+    });
+
+    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+      [header, ...Array.from(tiers), footer].forEach(el => {
+        if (el) (el as HTMLElement).style.opacity = '1';
+      });
+    });
+  }
+</script>

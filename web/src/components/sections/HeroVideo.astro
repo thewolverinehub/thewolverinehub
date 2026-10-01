@@ -1,0 +1,184 @@
+---
+import type { StrapiHeroSection } from '../../lib/strapi/types';
+
+interface Props {
+  section?: Partial<StrapiHeroSection>;
+}
+
+const { section } = Astro.props;
+
+const headline     = section?.headline     ?? 'Where Iron Meets Instinct.';
+const subheadline  = section?.subheadline  ?? "Sri Lanka's most demanding training ground. Classes, coaching and programs built for those who mean it.";
+const videoUrl     = section?.video?.url;
+const posterUrl    = section?.poster?.url;
+const primaryCta   = section?.primaryCta   ?? { label: 'Start Training', href: '/free-trial',  variant: 'primary', openInNewTab: false };
+const secondaryCta = section?.secondaryCta ?? { label: 'Explore Classes', href: '/classes', variant: 'ghost',   openInNewTab: false };
+const anchorId     = section?.anchorId     ?? 'hero';
+
+// Split headline so the last word gets the yellow accent colour
+const words    = headline.replace(/\.$/, '').split(' ');
+const lastWord = words.pop() ?? '';
+const rest     = words.join(' ');
+---
+
+<section class="twh-hero" id={anchorId} aria-label="Hero">
+
+  <!-- Background: video › poster › CSS gradient placeholder -->
+  <div class="twh-hero__bg" aria-hidden="true">
+    {videoUrl ? (
+      <video
+        class="twh-hero__video"
+        src={videoUrl}
+        poster={posterUrl}
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="none"
+      />
+    ) : posterUrl ? (
+      <img class="twh-hero__poster" src={posterUrl} alt="" />
+    ) : (
+      <div class="twh-hero__gradient"></div>
+    )}
+    <div class="twh-hero__overlay"></div>
+  </div>
+
+  <!-- Brand slash marks -->
+  <div class="twh-hero__slashes" aria-hidden="true">
+    <span class="twh-hero__slash twh-hero__slash--1"></span>
+    <span class="twh-hero__slash twh-hero__slash--2"></span>
+    <span class="twh-hero__slash twh-hero__slash--3"></span>
+  </div>
+
+  <!-- Content -->
+  <div class="twh-hero__content">
+
+    <span class="twh-hero__badge">
+      <span class="twh-hero__badge-dot" aria-hidden="true"></span>
+      Colombo, Sri Lanka
+    </span>
+
+    <h1 class="twh-hero__headline">
+      {rest} <span class="twh-hero__highlight">{lastWord}.</span>
+    </h1>
+
+    {subheadline && <p class="twh-hero__sub">{subheadline}</p>}
+
+    <div class="twh-hero__ctas">
+      <a
+        href={primaryCta.href}
+        class="twh-btn twh-btn--primary twh-btn--lg twh-hero__cta"
+        target={primaryCta.openInNewTab ? '_blank' : undefined}
+        rel={primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+      >
+        {primaryCta.label}
+      </a>
+      <a
+        href={secondaryCta.href}
+        class="twh-btn twh-btn--ghost twh-btn--lg twh-hero__cta"
+        target={secondaryCta.openInNewTab ? '_blank' : undefined}
+        rel={secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+      >
+        {secondaryCta.label}
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Scroll cue -->
+  <div class="twh-hero__scroll" aria-hidden="true">
+    <span class="twh-hero__scroll-line"></span>
+    <span class="twh-hero__scroll-label">Scroll</span>
+  </div>
+
+</section>
+
+<style>@import '../../styles/components/twh-hero.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { SplitText } from 'gsap/SplitText';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(SplitText, ScrollTrigger);
+
+  // Respect prefers-reduced-motion
+  const mm = gsap.matchMedia();
+
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
+    const hero = document.querySelector<HTMLElement>('.twh-hero');
+    if (!hero) return;
+
+    const badge    = hero.querySelector('.twh-hero__badge');
+    const headline = hero.querySelector('.twh-hero__headline');
+    const sub      = hero.querySelector('.twh-hero__sub');
+    const ctas     = hero.querySelectorAll('.twh-hero__cta');
+    const scroll   = hero.querySelector('.twh-hero__scroll');
+
+    // Split headline into individual characters
+    const split = headline
+      ? new SplitText(headline, { type: 'chars,words', charsClass: 'twh-char' })
+      : null;
+
+    const tl = gsap.timeline({ delay: 0.15 });
+
+    if (badge) {
+      tl.fromTo(badge,
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }
+      );
+    }
+
+    if (split?.chars?.length) {
+      tl.fromTo(split.chars,
+        { y: '110%', opacity: 0 },
+        { y: '0%', opacity: 1, duration: 0.9, stagger: 0.018, ease: 'power4.out' },
+        '-=0.4'
+      );
+    } else if (headline) {
+      tl.fromTo(headline,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: 'power4.out' },
+        '-=0.4'
+      );
+    }
+
+    if (sub) {
+      tl.fromTo(sub,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' },
+        '-=0.5'
+      );
+    }
+
+    if (ctas.length) {
+      tl.fromTo(ctas,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out' },
+        '-=0.5'
+      );
+    }
+
+    if (scroll) {
+      tl.fromTo(scroll,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: 'power2.out' },
+        '-=0.2'
+      );
+    }
+  });
+
+  // Scroll-hide the scroll cue when user scrolls
+  const scrollCue = document.querySelector('.twh-hero__scroll');
+  if (scrollCue) {
+    ScrollTrigger.create({
+      trigger: '.twh-hero',
+      start: 'top top',
+      end: '20% top',
+      onUpdate: (self) => {
+        (scrollCue as HTMLElement).style.opacity = String(1 - self.progress * 3);
+      },
+    });
+  }
+</script>

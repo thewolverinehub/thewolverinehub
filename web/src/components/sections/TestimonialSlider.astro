@@ -1,0 +1,170 @@
+---
+import type { StrapiTestimonialSliderSection, StrapiTestimonial } from '../../lib/strapi/types';
+import { getTestimonials } from '../../lib/strapi/queries';
+
+interface Props {
+  section?: Partial<StrapiTestimonialSliderSection>;
+}
+
+const { section } = Astro.props;
+
+const heading  = section?.heading  ?? 'The Members Speak.';
+const maxItems = section?.maxItems ?? 6;
+const anchorId = section?.anchorId ?? 'testimonials';
+
+let testimonials: StrapiTestimonial[] = [];
+try { testimonials = await getTestimonials(); } catch { /* CMS offline */ }
+
+const fallbackTestimonials: StrapiTestimonial[] = [
+  { documentId: '1', quote: 'The Wolverine Hub changed how I think about training. Not just a gym — it\'s a system.', authorName: 'Kasun M.', authorTitle: 'Member since 2022', rating: 5, isFeatured: true },
+  { documentId: '2', quote: 'I\'ve trained in Bangkok and KL. This place competes. The boxing programme here is elite.', authorName: 'Rashmi P.', authorTitle: 'Competitive Fighter', rating: 5, isFeatured: true },
+  { documentId: '3', quote: 'Six months in, 12kg down, and I feel genuinely unstoppable. The coaches never let you settle.', authorName: 'Dilnoza A.', authorTitle: 'Transformation Member', rating: 5, isFeatured: false },
+  { documentId: '4', quote: 'The BJJ programme is world-class. Coach Chamara has competed at the highest level and it shows.', authorName: 'Amila R.', authorTitle: 'BJJ Blue Belt', rating: 5, isFeatured: true },
+];
+
+const all = testimonials.length > 0 ? testimonials : fallbackTestimonials;
+const display = all.slice(0, maxItems);
+---
+
+<section class="twh-testi" id={anchorId} aria-label="Member testimonials">
+  <div class="twh-testi__inner">
+    <header class="twh-testi__header">
+      <span class="twh-testi__eyebrow">What members say</span>
+      <h2 class="twh-testi__heading">{heading}</h2>
+    </header>
+
+    <div class="twh-testi__slider" aria-live="polite">
+      <div class="twh-testi__track" id="testi-track">
+        {display.map((t, i) => (
+          <article
+            class={`twh-testi__slide${i === 0 ? ' is-active' : ''}`}
+            aria-hidden={i !== 0}
+            data-index={i}
+          >
+            <blockquote class="twh-testi__quote">
+              <span class="twh-testi__quotemark" aria-hidden="true">"</span>
+              <p>{t.quote}</p>
+            </blockquote>
+            <footer class="twh-testi__author">
+              {t.photo ? (
+                <img class="twh-testi__photo" src={t.photo.url} alt={t.photo.alternativeText ?? t.authorName} loading="lazy" />
+              ) : (
+                <div class="twh-testi__photo-placeholder" aria-hidden="true">
+                  {t.authorName.charAt(0)}
+                </div>
+              )}
+              <div class="twh-testi__author-info">
+                <span class="twh-testi__author-name">{t.authorName}</span>
+                {t.authorTitle && <span class="twh-testi__author-title">{t.authorTitle}</span>}
+              </div>
+              <div class="twh-testi__stars" aria-label={`${t.rating} out of 5 stars`}>
+                {Array.from({ length: 5 }, (_, s) => (
+                  <span class={`twh-testi__star${s < t.rating ? ' twh-testi__star--filled' : ''}`} aria-hidden="true">★</span>
+                ))}
+              </div>
+            </footer>
+          </article>
+        ))}
+      </div>
+
+      {display.length > 1 && (
+        <div class="twh-testi__controls">
+          <button class="twh-testi__btn twh-testi__btn--prev" id="testi-prev" aria-label="Previous testimonial" type="button">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M13 4L7 10L13 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="twh-testi__dots" role="tablist" aria-label="Testimonial navigation">
+            {display.map((_, i) => (
+              <button
+                class={`twh-testi__dot${i === 0 ? ' is-active' : ''}`}
+                data-index={i}
+                role="tab"
+                aria-selected={i === 0}
+                aria-label={`Testimonial ${i + 1}`}
+                type="button"
+              />
+            ))}
+          </div>
+          <button class="twh-testi__btn twh-testi__btn--next" id="testi-next" aria-label="Next testimonial" type="button">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>@import '../../styles/components/twh-testimonial-slider.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  (function initTestimonials() {
+    const section = document.querySelector<HTMLElement>('.twh-testi');
+    if (!section) return;
+
+    // Entrance animation
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      const inner = section.querySelector('.twh-testi__inner');
+      if (inner) {
+        gsap.fromTo(inner,
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 80%' } }
+        );
+      }
+    });
+
+    // Slider logic
+    const slides  = section.querySelectorAll<HTMLElement>('.twh-testi__slide');
+    const dots    = section.querySelectorAll<HTMLButtonElement>('.twh-testi__dot');
+    const prevBtn = section.querySelector<HTMLButtonElement>('#testi-prev');
+    const nextBtn = section.querySelector<HTMLButtonElement>('#testi-next');
+    let current   = 0;
+    let autoTimer = 0;
+
+    const goTo = (idx: number) => {
+      const from = current;
+      current = (idx + slides.length) % slides.length;
+      slides[from].classList.remove('is-active');
+      slides[from].setAttribute('aria-hidden', 'true');
+      slides[current].classList.add('is-active');
+      slides[current].setAttribute('aria-hidden', 'false');
+      dots.forEach((d, i) => {
+        d.classList.toggle('is-active', i === current);
+        d.setAttribute('aria-selected', String(i === current));
+      });
+    };
+
+    const startAuto = () => {
+      autoTimer = window.setInterval(() => goTo(current + 1), 5000);
+    };
+
+    const resetAuto = () => {
+      clearInterval(autoTimer);
+      startAuto();
+    };
+
+    prevBtn?.addEventListener('click', () => { goTo(current - 1); resetAuto(); });
+    nextBtn?.addEventListener('click', () => { goTo(current + 1); resetAuto(); });
+    dots.forEach((d, i) => d.addEventListener('click', () => { goTo(i); resetAuto(); }));
+
+    startAuto();
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top bottom',
+      end: 'bottom top',
+      onEnter: startAuto,
+      onLeave: () => clearInterval(autoTimer),
+      onEnterBack: startAuto,
+      onLeaveBack: () => clearInterval(autoTimer),
+    });
+  })();
+</script>

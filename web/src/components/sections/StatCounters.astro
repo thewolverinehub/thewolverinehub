@@ -1,0 +1,64 @@
+---
+import type { StrapiStatCountersSection } from '../../lib/strapi/types';
+
+interface Props {
+  section?: Partial<StrapiStatCountersSection>;
+}
+
+const { section } = Astro.props;
+
+const anchorId = section?.anchorId ?? 'stats';
+
+const fallbackStats = [
+  { number: '24+', label: 'Disciplines' },
+  { number: '1,200+', label: 'Active Members' },
+  { number: '18', label: 'Expert Coaches' },
+  { number: '5', label: 'Years Strong' },
+];
+
+const stats = (section?.stats && section.stats.length > 0) ? section.stats : fallbackStats;
+---
+
+<section class="twh-stats" id={anchorId} aria-label="Key statistics">
+  <div class="twh-stats__inner">
+    {stats.map((stat, i) => (
+      <div class="twh-stats__item" data-index={i}>
+        <span class="twh-stats__slash" aria-hidden="true">/</span>
+        <div class="twh-stats__content">
+          <span class="twh-stats__number" data-count={stat.number}>{stat.number}</span>
+          <span class="twh-stats__label">{stat.label}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>@import '../../styles/components/twh-stat-counters.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector('.twh-stats');
+  if (section) {
+    const items = section.querySelectorAll<HTMLElement>('.twh-stats__item');
+
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo(items,
+        { y: 30, opacity: 0 },
+        {
+          y: 0, opacity: 1,
+          duration: 0.7,
+          stagger: 0.1,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: section, start: 'top 80%' },
+        }
+      );
+    });
+
+    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+      items.forEach(el => { (el as HTMLElement).style.opacity = '1'; });
+    });
+  }
+</script>

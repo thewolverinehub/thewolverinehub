@@ -31,8 +31,8 @@ export function initMenu() {
     trigger!.setAttribute('aria-expanded', 'true');
     mobileTrigger?.setAttribute('aria-expanded', 'true');
     backdrop?.classList.add('is-visible');
+    document.body.classList.add('menu-is-open');
     document.body.style.overflow = 'hidden';
-    // Move focus into menu after transition
     setTimeout(() => {
       const firstLink = menu!.querySelector<HTMLElement>('a, button');
       firstLink?.focus();
@@ -46,6 +46,7 @@ export function initMenu() {
     trigger!.setAttribute('aria-expanded', 'false');
     mobileTrigger?.setAttribute('aria-expanded', 'false');
     backdrop?.classList.remove('is-visible');
+    document.body.classList.remove('menu-is-open');
     document.body.style.overflow = '';
     trigger!.focus();
   }
@@ -122,30 +123,39 @@ export function initMenu() {
     window.addEventListener('scroll', handleScroll, { passive: true });
   }
 
-  // ── Slash Menu: preview image on hover ─────────────────────
-  const previewContainer = document.getElementById('menu-preview');
+  // ── Slash Menu: preview on hover ───────────────────────────
+  const previewContainer = document.getElementById('sm-preview-media');
   if (previewContainer) {
-    menu.querySelectorAll<HTMLElement>('[data-preview-image], [data-preview-video]').forEach((link) => {
+    const fill = 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0;';
+
+    menu.querySelectorAll<HTMLElement>('[data-preview-image],[data-preview-video],[data-preview-accent]').forEach((link) => {
       link.addEventListener('mouseenter', () => {
-        const imgUrl = link.dataset.previewImage;
-        const vidUrl = link.dataset.previewVideo;
+        const imgUrl   = link.dataset.previewImage;
+        const vidUrl   = link.dataset.previewVideo;
+        const accent   = link.dataset.previewAccent ?? '#D7141A';
 
         previewContainer.innerHTML = '';
+
         if (vidUrl) {
           const vid = document.createElement('video');
-          vid.src = vidUrl;
-          vid.muted = true;
-          vid.loop = true;
-          vid.playsInline = true;
-          vid.autoplay = true;
-          vid.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0;';
+          vid.src = vidUrl; vid.muted = true; vid.loop = true;
+          vid.playsInline = true; vid.autoplay = true;
+          vid.style.cssText = fill;
           previewContainer.appendChild(vid);
         } else if (imgUrl) {
           const img = document.createElement('img');
-          img.src = imgUrl;
-          img.alt = '';
-          img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0;';
+          img.src = imgUrl; img.alt = '';
+          img.style.cssText = fill;
           previewContainer.appendChild(img);
+        } else {
+          // Colored gradient placeholder until real media is added via Strapi
+          const ph = document.createElement('div');
+          ph.style.cssText = `${fill}background:linear-gradient(155deg,${accent}55 0%,${accent}22 45%,#0A0A0B 100%);`;
+          // Diagonal slash overlay
+          const slash = document.createElement('div');
+          slash.style.cssText = `position:absolute;inset:0;background:repeating-linear-gradient(${accent}15 0,transparent 1px,transparent 40px);`;
+          ph.appendChild(slash);
+          previewContainer.appendChild(ph);
         }
       });
     });

@@ -1,14 +1,75 @@
 {
   "collectionName": "components_sections_cta_banners",
-  "info": { "displayName": "CTA Banner", "icon": "megaphone" },
+  "info": {
+    "displayName": "CTA Banner",
+    "icon": "megaphone"
+  },
   "options": {},
   "attributes": {
-    "heading": { "type": "string", "required": true },
-    "subheading": { "type": "text" },
-    "primaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
-    "secondaryCta": { "type": "component", "repeatable": false, "component": "shared.cta-button" },
-    "backgroundToken": { "type": "enumeration", "enum": ["black", "ink", "blue", "red", "yellow"], "default": "blue" },
-    "visible": { "type": "boolean", "default": true },
-    "anchorId": { "type": "string" }
+    "heading": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Column Heading",
+          "description": "Title above this group of footer links."
+        }
+      }
+    },
+    "subheading": {
+      "type": "text"
+    },
+    "primaryCta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.cta-button",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Primary Action Button",
+          "description": "Main call-to-action button. Leave empty to hide it."
+        }
+      }
+    },
+    "secondaryCta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.cta-button",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Secondary Action Button",
+          "description": "Supporting action link or ghost button. Leave empty to hide it."
+        }
+      }
+    },
+    "backgroundToken": {
+      "type": "enumeration",
+      "enum": [
+        "black",
+        "ink",
+        "blue",
+        "red",
+        "yellow"
+      ],
+      "default": "blue"
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Visible on Page?",
+          "description": "Untick to hide this section without deleting it."
+        }
+      }
+    },
+    "anchorId": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Section Anchor ID",
+          "description": "Optional HTML anchor for deep-linking, e.g. \"about\". Used in URLs like /page#about."
+        }
+      }
+    }
   }
 }

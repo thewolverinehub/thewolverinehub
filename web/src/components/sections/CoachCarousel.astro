@@ -1,0 +1,94 @@
+---
+import type { StrapiCoachCarouselSection, StrapiCoach } from '../../lib/strapi/types';
+import { getCoaches } from '../../lib/strapi/queries';
+
+interface Props {
+  section?: Partial<StrapiCoachCarouselSection>;
+}
+
+const { section } = Astro.props;
+
+const heading  = section?.heading ?? 'Train With the Best.';
+const cta      = section?.cta     ?? { label: 'All Coaches', href: '/coaches', variant: 'ghost', openInNewTab: false };
+const anchorId = section?.anchorId ?? 'coaches';
+
+let coaches: StrapiCoach[] = [];
+try { coaches = await getCoaches(); } catch { /* CMS offline */ }
+
+const fallbackCoaches: StrapiCoach[] = [
+  { documentId: '1', name: 'Ashan Perera',  slug: 'ashan-perera',  role: 'Head Boxing Coach',  shortBio: 'National champion. 12 years ringside.',     isHeadCoach: true,  sortOrder: 1 },
+  { documentId: '2', name: 'Nadun Silva',   slug: 'nadun-silva',   role: 'Muay Thai & MMA',    shortBio: 'IFMA certified. Fights out of Bangkok.',    isHeadCoach: false, sortOrder: 2 },
+  { documentId: '3', name: 'Chamara Jayasinghe', slug: 'chamara-jayasinghe', role: 'BJJ Black Belt', shortBio: 'IBJJF competitor since 2015.',      isHeadCoach: false, sortOrder: 3 },
+  { documentId: '4', name: 'Kasuni Rathnayake', slug: 'kasuni-rathnayake', role: 'Yoga & Recovery',  shortBio: 'RYT-500. Mobility specialist.',        isHeadCoach: false, sortOrder: 4 },
+  { documentId: '5', name: 'Tharaka Fernando', slug: 'tharaka-fernando', role: 'Strength & Conditioning', shortBio: 'NSCA certified. Former national swimmer.', isHeadCoach: false, sortOrder: 5 },
+];
+
+const displayCoaches = coaches.length > 0 ? coaches : fallbackCoaches;
+---
+
+<section class="twh-coaches" id={anchorId} aria-label="Our coaches">
+  <div class="twh-coaches__header">
+    <h2 class="twh-coaches__heading">{heading}</h2>
+    <a
+      href={cta.href}
+      class={`twh-btn twh-btn--${cta.variant} twh-btn--sm`}
+      target={cta.openInNewTab ? '_blank' : undefined}
+      rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
+    >
+      {cta.label}
+    </a>
+  </div>
+
+  <div class="twh-coaches__track-wrap">
+    <ul class="twh-coaches__track" role="list">
+      {displayCoaches.map((coach) => (
+        <li class="twh-coaches__card">
+          <a href={`/coaches/${coach.slug}`} class="twh-coaches__card-link">
+            <div class="twh-coaches__photo">
+              {coach.photo ? (
+                <img src={coach.photo.url} alt={coach.photo.alternativeText ?? coach.name} loading="lazy" />
+              ) : (
+                <div class="twh-coaches__photo-placeholder" aria-hidden="true">
+                  <span>/</span>
+                </div>
+              )}
+              {coach.isHeadCoach && (
+                <span class="twh-coaches__head-badge">Head Coach</span>
+              )}
+            </div>
+            <div class="twh-coaches__info">
+              <h3 class="twh-coaches__name">{coach.name}</h3>
+              {coach.role && <p class="twh-coaches__role">{coach.role}</p>}
+              {coach.shortBio && <p class="twh-coaches__bio">{coach.shortBio}</p>}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>@import '../../styles/components/twh-coach-carousel.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector('.twh-coaches');
+  if (section) {
+    const cards = section.querySelectorAll('.twh-coaches__card');
+
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo(cards,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power3.out',
+          scrollTrigger: { trigger: section, start: 'top 75%' } }
+      );
+    });
+
+    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+      cards.forEach(el => { (el as HTMLElement).style.opacity = '1'; });
+    });
+  }
+</script>

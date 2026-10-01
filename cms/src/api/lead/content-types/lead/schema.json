@@ -1,17 +1,68 @@
 {
   "kind": "collectionType",
   "collectionName": "leads",
-  "info": { "singularName": "lead", "pluralName": "leads", "displayName": "Lead" },
-  "options": { "draftAndPublish": false },
+  "info": {
+    "singularName": "lead",
+    "pluralName": "leads",
+    "displayName": "Lead",
+    "description": "An enquiry or lead captured from a site contact form."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
   "pluginOptions": {},
   "attributes": {
-    "formKey": { "type": "string", "required": true },
-    "name": { "type": "string", "required": true },
-    "email": { "type": "email", "required": true },
-    "phone": { "type": "string" },
-    "message": { "type": "text" },
-    "fields": { "type": "json" },
-    "ipHash": { "type": "string" },
-    "status": { "type": "enumeration", "enum": ["new", "contacted", "converted", "closed"], "default": "new" }
+    "formKey": {
+      "type": "string",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Name",
+          "description": "Full display name."
+        }
+      }
+    },
+    "email": {
+      "type": "email",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Contact Email",
+          "description": "Main contact email address displayed on the site."
+        }
+      }
+    },
+    "phone": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Phone Number",
+          "description": "Contact phone number including country code, e.g. +94 77 123 4567."
+        }
+      }
+    },
+    "message": {
+      "type": "text"
+    },
+    "fields": {
+      "type": "json"
+    },
+    "ipHash": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "new",
+        "contacted",
+        "converted",
+        "closed"
+      ],
+      "default": "new"
+    }
   }
 }
