@@ -167,6 +167,31 @@ const rest     = words.join(' ');
         '-=0.2'
       );
     }
+
+    // ── Scroll parallax ───────────────────────────────────────
+    const heroBg      = hero.querySelector<HTMLElement>('.twh-hero__bg');
+    const heroContent = hero.querySelector<HTMLElement>('.twh-hero__content');
+    const heroSlashes = hero.querySelectorAll<HTMLElement>('.twh-hero__slash');
+
+    const scrubBase = { trigger: hero, start: 'top top', end: 'bottom top', scrub: 1 };
+
+    if (heroBg) {
+      gsap.to(heroBg, { y: 180, ease: 'none', scrollTrigger: scrubBase });
+    }
+
+    if (heroContent) {
+      gsap.to(heroContent, {
+        y: -60, ease: 'none',
+        scrollTrigger: { ...scrubBase, scrub: 1.5 },
+      });
+    }
+
+    heroSlashes.forEach((slash, i) => {
+      gsap.to(slash, {
+        y: -(35 + i * 25), ease: 'none',
+        scrollTrigger: { ...scrubBase, scrub: 1 + i * 0.4 },
+      });
+    });
   });
 
   // Scroll-hide the scroll cue when user scrolls

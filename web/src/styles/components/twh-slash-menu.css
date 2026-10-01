@@ -331,6 +331,25 @@
 
 .twh-sm__preview-media:not(:empty) { opacity: 1; }
 
+/* Giant index number — GSAP controls opacity + content */
+.twh-sm__preview-num {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: clamp(7rem, 18vw, 13rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  opacity: 0;
+  user-select: none;
+}
+
 /* ── 9. Bottom bar ───────────────────────────────────────── */
 
 .twh-sm__bar {

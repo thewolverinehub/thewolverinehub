@@ -1,0 +1,28 @@
+/* ============================================================
+   PAGE TRANSITION CURTAIN
+   Component: injected by page-transition.ts   Prefix: twh-pt
+   ============================================================ */
+
+.twh-pt {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.twh-pt.is-active {
+  pointer-events: all;
+}
+
+.twh-pt__panel {
+  position: absolute;
+  inset: 0;
+}
+
+.twh-pt__panel--1 { background: var(--color-twh-red); }
+.twh-pt__panel--2 { background: var(--color-twh-blue-deep); }
+.twh-pt__panel--3 { background: var(--color-twh-black); }
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-pt__panel { transition: none !important; }
+}

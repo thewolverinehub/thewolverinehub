@@ -38,7 +38,11 @@ try {
   <Footer {footer} {global} />
 </BaseLayout>
 
+<style>@import '../styles/components/twh-page-transition.css';</style>
+
 <script>
   import { initMenu } from '../scripts/interactions/menu';
+  import { initPageTransition } from '../scripts/transitions/page-transition';
   initMenu();
+  initPageTransition();
 </script>

@@ -1,8 +1,4 @@
-/**
- * Menu controller — handles open/close, focus trap, keyboard nav,
- * scroll progress, and header hide/show on scroll.
- * Works with all three menu variants (SlashMenu, Reveal, Slide).
- */
+import gsap from 'gsap';
 
 export function initMenu() {
   const trigger = document.getElementById('menu-trigger') as HTMLButtonElement | null;
@@ -121,6 +117,32 @@ export function initMenu() {
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+  }
+
+  // ── Slash Menu: preview number on hover ───────────────────
+  const previewNum = document.getElementById('sm-preview-num') as HTMLElement | null;
+  if (previewNum) {
+    let currentNum = '';
+    menu.querySelectorAll<HTMLElement>('.twh-sm__link').forEach((link) => {
+      link.addEventListener('mouseenter', () => {
+        const idx = link.querySelector('.twh-sm__idx')?.textContent?.trim() ?? '';
+        if (idx && idx !== currentNum) {
+          currentNum = idx;
+          // Cross-fade: out → update → in
+          gsap.to(previewNum, {
+            opacity: 0, duration: 0.12, ease: 'power2.in',
+            onComplete: () => {
+              previewNum.textContent = idx;
+              gsap.to(previewNum, { opacity: 1, duration: 0.25, ease: 'power2.out' });
+            },
+          });
+        }
+      });
+    });
+    menu.querySelector('.twh-sm__nav')?.addEventListener('mouseleave', () => {
+      currentNum = '';
+      gsap.to(previewNum, { opacity: 0, duration: 0.2, ease: 'power2.in' });
+    });
   }
 
   // ── Slash Menu: preview on hover ───────────────────────────
