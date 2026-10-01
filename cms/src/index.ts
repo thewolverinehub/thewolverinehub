@@ -102,6 +102,12 @@ async function setPublicPermissions(strapi: Core.Strapi) {
   const roleWithPerms: any = await roleService.findOne(publicRole.id);
   const permissions: Record<string, any> = roleWithPerms.permissions ?? {};
 
+  // Debug: log what top-level keys the permission tree contains
+  const treeKeys = Object.keys(permissions);
+  strapi.log.info(`[bootstrap] Permission tree top-level keys (${treeKeys.length}): ${treeKeys.slice(0, 10).join(', ')}`);
+  const apiKeys = treeKeys.filter(k => k.startsWith('api::'));
+  strapi.log.info(`[bootstrap] API keys in tree: ${apiKeys.length > 0 ? apiKeys.join(', ') : '(none)'}`);
+
   // Helper: parse 'api::global.global' → apiKey='api::global', controller='global'
   const enable = (uid: string, actions: string[]) => {
     const colonIdx = uid.indexOf('::');
