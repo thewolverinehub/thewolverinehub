@@ -1,0 +1,104 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getPostBySlug, getGlobal } from '../../lib/strapi/queries';
+import { blocksToHtml } from '../../lib/strapi/blocks';
+import { articleSchema, breadcrumbSchema } from '../../lib/seo/json-ld';
+
+const { slug } = Astro.params;
+
+let global, post;
+try {
+  [global, post] = await Promise.all([getGlobal(), getPostBySlug(slug!)]);
+} catch { /* CMS offline */ }
+
+if (!post) return Astro.redirect('/blog', 307);
+
+const contentHtml = blocksToHtml(post.content);
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+const jsonLd = [
+  articleSchema(post, post.author?.name),
+  breadcrumbSchema([
+    { name: 'Home',    url: '/' },
+    { name: 'Journal', url: '/blog' },
+    { name: post.title, url: `/blog/${post.slug}` },
+  ]),
+];
+
+const seo = post.seo ?? {
+  metaTitle: `${post.title} — The Wolverine Hub`,
+  metaDescription: post.summary ?? post.title,
+};
+---
+
+<PageLayout {seo} {global} {jsonLd}>
+  <article class="twh-article">
+    <div class="twh-article__inner">
+
+      <!-- Back link -->
+      <a href="/blog" class="twh-article__back">← Journal</a>
+
+      <!-- Cover image -->
+      {post.coverImage && (
+        <div class="twh-article__cover">
+          <img
+            src={post.coverImage.url}
+            alt={post.coverImage.alternativeText ?? post.title}
+          />
+        </div>
+      )}
+
+      <!-- Category + Title -->
+      {post.category && (
+        <p style="font-size:0.7rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:var(--color-twh-yellow);margin:0 0 0.75rem;">
+          {post.category.name}
+        </p>
+      )}
+
+      <h1 style="font-family:var(--font-display);font-size:var(--text-4xl);text-transform:uppercase;letter-spacing:0.02em;line-height:0.95;color:var(--color-twh-white);margin:0 0 2rem;">
+        {post.title}
+      </h1>
+
+      <!-- Byline -->
+      <div class="twh-article__byline">
+        {post.author && (
+          <div class="twh-article__author">
+            {post.author.photo && (
+              <img
+                src={post.author.photo.url}
+                alt={post.author.photo.alternativeText ?? post.author.name}
+                class="twh-article__author-photo"
+              />
+            )}
+            <span class="twh-article__author-name">{post.author.name}</span>
+          </div>
+        )}
+        <div class="twh-article__meta">
+          <span>{formatDate(post.publishedAt)}</span>
+          {post.readingTimeMinutes && <span>{post.readingTimeMinutes} min read</span>}
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="twh-article__prose">
+        {contentHtml
+          ? <Fragment set:html={contentHtml} />
+          : <p style="color:rgba(255,255,255,0.35);">Article content coming soon.</p>
+        }
+      </div>
+
+      <!-- Tags -->
+      {post.tags && post.tags.length > 0 && (
+        <div class="twh-article__tags" aria-label="Post tags">
+          {post.tags.map(tag => (
+            <span class="twh-article__tag">{tag}</span>
+          ))}
+        </div>
+      )}
+
+    </div>
+  </article>
+</PageLayout>

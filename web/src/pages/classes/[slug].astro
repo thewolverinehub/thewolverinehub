@@ -1,0 +1,151 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getClassBySlug, getScheduleSlots, getGlobal } from '../../lib/strapi/queries';
+import { blocksToHtml } from '../../lib/strapi/blocks';
+
+const { slug } = Astro.params;
+
+let global, cls, slots;
+try {
+  [global, cls, slots] = await Promise.all([
+    getGlobal(),
+    getClassBySlug(slug!),
+    getScheduleSlots(),
+  ]);
+} catch { /* CMS offline */ }
+
+if (!cls) return Astro.redirect('/classes', 307);
+
+const classSlots = (slots ?? []).filter(s => s.class?.slug === slug);
+
+const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+
+function fmt(t: string) {
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
+const intensityColour: Record<string, string> = {
+  low:     'var(--color-twh-blue)',
+  medium:  'var(--color-twh-yellow)',
+  high:    'var(--color-twh-red)',
+  extreme: 'var(--color-twh-red-deep)',
+};
+
+const bodyHtml = blocksToHtml(cls.description);
+const accentColor = intensityColour[cls.intensity] ?? 'var(--color-twh-grey-600)';
+
+const seo = cls.seo ?? {
+  metaTitle: `${cls.name} — The Wolverine Hub`,
+  metaDescription: cls.tagline ?? `${cls.name} classes at The Wolverine Hub. ${cls.durationMinutes} min, ${cls.level} level.`,
+};
+---
+
+<PageLayout {seo} {global}>
+  <!-- Page hero -->
+  <div class="twh-page-hero">
+    <div class="twh-page-hero__inner">
+      <p class="twh-page-hero__eyebrow">Classes</p>
+      <h1 class="twh-page-hero__heading">{cls.name}</h1>
+      {cls.tagline && <p class="twh-page-hero__sub">{cls.tagline}</p>}
+      <div class="twh-page-hero__meta">
+        <span class="twh-badge" style={`background:${accentColor}; color:${cls.intensity === 'medium' ? 'var(--color-twh-black)' : 'var(--color-twh-white)'};`}>
+          {cls.intensity}
+        </span>
+        <span class="twh-badge twh-badge--grey">{cls.durationMinutes} min</span>
+        <span class="twh-badge twh-badge--grey">{cls.level}</span>
+        {cls.isFree && <span class="twh-badge twh-badge--yellow">Free</span>}
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail -->
+  <div class="twh-class-detail">
+    <div class="twh-class-detail__inner">
+
+      <!-- Body -->
+      <div class="twh-class-detail__body">
+        {bodyHtml ? (
+          <Fragment set:html={bodyHtml} />
+        ) : (
+          <p style="color:rgba(255,255,255,0.4);">
+            Full class description coming soon.
+          </p>
+        )}
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="twh-class-detail__sidebar">
+        <!-- Quick info -->
+        <div class="twh-class-detail__info-card">
+          <h3>Class Info</h3>
+          <div class="twh-class-detail__info-row">
+            <span class="twh-class-detail__info-label">Duration</span>
+            <span class="twh-class-detail__info-value">{cls.durationMinutes} min</span>
+          </div>
+          <div class="twh-class-detail__info-row">
+            <span class="twh-class-detail__info-label">Level</span>
+            <span class="twh-class-detail__info-value">{cls.level}</span>
+          </div>
+          <div class="twh-class-detail__info-row">
+            <span class="twh-class-detail__info-label">Intensity</span>
+            <span class="twh-class-detail__info-value" style={`color:${accentColor};`}>{cls.intensity}</span>
+          </div>
+          {cls.discipline && (
+            <div class="twh-class-detail__info-row">
+              <span class="twh-class-detail__info-label">Discipline</span>
+              <span class="twh-class-detail__info-value">{cls.discipline.name}</span>
+            </div>
+          )}
+        </div>
+
+        <!-- Schedule for this class -->
+        {classSlots.length > 0 && (
+          <div class="twh-class-detail__info-card">
+            <h3>This Week</h3>
+            {DAYS.map(day => {
+              const daySlots = classSlots.filter(s => s.weekday === day);
+              return daySlots.map(slot => (
+                <div class="twh-class-detail__info-row" style="flex-direction:column;align-items:flex-start;gap:0.25rem;">
+                  <span class="twh-class-detail__info-label" style="text-transform:capitalize;">{day}</span>
+                  <span class="twh-class-detail__info-value">
+                    {fmt(slot.startTime)} – {fmt(slot.endTime)}
+                    {slot.coach && <span style="color:rgba(255,255,255,0.4); font-weight:400;"> · {slot.coach.name}</span>}
+                  </span>
+                </div>
+              ));
+            })}
+          </div>
+        )}
+
+        <!-- CTA -->
+        <a href="/contact" class="twh-btn twh-btn--primary twh-btn--md" style="width:100%;justify-content:center;">
+          Book a Free Trial
+        </a>
+        <a href="/classes" class="twh-btn twh-btn--ghost twh-btn--sm" style="width:100%;justify-content:center;margin-top:0.5rem;">
+          ← All Classes
+        </a>
+      </aside>
+    </div>
+  </div>
+</PageLayout>
+
+<script>
+  import gsap from 'gsap';
+
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+    const hero = document.querySelector('.twh-page-hero__inner');
+    if (!hero) return;
+    const tl = gsap.timeline();
+    const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
+    const heading = hero.querySelector('.twh-page-hero__heading');
+    const sub     = hero.querySelector('.twh-page-hero__sub');
+    const meta    = hero.querySelector('.twh-page-hero__meta');
+    if (eyebrow) tl.fromTo(eyebrow, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' });
+    if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6,  ease: 'power3.out' }, '-=0.2');
+    if (sub)     tl.fromTo(sub,     { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5,  ease: 'power3.out' }, '-=0.3');
+    if (meta)    tl.fromTo(meta,    { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4,  ease: 'power3.out' }, '-=0.25');
+  });
+</script>

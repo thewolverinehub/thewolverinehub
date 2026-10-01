@@ -1,0 +1,140 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getPosts, getGlobal } from '../../lib/strapi/queries';
+import type { StrapiPost } from '../../lib/strapi/types';
+
+let global, posts: StrapiPost[] = [];
+try {
+  [global, posts] = await Promise.all([getGlobal(), getPosts(1, 13)]);
+} catch { /* CMS offline */ }
+
+const featured = posts.find(p => p.isFeatured) ?? posts[0];
+const rest     = posts.filter(p => p.documentId !== featured?.documentId);
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const seo = {
+  metaTitle: 'Journal — The Wolverine Hub',
+  metaDescription: 'Training guides, nutrition tips, fighter spotlights, and stories from inside The Wolverine Hub.',
+};
+---
+
+<PageLayout {seo} {global}>
+  <div class="twh-page-hero">
+    <div class="twh-page-hero__inner">
+      <p class="twh-page-hero__eyebrow">Journal</p>
+      <h1 class="twh-page-hero__heading">Inside<br/>The Hub.</h1>
+      <p class="twh-page-hero__sub">Training guides, fighter spotlights, nutrition, and stories from inside The Wolverine Hub.</p>
+    </div>
+  </div>
+
+  <section class="twh-blog" aria-label="Journal posts">
+    <div class="twh-blog__inner">
+
+      {posts.length === 0 ? (
+        <div class="twh-blog__empty">
+          <div class="twh-blog__empty-slash" aria-hidden="true">///</div>
+          <h2 class="twh-blog__empty-heading">Coming Soon.</h2>
+          <p class="twh-blog__empty-body">Stories, guides, and spotlights are on their way.</p>
+        </div>
+      ) : (
+        <>
+          {featured && (
+            <div class="twh-blog__featured" id="blog-featured">
+              <a href={`/blog/${featured.slug}`} class="twh-blog__featured-link">
+                <div class="twh-blog__featured-img">
+                  {featured.coverImage
+                    ? <img src={featured.coverImage.url} alt={featured.coverImage.alternativeText ?? featured.title} />
+                    : <div style="width:100%;height:100%;background:var(--color-twh-grey-900);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:5rem;color:rgba(255,255,255,0.04);">/</div>
+                  }
+                </div>
+                <div class="twh-blog__featured-body">
+                  <p class="twh-blog__featured-eyebrow">
+                    {featured.category?.name ?? 'Featured'}
+                  </p>
+                  <h2 class="twh-blog__featured-title">{featured.title}</h2>
+                  {featured.summary && <p class="twh-blog__featured-summary">{featured.summary}</p>}
+                  <div class="twh-blog__featured-meta">
+                    {featured.author && <span>{featured.author.name}</span>}
+                    <span>{formatDate(featured.publishedAt)}</span>
+                    {featured.readingTimeMinutes && <span>{featured.readingTimeMinutes} min read</span>}
+                  </div>
+                </div>
+              </a>
+            </div>
+          )}
+
+          {rest.length > 0 && (
+            <>
+              <p class="twh-blog__grid-heading">Latest</p>
+              <ul class="twh-blog__grid" role="list" id="blog-grid">
+                {rest.map(post => (
+                  <li class="twh-blog__card">
+                    <a href={`/blog/${post.slug}`} class="twh-blog__card-link">
+                      <div class="twh-blog__card-img">
+                        {post.coverImage
+                          ? <img src={post.coverImage.url} alt={post.coverImage.alternativeText ?? post.title} loading="lazy" />
+                          : <div class="twh-blog__card-img-placeholder" aria-hidden="true">/</div>
+                        }
+                      </div>
+                      <div class="twh-blog__card-body">
+                        {post.category && <p class="twh-blog__card-cat">{post.category.name}</p>}
+                        <h2 class="twh-blog__card-title">{post.title}</h2>
+                        {post.summary && <p class="twh-blog__card-summary">{post.summary}</p>}
+                        <div class="twh-blog__card-meta">
+                          <span>{formatDate(post.publishedAt)}</span>
+                          {post.readingTimeMinutes && <span>{post.readingTimeMinutes} min</span>}
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  </section>
+</PageLayout>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+    const hero = document.querySelector('.twh-page-hero__inner');
+    if (hero) {
+      const tl = gsap.timeline();
+      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
+      const heading = hero.querySelector('.twh-page-hero__heading');
+      const sub     = hero.querySelector('.twh-page-hero__sub');
+      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
+      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
+    }
+
+    const featured = document.getElementById('blog-featured');
+    if (featured) {
+      gsap.fromTo(featured, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out',
+        scrollTrigger: { trigger: featured, start: 'top 85%' } });
+    }
+
+    const cards = document.querySelectorAll('.twh-blog__card');
+    if (cards.length) {
+      gsap.fromTo(cards,
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.07, ease: 'power3.out',
+          scrollTrigger: { trigger: '#blog-grid', start: 'top 80%' } }
+      );
+    }
+  });
+
+  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+    document.querySelectorAll<HTMLElement>('.twh-blog__featured, .twh-blog__card')
+      .forEach(el => { el.style.opacity = '1'; });
+  });
+</script>

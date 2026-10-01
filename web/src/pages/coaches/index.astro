@@ -1,0 +1,135 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getCoaches, getGlobal } from '../../lib/strapi/queries';
+import type { StrapiCoach } from '../../lib/strapi/types';
+
+let global, coaches: StrapiCoach[] = [];
+try {
+  [global, coaches] = await Promise.all([getGlobal(), getCoaches()]);
+} catch { /* CMS offline */ }
+
+const fallback: StrapiCoach[] = [
+  { documentId: '1', name: 'Ashan Perera',       slug: 'ashan-perera',       role: 'Head Boxing Coach',          shortBio: 'National champion. 12 years ringside.',             isHeadCoach: true,  sortOrder: 1 },
+  { documentId: '2', name: 'Nadun Silva',         slug: 'nadun-silva',        role: 'Muay Thai & MMA',            shortBio: 'IFMA certified. Fights out of Bangkok.',            isHeadCoach: false, sortOrder: 2 },
+  { documentId: '3', name: 'Chamara Jayasinghe', slug: 'chamara-jayasinghe', role: 'BJJ Black Belt',             shortBio: 'IBJJF competitor since 2015.',                       isHeadCoach: false, sortOrder: 3 },
+  { documentId: '4', name: 'Kasuni Rathnayake',  slug: 'kasuni-rathnayake',  role: 'Yoga & Recovery',            shortBio: 'RYT-500. Mobility specialist.',                      isHeadCoach: false, sortOrder: 4 },
+  { documentId: '5', name: 'Tharaka Fernando',   slug: 'tharaka-fernando',   role: 'Strength & Conditioning',    shortBio: 'NSCA certified. Former national swimmer.',           isHeadCoach: false, sortOrder: 5 },
+];
+
+const display   = coaches.length > 0 ? coaches : fallback;
+const headCoach = display.find(c => c.isHeadCoach);
+const rest      = display.filter(c => !c.isHeadCoach);
+
+const seo = {
+  metaTitle: 'Coaches — The Wolverine Hub',
+  metaDescription: 'Meet our certified coaches — national champions, IBJJF competitors, and NSCA-certified trainers. Real expertise, zero ego.',
+};
+---
+
+<PageLayout {seo} {global}>
+  <!-- Page hero -->
+  <div class="twh-page-hero">
+    <div class="twh-page-hero__inner">
+      <p class="twh-page-hero__eyebrow">Expertise</p>
+      <h1 class="twh-page-hero__heading">Train With<br/>The Best.</h1>
+      <p class="twh-page-hero__sub">Every coach at The Wolverine Hub has competed, won, and still trains. No ex-gym rats, no online certificates.</p>
+    </div>
+  </div>
+
+  <section class="twh-coaches-page" aria-label="Our coaches">
+    <div class="twh-coaches-page__inner">
+
+      <!-- Head coach feature -->
+      {headCoach && (
+        <div class="twh-coaches-page__featured" id="featured-coach">
+          <a href={`/coaches/${headCoach.slug}`} class="twh-coaches-page__featured-card" style="text-decoration:none;">
+            <div class="twh-coaches-page__featured-photo">
+              {headCoach.photo ? (
+                <img src={headCoach.photo.url} alt={headCoach.photo.alternativeText ?? headCoach.name} />
+              ) : (
+                <div class="twh-coaches-page__featured-photo-placeholder" aria-hidden="true">/</div>
+              )}
+            </div>
+            <div class="twh-coaches-page__featured-body">
+              <p class="twh-coaches-page__head-label">Head Coach</p>
+              <h2 class="twh-coaches-page__featured-name">{headCoach.name}</h2>
+              {headCoach.role && <p class="twh-coaches-page__featured-role">{headCoach.role}</p>}
+              {headCoach.shortBio && <p class="twh-coaches-page__featured-bio">{headCoach.shortBio}</p>}
+              <span class="twh-btn twh-btn--ghost twh-btn--sm twh-coaches-page__featured-link">View Profile</span>
+            </div>
+          </a>
+        </div>
+      )}
+
+      <!-- Coaching staff grid -->
+      {rest.length > 0 && (
+        <>
+          <p class="twh-coaches-page__section-heading">Coaching Staff</p>
+          <ul class="twh-coaches-page__grid" role="list" id="coaches-grid">
+            {rest.map((coach) => (
+              <li class="twh-coaches-page__card">
+                <a href={`/coaches/${coach.slug}`} class="twh-coaches-page__card-link">
+                  <div class="twh-coaches-page__card-photo">
+                    {coach.photo ? (
+                      <img src={coach.photo.url} alt={coach.photo.alternativeText ?? coach.name} loading="lazy" />
+                    ) : (
+                      <div class="twh-coaches-page__card-photo-placeholder" aria-hidden="true">/</div>
+                    )}
+                  </div>
+                  <div class="twh-coaches-page__card-info">
+                    <h2 class="twh-coaches-page__card-name">{coach.name}</h2>
+                    {coach.role     && <p class="twh-coaches-page__card-role">{coach.role}</p>}
+                    {coach.shortBio && <p class="twh-coaches-page__card-bio">{coach.shortBio}</p>}
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  </section>
+</PageLayout>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+    const hero     = document.querySelector('.twh-page-hero__inner');
+    const featured = document.getElementById('featured-coach');
+    const cards    = document.querySelectorAll('.twh-coaches-page__card');
+
+    if (hero) {
+      const tl = gsap.timeline();
+      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
+      const heading = hero.querySelector('.twh-page-hero__heading');
+      const sub     = hero.querySelector('.twh-page-hero__sub');
+      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
+      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
+    }
+
+    if (featured) {
+      gsap.fromTo(featured,
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+          scrollTrigger: { trigger: featured, start: 'top 85%' } }
+      );
+    }
+
+    if (cards.length) {
+      gsap.fromTo(cards,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.55, stagger: 0.08, ease: 'power3.out',
+          scrollTrigger: { trigger: '#coaches-grid', start: 'top 80%' } }
+      );
+    }
+  });
+
+  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+    document.querySelectorAll<HTMLElement>('.twh-coaches-page__featured, .twh-coaches-page__card')
+      .forEach(el => { el.style.opacity = '1'; });
+  });
+</script>

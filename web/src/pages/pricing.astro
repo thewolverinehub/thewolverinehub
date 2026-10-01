@@ -1,0 +1,205 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import { getPricingTiers, getPasses, getFaqs, getGlobal } from '../lib/strapi/queries';
+import type { StrapiPricingTier, StrapiPass, StrapiFaq } from '../lib/strapi/types';
+import { blocksToHtml } from '../lib/strapi/blocks';
+
+let global, tiers: StrapiPricingTier[] = [], passes: StrapiPass[] = [], faqs: StrapiFaq[] = [];
+try {
+  [global, tiers, passes, faqs] = await Promise.all([
+    getGlobal(), getPricingTiers(), getPasses(), getFaqs(),
+  ]);
+} catch { /* CMS offline */ }
+
+const fallbackTiers: StrapiPricingTier[] = [
+  { documentId: '1', name: 'Starter',        slug: 'starter',        tagline: 'Perfect for your first month',    features: ['2 classes/week','Access to open gym','Beginner workshops'],                                  isMostPopular: false, colour: 'blue',   sortOrder: 1 },
+  { documentId: '2', name: 'Signature',      slug: 'signature',      tagline: 'For the committed athlete',        features: ['Unlimited classes','Priority booking','Nutrition guide','Monthly check-in'],               isMostPopular: true,  colour: 'yellow', sortOrder: 2 },
+  { documentId: '3', name: 'Transformation', slug: 'transformation', tagline: 'Elite coaching + full access',     features: ['Everything in Signature','1-on-1 sessions','Body composition analysis','Custom plan'],      isMostPopular: false, colour: 'red',    sortOrder: 3 },
+];
+
+const displayTiers = tiers.length > 0 ? tiers : fallbackTiers;
+
+const tierColour: Record<string, { bg: string; text: string }> = {
+  yellow: { bg: 'var(--color-twh-yellow)',    text: 'var(--color-twh-black)' },
+  blue:   { bg: 'var(--color-twh-blue)',      text: 'var(--color-twh-white)' },
+  red:    { bg: 'var(--color-twh-red)',        text: 'var(--color-twh-white)' },
+  white:  { bg: 'var(--color-twh-white)',      text: 'var(--color-twh-black)' },
+};
+
+function tierPasses(tierId: string) {
+  return passes
+    .filter(p => p.tier?.documentId === tierId && p.isPurchasable)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+const pricingFaqs = faqs.filter(f =>
+  !f.category || f.category.slug === 'pricing' || f.category.slug === 'membership'
+).slice(0, 8);
+
+const seo = {
+  metaTitle: 'Pricing & Membership — The Wolverine Hub',
+  metaDescription: 'Simple, honest pricing. Pick a membership tier that fits your goals — no lock-ins, cancel anytime.',
+};
+---
+
+<PageLayout {seo} {global}>
+  <!-- Page hero -->
+  <div class="twh-page-hero">
+    <div class="twh-page-hero__inner">
+      <p class="twh-page-hero__eyebrow">Membership</p>
+      <h1 class="twh-page-hero__heading">Simple,<br/>Honest Pricing.</h1>
+      <p class="twh-page-hero__sub">Pick your tier. Book your first class. No hidden fees, no lock-in contracts.</p>
+    </div>
+  </div>
+
+  <section class="twh-pricing-page" aria-label="Pricing">
+    <div class="twh-pricing-page__inner">
+
+      <!-- Tier cards -->
+      <div class="twh-pricing-page__tiers" id="pricing-tiers">
+        {displayTiers.map((tier) => {
+          const colors = tierColour[tier.colour] ?? tierColour.blue;
+          const tp     = tierPasses(tier.documentId);
+          return (
+            <div class={`twh-pricing-page__tier${tier.isMostPopular ? ' twh-pricing-page__tier--popular' : ''}`}>
+              {tier.isMostPopular && (
+                <div class="twh-pricing-page__popular-banner" style={`background:${colors.bg}; color:${colors.text};`}>
+                  Most Popular
+                </div>
+              )}
+              <div class="twh-pricing-page__tier-body" style={`border-color:${tier.isMostPopular ? colors.bg : 'var(--color-twh-grey-800)'};`}>
+                <span class="twh-pricing-page__slash" aria-hidden="true" style={`color:${colors.bg};`}>/</span>
+                <h2 class="twh-pricing-page__tier-name" style={`color:${tier.isMostPopular ? colors.bg : 'var(--color-twh-white)'};`}>
+                  {tier.name}
+                </h2>
+                {tier.tagline && <p class="twh-pricing-page__tier-tagline">{tier.tagline}</p>}
+                {tier.description && <p class="twh-pricing-page__tier-desc">{tier.description}</p>}
+
+                {(tier.features ?? []).length > 0 && (
+                  <ul class="twh-pricing-page__features" role="list">
+                    {(tier.features ?? []).map(f => (
+                      <li class="twh-pricing-page__feature">
+                        <span class="twh-pricing-page__feature-icon" style={`color:${colors.bg};`}>✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {tp.length > 0 ? (
+                  <div class="twh-pricing-page__passes">
+                    <p class="twh-pricing-page__passes-heading">Plans</p>
+                    {tp.map(pass => (
+                      <div class="twh-pricing-page__pass-row">
+                        <span class="twh-pricing-page__pass-duration">{pass.duration}</span>
+                        <span class="twh-pricing-page__pass-price" style={`color:${colors.bg};`}>
+                          LKR {pass.priceLKR.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div class="twh-pricing-page__passes" style="border-top:1px solid var(--color-twh-grey-800);padding-top:1.5rem;">
+                    <a href="/contact" style={`color:${colors.bg}; font-weight:700; font-size:0.875rem; text-decoration:none;`}>
+                      Enquire for pricing →
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <!-- CTA strip -->
+      <div class="twh-pricing-page__cta-strip" id="pricing-cta">
+        <a href="/contact" class="twh-btn twh-btn--primary twh-btn--lg">Start Your Free Trial</a>
+        <p class="twh-pricing-page__cta-note">No credit card required. Cancel any time.</p>
+      </div>
+
+      <!-- FAQ -->
+      {pricingFaqs.length > 0 && (
+        <div id="pricing-faq">
+          <h2 class="twh-pricing-page__faq-heading">Common Questions</h2>
+          <div class="twh-pricing-page__faq-list">
+            {pricingFaqs.map((faq) => {
+              const answerHtml = blocksToHtml(faq.answer);
+              return (
+                <details class="twh-pricing-page__faq-item">
+                  <summary class="twh-pricing-page__faq-question">
+                    {faq.question}
+                    <span class="twh-pricing-page__faq-icon" aria-hidden="true">+</span>
+                  </summary>
+                  <div class="twh-pricing-page__faq-answer">
+                    {answerHtml
+                      ? <Fragment set:html={answerHtml} />
+                      : <p style="color:rgba(255,255,255,0.4);">Answer coming soon.</p>
+                    }
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</PageLayout>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+    // Hero
+    const hero = document.querySelector('.twh-page-hero__inner');
+    if (hero) {
+      const tl = gsap.timeline();
+      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
+      const heading = hero.querySelector('.twh-page-hero__heading');
+      const sub     = hero.querySelector('.twh-page-hero__sub');
+      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
+      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
+    }
+
+    // Tiers
+    const tiers = document.querySelectorAll('.twh-pricing-page__tier');
+    if (tiers.length) {
+      gsap.fromTo(tiers,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.12, ease: 'power3.out',
+          scrollTrigger: { trigger: '#pricing-tiers', start: 'top 80%' } }
+      );
+    }
+
+    // CTA
+    const cta = document.getElementById('pricing-cta');
+    if (cta) {
+      gsap.fromTo(cta, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out',
+        scrollTrigger: { trigger: cta, start: 'top 85%' } });
+    }
+
+    // FAQ
+    const faqHeading = document.querySelector('.twh-pricing-page__faq-heading');
+    const faqItems   = document.querySelectorAll('.twh-pricing-page__faq-item');
+    if (faqHeading) {
+      gsap.fromTo(faqHeading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out',
+        scrollTrigger: { trigger: faqHeading, start: 'top 85%' } });
+    }
+    if (faqItems.length) {
+      gsap.fromTo(faqItems,
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.4, stagger: 0.07, ease: 'power2.out',
+          scrollTrigger: { trigger: '#pricing-faq', start: 'top 80%' } }
+      );
+    }
+  });
+
+  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+    document.querySelectorAll<HTMLElement>(
+      '.twh-pricing-page__tier, .twh-pricing-page__cta-strip, .twh-pricing-page__faq-heading, .twh-pricing-page__faq-item'
+    ).forEach(el => { el.style.opacity = '1'; });
+  });
+</script>

@@ -1,0 +1,101 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getCoachBySlug, getGlobal } from '../../lib/strapi/queries';
+import { blocksToHtml } from '../../lib/strapi/blocks';
+
+const { slug } = Astro.params;
+
+let global, coach;
+try {
+  [global, coach] = await Promise.all([getGlobal(), getCoachBySlug(slug!)]);
+} catch { /* CMS offline */ }
+
+if (!coach) return Astro.redirect('/coaches', 307);
+
+const bioHtml = blocksToHtml(coach.bio);
+
+const seo = coach.seo ?? {
+  metaTitle: `${coach.name} — The Wolverine Hub`,
+  metaDescription: coach.shortBio ?? `Meet ${coach.name}, ${coach.role ?? 'coach'} at The Wolverine Hub.`,
+};
+---
+
+<PageLayout {seo} {global}>
+  <article class="twh-coach-detail">
+
+    <!-- Hero split: photo + info -->
+    <div class="twh-coach-detail__hero">
+      <div class="twh-coach-detail__photo">
+        {coach.photo ? (
+          <img src={coach.photo.url} alt={coach.photo.alternativeText ?? coach.name} />
+        ) : (
+          <div class="twh-coach-detail__photo-placeholder" aria-hidden="true">/</div>
+        )}
+      </div>
+
+      <div class="twh-coach-detail__hero-body">
+        {coach.isHeadCoach && (
+          <span class="twh-badge twh-badge--yellow" style="align-self:flex-start;">Head Coach</span>
+        )}
+        {coach.role && <p class="twh-coach-detail__role">{coach.role}</p>}
+        <h1 class="twh-coach-detail__name">{coach.name}</h1>
+        {coach.shortBio && <p class="twh-coach-detail__short-bio">{coach.shortBio}</p>}
+
+        {coach.specialties && coach.specialties.length > 0 && (
+          <div class="twh-coach-detail__tags">
+            {coach.specialties.map(s => (
+              <span class="twh-coach-detail__tag">{s}</span>
+            ))}
+          </div>
+        )}
+
+        {coach.instagram && (
+          <a
+            href={`https://instagram.com/${coach.instagram.replace('@', '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="twh-btn twh-btn--ghost twh-btn--sm"
+            style="align-self:flex-start;"
+          >
+            @{coach.instagram.replace('@', '')}
+          </a>
+        )}
+      </div>
+    </div>
+
+    <!-- Bio + sidebar -->
+    <div class="twh-coach-detail__body-section">
+      <div class="twh-coach-detail__prose">
+        {bioHtml ? (
+          <Fragment set:html={bioHtml} />
+        ) : (
+          <p style="color:rgba(255,255,255,0.35);">Full bio coming soon.</p>
+        )}
+      </div>
+
+      <aside>
+        <div class="twh-coach-detail__side-card">
+          <h2 class="twh-coach-detail__side-heading">At a Glance</h2>
+          <ul class="twh-coach-detail__spec-list">
+            {coach.yearsExperience && (
+              <li class="twh-coach-detail__spec-item">{coach.yearsExperience} years experience</li>
+            )}
+            {(coach.disciplines ?? []).map(d => (
+              <li class="twh-coach-detail__spec-item">{d.name}</li>
+            ))}
+            {(coach.specialties ?? []).map(s => (
+              <li class="twh-coach-detail__spec-item">{s}</li>
+            ))}
+          </ul>
+        </div>
+
+        <a href="/contact" class="twh-btn twh-btn--primary twh-btn--md" style="width:100%;justify-content:center;margin-top:1.5rem;">
+          Train With {coach.name.split(' ')[0]}
+        </a>
+        <a href="/coaches" class="twh-btn twh-btn--ghost twh-btn--sm" style="width:100%;justify-content:center;margin-top:0.75rem;">
+          ← All Coaches
+        </a>
+      </aside>
+    </div>
+  </article>
+</PageLayout>
