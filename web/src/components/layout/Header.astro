@@ -19,22 +19,32 @@ const siteName = global?.siteName ?? 'The Wolverine Hub';
 
     <!-- Logo -->
     <a href="/" class="twh-header__logo" aria-label={`${siteName} — Home`}>
-      <img
-        src={global?.logoLight?.url ?? '/wolverinehub-logo.png'}
-        alt={siteName}
-        width="160"
-        height="44"
-        class="twh-header__logo-full"
-        fetchpriority="high"
-      />
-      <img
-        src={global?.logoMonogram?.url ?? '/wolverinehub-logo.png'}
-        alt=""
-        width="40"
-        height="40"
-        class="twh-header__logo-mono"
-        aria-hidden="true"
-      />
+      {global?.logoLight?.url ? (
+        <img
+          src={global.logoLight.url}
+          alt={siteName}
+          width="160"
+          height="44"
+          class="twh-header__logo-full"
+          fetchpriority="high"
+        />
+      ) : (
+        <span class="twh-header__logo-wordmark" aria-label={siteName}>
+          <span class="twh-header__logo-slash" aria-hidden="true">/</span>TWH
+        </span>
+      )}
+      {global?.logoMonogram?.url ? (
+        <img
+          src={global.logoMonogram.url}
+          alt=""
+          width="40"
+          height="40"
+          class="twh-header__logo-mono"
+          aria-hidden="true"
+        />
+      ) : (
+        <span class="twh-header__logo-mono twh-header__logo-mono--text" aria-hidden="true">/</span>
+      )}
     </a>
 
     <!-- Desktop nav (hidden — lives inside the menu) -->

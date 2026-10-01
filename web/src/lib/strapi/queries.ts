@@ -16,10 +16,16 @@ export const getGlobal = () =>
   cache('global', () => fetchSingle<StrapiGlobal>('global'), TTL);
 
 export const getHeader = () =>
-  cache('header', () => fetchSingle<StrapiHeader>('header'), TTL);
+  cache('header', () => fetchSingle<StrapiHeader>(
+    'header',
+    'populate[menuItems][populate]=*&populate[primaryCta]=*',
+  ), TTL);
 
 export const getFooter = () =>
-  cache('footer', () => fetchSingle<StrapiFooter>('footer'), TTL);
+  cache('footer', () => fetchSingle<StrapiFooter>(
+    'footer',
+    'populate[columns][populate]=*&populate[legalLinks]=*',
+  ), TTL);
 
 export const getUiStrings = () =>
   cache('ui-strings', () => fetchSingle<StrapiUiStrings>('ui-strings'), TTL);

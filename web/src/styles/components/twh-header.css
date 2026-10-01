@@ -72,14 +72,43 @@
   line-height: 1;
 }
 
+/* Text wordmark fallback (used when no logo image is in CMS) */
+.twh-header__logo-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+  color: var(--color-twh-white);
+  line-height: 1;
+}
+
+.twh-header__logo-slash {
+  color: var(--color-twh-yellow);
+  transform: skewX(-8deg);
+  display: inline-block;
+}
+
+.twh-header__logo-mono--text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-twh-yellow);
+  transform: skewX(-8deg);
+  display: none;
+  line-height: 1;
+}
+
 /* Compact on scroll — swap full logo for monogram */
 .twh-header.is-scrolled .twh-header__logo-full,
-.twh-header.is-scrolled .twh-header__logo-text {
+.twh-header.is-scrolled .twh-header__logo-text,
+.twh-header.is-scrolled .twh-header__logo-wordmark {
   display: none;
 }
 
 .twh-header.is-scrolled .twh-header__logo-mono,
-.twh-header.is-scrolled .twh-header__logo-mono-text {
+.twh-header.is-scrolled .twh-header__logo-mono-text,
+.twh-header.is-scrolled .twh-header__logo-mono--text {
   display: block;
 }
 
