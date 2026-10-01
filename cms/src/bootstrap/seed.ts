@@ -186,11 +186,6 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 async function patchMissingData(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
 
-  // Remove duplicate documents created by the now-removed repairPublishedOnly pass.
-  // That pass created extra rows with the same documentId; publishAllContent then
-  // published all of them, giving every content type doubled entries.
-  await tryRun('dedup', async () => deduplicateDocuments(strapi));
-
   // Count via raw DB query — bypasses draft/published status confusion
   const count = async (uid: string): Promise<number> => {
     try {
@@ -207,6 +202,9 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
       strapi.log.warn(`[seed:patch] ${label} skipped — ${err?.message ?? err}`);
     }
   };
+
+  // Remove duplicate documents created by the now-removed repairPublishedOnly pass.
+  await tryRun('dedup', async () => deduplicateDocuments(strapi));
 
   // ── Reference maps (disciplines, classes, coaches) ────────────────────────
   let disciplineIds: Record<string, string> = {};
