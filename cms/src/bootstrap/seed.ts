@@ -656,6 +656,9 @@ async function seedSchedule(strapi: Core.Strapi): Promise<void> {
     { weekday: 'sunday', startTime: '10:30', endTime: '12:00', classSlug: 'mma',                   coachSlug: 'nadun-silva',        room: 'Main Floor',    capacity: 14 },
   ];
 
+  // db.query time fields expect HH:mm:ss.SSS format
+  const toDbTime = (t: string) => t.length === 5 ? `${t}:00.000` : t;
+
   let created = 0;
   for (const slot of slots) {
     const classRawId = classRawIds[slot.classSlug];
@@ -668,8 +671,8 @@ async function seedSchedule(strapi: Core.Strapi): Promise<void> {
       data: {
         documentId: genDocId(),
         weekday:    slot.weekday,
-        startTime:  slot.startTime,
-        endTime:    slot.endTime,
+        startTime:  toDbTime(slot.startTime),
+        endTime:    toDbTime(slot.endTime),
         capacity:   slot.capacity,
         room:       slot.room,
         isActive:   true,
