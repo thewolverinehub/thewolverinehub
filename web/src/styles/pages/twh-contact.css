@@ -1,0 +1,261 @@
+/* ============================================================
+   CONTACT PAGE  — /contact
+   Prefix: twh-contact
+   ============================================================ */
+
+.twh-contact {
+  padding: 4rem 0 6rem;
+}
+
+.twh-contact__inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+@media (max-width: 1023px) {
+  .twh-contact__inner { grid-template-columns: 1fr; gap: 3rem; }
+}
+
+/* ── Contact info ─────────────────────────────────────────── */
+
+.twh-contact__info-heading {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--color-twh-white);
+  margin: 0 0 0.75rem;
+}
+
+.twh-contact__info-sub {
+  color: var(--color-twh-grey-400);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  margin: 0 0 2.5rem;
+  max-width: 40ch;
+}
+
+/* Detail items */
+.twh-contact__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 3rem;
+}
+
+.twh-contact__detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.125rem 0;
+  border-bottom: 1px solid var(--color-twh-grey-900);
+}
+
+.twh-contact__detail-item:first-child { border-top: 1px solid var(--color-twh-grey-900); }
+
+.twh-contact__detail-slash {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  line-height: 1;
+  color: var(--color-twh-red);
+  transform: skewX(-8deg);
+  display: block;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.twh-contact__detail-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-600);
+  margin: 0 0 0.25rem;
+}
+
+.twh-contact__detail-value {
+  font-size: 0.9375rem;
+  color: var(--color-twh-grey-200);
+  margin: 0;
+  text-decoration: none;
+  transition: color 0.15s;
+  line-height: 1.5;
+}
+
+a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
+
+/* Hours */
+.twh-contact__hours {
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-900);
+  padding: 1.75rem;
+}
+
+.twh-contact__hours-heading {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-600);
+  margin: 0 0 1.25rem;
+}
+
+.twh-contact__hours-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.twh-contact__hours-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--color-twh-grey-900);
+}
+
+.twh-contact__hours-row:last-child { border-bottom: none; }
+
+.twh-contact__hours-day {
+  font-size: 0.875rem;
+  color: var(--color-twh-grey-400);
+}
+
+.twh-contact__hours-time {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-twh-white);
+  text-align: right;
+}
+
+/* ── Contact form ─────────────────────────────────────────── */
+
+.twh-contact__form-wrap {
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-900);
+  border-top: 3px solid var(--color-twh-red);
+  padding: 3rem;
+}
+
+@media (max-width: 767px) {
+  .twh-contact__form-wrap { padding: 2rem 1.5rem; }
+}
+
+.twh-contact__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.twh-contact__form-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: var(--color-twh-white);
+  margin: 0 0 0.25rem;
+}
+
+.twh-contact__form-sub {
+  font-size: 0.875rem;
+  color: var(--color-twh-grey-500);
+  margin: 0;
+}
+
+/* Fields */
+.twh-contact__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.twh-contact__label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-400);
+}
+
+.twh-contact__label-required {
+  color: var(--color-twh-red);
+  margin-left: 0.125rem;
+}
+
+.twh-contact__input,
+.twh-contact__textarea {
+  background: var(--color-twh-black);
+  border: 1px solid var(--color-twh-grey-800);
+  color: var(--color-twh-white);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  padding: 0.875rem 1rem;
+  width: 100%;
+  border-radius: 2px;
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.twh-contact__input::placeholder,
+.twh-contact__textarea::placeholder { color: var(--color-twh-grey-700); }
+
+.twh-contact__input:focus,
+.twh-contact__textarea:focus { border-color: var(--color-twh-yellow); }
+
+.twh-contact__textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Honeypot */
+.twh-contact__honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Status */
+.twh-contact__status {
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-radius: 2px;
+  display: none;
+}
+
+.twh-contact__status:not(:empty) { display: block; }
+
+.twh-contact__status[data-state="success"] {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--color-twh-white);
+}
+
+.twh-contact__status[data-state="error"] {
+  background: rgba(215,20,26,0.1);
+  border: 1px solid rgba(215,20,26,0.4);
+  color: var(--color-twh-white);
+}
+
+/* Submit */
+.twh-contact__submit { align-self: flex-start; }
+.twh-contact__submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .twh-contact__inner { padding: 0 1.25rem; }
+  .twh-contact { padding: 3rem 0 4rem; }
+  .twh-contact__submit { width: 100%; justify-content: center; }
+}

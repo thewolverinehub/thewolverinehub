@@ -1,0 +1,154 @@
+/* ============================================================
+   SCHEDULE PAGE  — /schedule
+   Prefix: twh-schedule
+   ============================================================ */
+
+.twh-schedule {
+  padding: 3rem 0 6rem;
+}
+
+.twh-schedule__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ── Day tabs ─────────────────────────────────────────────── */
+
+.twh-schedule__tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.twh-schedule__tabs::-webkit-scrollbar { display: none; }
+
+.twh-schedule__tab {
+  flex: 1;
+  min-width: 64px;
+  padding: 0.875rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-900);
+  border-bottom: none;
+  color: var(--color-twh-grey-500);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.twh-schedule__tab:hover { color: var(--color-twh-white); background: var(--color-twh-grey-900); }
+
+.twh-schedule__tab[aria-selected="true"] {
+  background: var(--color-twh-black);
+  color: var(--color-twh-white);
+  border-color: var(--color-twh-grey-700);
+  border-bottom-color: var(--color-twh-black);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Day panels ───────────────────────────────────────────── */
+
+.twh-schedule__panel {
+  display: none;
+  background: var(--color-twh-black);
+  border: 1px solid var(--color-twh-grey-700);
+  padding: 0;
+}
+
+.twh-schedule__panel[data-active="true"] { display: block; }
+
+/* ── Slot list ────────────────────────────────────────────── */
+
+.twh-schedule__slots {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.twh-schedule__slot {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 2rem;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--color-twh-grey-900);
+  transition: background 0.15s;
+}
+
+.twh-schedule__slot:last-child { border-bottom: none; }
+.twh-schedule__slot:hover { background: var(--color-twh-ink); }
+
+@media (max-width: 640px) {
+  .twh-schedule__slot { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.125rem 1.25rem; }
+}
+
+/* Time column */
+.twh-schedule__time {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.twh-schedule__time {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--color-twh-white);
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+}
+
+.twh-schedule__time-to {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-twh-grey-600);
+  letter-spacing: 0.06em;
+  font-family: var(--font-body);
+  font-weight: 400;
+}
+
+/* Class name */
+.twh-schedule__class-name {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-twh-white);
+  margin: 0 0 0.25rem;
+  line-height: 1.2;
+}
+
+.twh-schedule__slot-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-twh-grey-500);
+  flex-wrap: wrap;
+}
+
+.twh-schedule__coach {
+  color: var(--color-twh-grey-300);
+}
+
+/* Empty day */
+.twh-schedule__empty-day {
+  padding: 3rem 2rem;
+  color: var(--color-twh-grey-600);
+  font-size: 0.9375rem;
+  text-align: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .twh-schedule__inner { padding: 0 1.25rem; }
+  .twh-schedule { padding: 2rem 0 4rem; }
+}

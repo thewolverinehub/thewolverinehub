@@ -1,0 +1,193 @@
+/* ============================================================
+   BLOG ARTICLE — /blog/[slug]
+   Prefix: twh-article
+   ============================================================ */
+
+.twh-article {
+  padding: 3rem 0 6rem;
+}
+
+.twh-article__inner {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ── Back link ────────────────────────────────────────────── */
+
+.twh-article__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-500);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: color 0.15s;
+}
+
+.twh-article__back:hover { color: var(--color-twh-white); }
+
+/* ── Cover image ──────────────────────────────────────────── */
+
+.twh-article__cover {
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  margin-bottom: 2.5rem;
+  background: var(--color-twh-grey-900);
+}
+
+.twh-article__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Byline ───────────────────────────────────────────────── */
+
+.twh-article__byline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-twh-grey-900);
+}
+
+.twh-article__author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.twh-article__author-photo {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.twh-article__author-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-twh-white);
+}
+
+.twh-article__meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-twh-grey-500);
+  flex-wrap: wrap;
+}
+
+/* ── Prose ────────────────────────────────────────────────── */
+
+.twh-article__prose {
+  color: var(--color-twh-grey-300);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+
+.twh-article__prose p  { margin: 0 0 1.5rem; }
+.twh-article__prose p:last-child { margin-bottom: 0; }
+
+.twh-article__prose h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-twh-white);
+  margin: 3rem 0 1rem;
+  line-height: 1.1;
+}
+
+.twh-article__prose h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-twh-white);
+  margin: 2rem 0 0.75rem;
+  line-height: 1.2;
+}
+
+.twh-article__prose ul, .twh-article__prose ol {
+  padding-left: 1.5rem;
+  margin: 0 0 1.5rem;
+}
+
+.twh-article__prose li { margin-bottom: 0.625rem; }
+
+.twh-article__prose strong { color: var(--color-twh-white); font-weight: 700; }
+.twh-article__prose em     { color: var(--color-twh-grey-200); }
+
+.twh-article__prose a {
+  color: var(--color-twh-yellow);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.twh-article__prose a:hover { color: var(--color-twh-white); }
+
+.twh-article__prose blockquote {
+  border-left: 3px solid var(--color-twh-red);
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: var(--color-twh-grey-300);
+}
+
+.twh-article__prose img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 2rem 0;
+}
+
+.twh-article__prose code {
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  padding: 0.15em 0.4em;
+  border-radius: 2px;
+  font-size: 0.875em;
+  color: var(--color-twh-yellow);
+}
+
+/* ── Tags ─────────────────────────────────────────────────── */
+
+.twh-article__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-twh-grey-900);
+}
+
+.twh-article__tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--color-twh-grey-800);
+  color: var(--color-twh-grey-500);
+  border-radius: 2px;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .twh-article__inner { padding: 0 1.25rem; }
+  .twh-article { padding: 2.5rem 0 4rem; }
+  .twh-article__prose { font-size: 1rem; }
+}
