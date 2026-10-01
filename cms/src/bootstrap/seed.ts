@@ -186,8 +186,10 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 async function patchMissingData(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
 
-  // Ensure all documents have draft copies so the REST API can find them
-  await repairPublishedOnly(strapi);
+  // Remove duplicate documents created by the now-removed repairPublishedOnly pass.
+  // That pass created extra rows with the same documentId; publishAllContent then
+  // published all of them, giving every content type doubled entries.
+  await tryRun('dedup', async () => deduplicateDocuments(strapi));
 
   // Count via raw DB query — bypasses draft/published status confusion
   const count = async (uid: string): Promise<number> => {
@@ -226,6 +228,7 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     if ((await count('api::coach.coach')) > 0) {
       coachIds = await getExistingIds(strapi, 'api::coach.coach', 'slug');
       await fixArrayFields(strapi, 'api::coach.coach', 'specialties');
+      await patchCoachSpecialties(strapi);
     } else {
       coachIds = await seedCoaches(strapi, disciplineIds);
     }
@@ -387,6 +390,53 @@ function genDocId(): string {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: remove duplicate DB rows that share the same documentId.
+// Keeps the row with the earliest id (the original seeded entry) and deletes
+// the rest.  Safe to call multiple times — skips content types with no dups.
+// ---------------------------------------------------------------------------
+async function deduplicateDocuments(strapi: Core.Strapi): Promise<void> {
+  const uids = [
+    'api::global.global', 'api::header.header', 'api::footer.footer',
+    'api::ui-strings.ui-strings', 'api::discipline.discipline',
+    'api::class.class', 'api::coach.coach', 'api::schedule-slot.schedule-slot',
+    'api::pricing-tier.pricing-tier', 'api::pass.pass',
+    'api::testimonial.testimonial', 'api::faq-category.faq-category',
+    'api::faq.faq', 'api::post-category.post-category',
+    'api::author.author', 'api::post.post', 'api::amenity.amenity',
+    'api::program.program', 'api::legal-page.legal-page', 'api::page.page',
+  ];
+
+  let totalRemoved = 0;
+  for (const uid of uids) {
+    try {
+      const db = (strapi.db as any).query(uid);
+      const rows: any[] = await db.findMany({ limit: 2000 });
+
+      const seen = new Map<string, number>();
+      const toDelete: number[] = [];
+
+      for (const row of rows.sort((a: any, b: any) => a.id - b.id)) {
+        const docId: string = row.documentId ?? String(row.id);
+        if (seen.has(docId)) {
+          toDelete.push(row.id);
+        } else {
+          seen.set(docId, row.id);
+        }
+      }
+
+      for (const id of toDelete) {
+        await db.delete({ where: { id } });
+        totalRemoved++;
+      }
+    } catch { /* content type may not exist yet */ }
+  }
+
+  if (totalRemoved > 0) {
+    strapi.log.info(`[seed:patch] Removed ${totalRemoved} duplicate document rows`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Helper: create draft copies for any published-only documents.
 //
 // In Strapi v5, docs.create({ status:'published' }) creates a single row with
@@ -445,6 +495,26 @@ async function repairPublishedOnly(strapi: Core.Strapi): Promise<void> {
 // Helper: convert any field stored as a JSON array back to a newline string.
 // Needed when a schema changes from json → text but old rows keep array values.
 // ---------------------------------------------------------------------------
+async function patchCoachSpecialties(strapi: Core.Strapi): Promise<void> {
+  const db = (strapi.db as any);
+  const specialtiesMap: Record<string, string> = {
+    'ashan-perera':      'Technical boxing\nSparring preparation\nFootwork and defence\nCombination drilling\nCompetition coaching',
+    'nadun-silva':       'Muay Thai striking\nClinch and knee work\nMMA transitions\nThai pad coaching\nFight camp preparation',
+    'chamara-jayasinghe':'Guard systems\nSubmission finishing\nPositional sparring\nCompetition strategy\nNo-gi grappling',
+    'kasuni-rathnayake': 'Athlete recovery yoga\nHip flexor and hamstring release\nShoulder mobility\nBreath control\nInjury prevention',
+    'tharaka-fernando':  'Periodised strength programming\nExplosive power development\nMetabolic conditioning\nCombat sports S&C\nSwimmer-to-athlete transitions',
+  };
+  const rows: any[] = await db.query('api::coach.coach').findMany({ limit: 50 });
+  for (const row of rows) {
+    if (!row.specialties && specialtiesMap[row.slug]) {
+      await db.query('api::coach.coach').update({
+        where: { id: row.id },
+        data: { specialties: specialtiesMap[row.slug] },
+      });
+    }
+  }
+}
+
 async function fixArrayFields(
   strapi: Core.Strapi,
   uid: string,
