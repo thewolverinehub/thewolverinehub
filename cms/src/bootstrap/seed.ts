@@ -187,11 +187,10 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 async function patchMissingData(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
 
-  // Check total count regardless of published/draft status
+  // Count via raw DB query — bypasses draft/published status confusion
   const count = async (uid: string): Promise<number> => {
     try {
-      const items = await docs(uid).findMany({ limit: 1 });
-      return items.length;
+      return await (strapi.db as any).query(uid).count();
     } catch {
       return 0;
     }
@@ -335,19 +334,18 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Helper: get existing documentIds keyed by a slug/name field (any status)
+// Helper: get existing documentIds keyed by a slug/name field
+// Uses raw db.query so published-only documents (no separate draft) are found.
 // ---------------------------------------------------------------------------
 async function getExistingIds(
   strapi: Core.Strapi,
   uid: string,
   field: string,
 ): Promise<Record<string, string>> {
-  const docs = strapi.documents as (uid: string) => any;
-  // fetch all versions — no status filter so we get draft-only docs too
-  const items = await docs(uid).findMany({ limit: 200 });
+  const items: any[] = await (strapi.db as any).query(uid).findMany({ limit: 200 });
   const map: Record<string, string> = {};
   for (const item of items) {
-    if (item[field]) map[item[field]] = item.documentId;
+    if (item[field]) map[item[field]] = item.document_id ?? item.documentId ?? item.id;
   }
   return map;
 }
@@ -1226,9 +1224,10 @@ async function publishAllContent(strapi: Core.Strapi): Promise<void> {
     'api::footer.footer', 'api::ui-strings.ui-strings',
   ];
 
+  // pass excluded — its tier relation can be orphaned, which breaks publish
   const collections = [
     'api::page.page', 'api::class.class', 'api::discipline.discipline',
-    'api::coach.coach', 'api::pricing-tier.pricing-tier', 'api::pass.pass',
+    'api::coach.coach', 'api::pricing-tier.pricing-tier',
     'api::testimonial.testimonial', 'api::faq.faq', 'api::faq-category.faq-category',
     'api::schedule-slot.schedule-slot', 'api::author.author',
     'api::post-category.post-category', 'api::post.post',
@@ -1237,14 +1236,20 @@ async function publishAllContent(strapi: Core.Strapi): Promise<void> {
 
   let published = 0;
   for (const uid of singleTypes) {
-    const draft = await docs(uid).findFirst({});
-    if (draft) { await docs(uid).publish({ documentId: draft.documentId }); published++; }
+    try {
+      const draft = await docs(uid).findFirst({ status: 'draft' });
+      if (draft) { await docs(uid).publish({ documentId: draft.documentId }); published++; }
+    } catch { /* already published or broken relation — skip */ }
   }
   for (const uid of collections) {
-    const drafts = await docs(uid).findMany({ status: 'draft', limit: 200 });
-    for (const draft of drafts) {
-      await docs(uid).publish({ documentId: draft.documentId }); published++;
-    }
+    try {
+      const drafts = await docs(uid).findMany({ status: 'draft', limit: 200 });
+      for (const draft of drafts) {
+        try {
+          await docs(uid).publish({ documentId: draft.documentId }); published++;
+        } catch { /* skip items with broken relations */ }
+      }
+    } catch { /* content type not queryable — skip */ }
   }
 
   strapi.log.info(`[seed] Published ${published} draft documents`);
