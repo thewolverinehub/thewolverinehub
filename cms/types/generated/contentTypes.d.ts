@@ -2256,7 +2256,7 @@ export interface ApiRedirectRedirect extends Struct.CollectionTypeSchema {
     singularName: 'redirect';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -2317,7 +2317,7 @@ export interface ApiScheduleSlotScheduleSlot
     singularName: 'schedule-slot';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     capacity: Schema.Attribute.Integer &
@@ -2424,7 +2424,7 @@ export interface ApiStatStat extends Struct.CollectionTypeSchema {
     singularName: 'stat';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -2585,7 +2585,7 @@ export interface ApiTokenPackTokenPack extends Struct.CollectionTypeSchema {
     singularName: 'token-pack';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -2638,7 +2638,7 @@ export interface ApiUiStringsUiStrings extends Struct.SingleTypeSchema {
     singularName: 'ui-strings';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     bookNowLabel: Schema.Attribute.String &
