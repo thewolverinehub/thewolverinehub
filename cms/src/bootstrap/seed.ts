@@ -182,98 +182,150 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 
 // ---------------------------------------------------------------------------
 // Patch (existing DB — add any content types that are empty)
+// Each section is independent — one failure does not block the rest.
 // ---------------------------------------------------------------------------
 async function patchMissingData(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
 
-  const check = async (uid: string): Promise<boolean> => {
-    const items = await docs(uid).findMany({ limit: 1 });
-    return items.length > 0;
+  const count = async (uid: string): Promise<number> => {
+    try {
+      const items = await docs(uid).findMany({ status: 'published', limit: 1 });
+      return items.length;
+    } catch {
+      return 0;
+    }
   };
 
-  const disciplineIds = (await check('api::discipline.discipline'))
-    ? await getExistingIds(strapi, 'api::discipline.discipline', 'slug')
-    : await seedDisciplines(strapi);
+  const tryRun = async (label: string, fn: () => Promise<void>): Promise<void> => {
+    try {
+      await fn();
+    } catch (err: any) {
+      strapi.log.warn(`[seed:patch] ${label} skipped — ${err?.message ?? err}`);
+    }
+  };
+
+  // ── Reference maps (disciplines, classes, coaches) ────────────────────────
+  let disciplineIds: Record<string, string> = {};
+  await tryRun('disciplines', async () => {
+    disciplineIds = (await count('api::discipline.discipline')) > 0
+      ? await getExistingIds(strapi, 'api::discipline.discipline', 'slug')
+      : await seedDisciplines(strapi);
+  });
 
   let classIds: Record<string, string> = {};
-  if (await check('api::class.class')) {
-    classIds = await getExistingIds(strapi, 'api::class.class', 'slug');
-  } else {
-    classIds = await seedClasses(strapi, disciplineIds);
-  }
+  await tryRun('classes', async () => {
+    classIds = (await count('api::class.class')) > 0
+      ? await getExistingIds(strapi, 'api::class.class', 'slug')
+      : await seedClasses(strapi, disciplineIds);
+  });
 
   let coachIds: Record<string, string> = {};
-  if (await check('api::coach.coach')) {
-    coachIds = await getExistingIds(strapi, 'api::coach.coach', 'slug');
-  } else {
-    coachIds = await seedCoaches(strapi, disciplineIds);
-  }
+  await tryRun('coaches', async () => {
+    coachIds = (await count('api::coach.coach')) > 0
+      ? await getExistingIds(strapi, 'api::coach.coach', 'slug')
+      : await seedCoaches(strapi, disciplineIds);
+  });
 
-  if (!(await check('api::schedule-slot.schedule-slot'))) {
-    await seedSchedule(strapi, classIds, coachIds);
-    strapi.log.info('[seed:patch] Created schedule slots');
-  }
+  strapi.log.info(`[seed:patch] Reference IDs — disciplines:${Object.keys(disciplineIds).length} classes:${Object.keys(classIds).length} coaches:${Object.keys(coachIds).length}`);
 
-  if (!(await check('api::pricing-tier.pricing-tier'))) {
-    await seedPricing(strapi);
-    strapi.log.info('[seed:patch] Created pricing tiers + passes');
-  }
+  // ── Schedule slots ────────────────────────────────────────────────────────
+  await tryRun('schedule slots', async () => {
+    if ((await count('api::schedule-slot.schedule-slot')) === 0) {
+      await seedSchedule(strapi, classIds, coachIds);
+      strapi.log.info('[seed:patch] Created schedule slots');
+    }
+  });
 
-  if (!(await check('api::testimonial.testimonial'))) {
-    await seedTestimonials(strapi);
-    strapi.log.info('[seed:patch] Created testimonials');
-  }
+  // ── Pricing tiers + passes ────────────────────────────────────────────────
+  await tryRun('pricing', async () => {
+    if ((await count('api::pricing-tier.pricing-tier')) === 0) {
+      await seedPricing(strapi);
+      strapi.log.info('[seed:patch] Created pricing tiers + passes');
+    }
+  });
 
+  // ── Testimonials ──────────────────────────────────────────────────────────
+  await tryRun('testimonials', async () => {
+    if ((await count('api::testimonial.testimonial')) === 0) {
+      await seedTestimonials(strapi);
+      strapi.log.info('[seed:patch] Created testimonials');
+    }
+  });
+
+  // ── FAQ categories ────────────────────────────────────────────────────────
   let faqCatIds: Record<string, string> = {};
-  if (await check('api::faq-category.faq-category')) {
-    faqCatIds = await getExistingIds(strapi, 'api::faq-category.faq-category', 'slug');
-  } else {
-    faqCatIds = await seedFaqCategories(strapi);
-    strapi.log.info('[seed:patch] Created FAQ categories');
-  }
+  await tryRun('faq categories', async () => {
+    if ((await count('api::faq-category.faq-category')) > 0) {
+      faqCatIds = await getExistingIds(strapi, 'api::faq-category.faq-category', 'slug');
+    } else {
+      faqCatIds = await seedFaqCategories(strapi);
+      strapi.log.info('[seed:patch] Created FAQ categories');
+    }
+  });
 
-  if (!(await check('api::faq.faq'))) {
-    await seedFaqs(strapi, faqCatIds);
-    strapi.log.info('[seed:patch] Created FAQs');
-  }
+  // ── FAQs ──────────────────────────────────────────────────────────────────
+  await tryRun('faqs', async () => {
+    if ((await count('api::faq.faq')) === 0) {
+      await seedFaqs(strapi, faqCatIds);
+      strapi.log.info('[seed:patch] Created FAQs');
+    }
+  });
 
+  // ── Authors ───────────────────────────────────────────────────────────────
   let authorIds: Record<string, string> = {};
-  if (await check('api::author.author')) {
-    authorIds = await getExistingIds(strapi, 'api::author.author', 'slug');
-  } else {
-    authorIds = await seedAuthors(strapi);
-    strapi.log.info('[seed:patch] Created authors');
-  }
+  await tryRun('authors', async () => {
+    if ((await count('api::author.author')) > 0) {
+      authorIds = await getExistingIds(strapi, 'api::author.author', 'slug');
+    } else {
+      authorIds = await seedAuthors(strapi);
+      strapi.log.info('[seed:patch] Created authors');
+    }
+  });
 
+  // ── Post categories ───────────────────────────────────────────────────────
   let postCatIds: Record<string, string> = {};
-  if (await check('api::post-category.post-category')) {
-    postCatIds = await getExistingIds(strapi, 'api::post-category.post-category', 'slug');
-  } else {
-    postCatIds = await seedPostCategories(strapi);
-    strapi.log.info('[seed:patch] Created post categories');
-  }
+  await tryRun('post categories', async () => {
+    if ((await count('api::post-category.post-category')) > 0) {
+      postCatIds = await getExistingIds(strapi, 'api::post-category.post-category', 'slug');
+    } else {
+      postCatIds = await seedPostCategories(strapi);
+      strapi.log.info('[seed:patch] Created post categories');
+    }
+  });
 
-  if (!(await check('api::post.post'))) {
-    await seedPosts(strapi, authorIds, postCatIds);
-    strapi.log.info('[seed:patch] Created blog posts');
-  }
+  // ── Blog posts ────────────────────────────────────────────────────────────
+  await tryRun('blog posts', async () => {
+    if ((await count('api::post.post')) === 0) {
+      await seedPosts(strapi, authorIds, postCatIds);
+      strapi.log.info('[seed:patch] Created blog posts');
+    }
+  });
 
-  if (!(await check('api::amenity.amenity'))) {
-    await seedAmenities(strapi);
-    strapi.log.info('[seed:patch] Created amenities');
-  }
+  // ── Amenities ─────────────────────────────────────────────────────────────
+  await tryRun('amenities', async () => {
+    if ((await count('api::amenity.amenity')) === 0) {
+      await seedAmenities(strapi);
+      strapi.log.info('[seed:patch] Created amenities');
+    }
+  });
 
-  if (!(await check('api::legal-page.legal-page'))) {
-    await seedLegalPages(strapi);
-    strapi.log.info('[seed:patch] Created legal pages');
-  }
+  // ── Legal pages ───────────────────────────────────────────────────────────
+  await tryRun('legal pages', async () => {
+    if ((await count('api::legal-page.legal-page')) === 0) {
+      await seedLegalPages(strapi);
+      strapi.log.info('[seed:patch] Created legal pages');
+    }
+  });
 
-  if (!(await check('api::program.program'))) {
-    await seedPrograms(strapi);
-    strapi.log.info('[seed:patch] Created programs');
-  }
+  // ── Programs ─────────────────────────────────────────────────────────────
+  await tryRun('programs', async () => {
+    if ((await count('api::program.program')) === 0) {
+      await seedPrograms(strapi);
+      strapi.log.info('[seed:patch] Created programs');
+    }
+  });
 
-  strapi.log.info('[seed:patch] Patch complete');
+  strapi.log.info('[seed:patch] Patch run complete');
 }
 
 // ---------------------------------------------------------------------------
