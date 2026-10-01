@@ -20,9 +20,9 @@ try {
 } catch { /* CMS offline */ }
 
 const fallbackTiers: StrapiPricingTier[] = [
-  { documentId: '1', name: 'Starter',      slug: 'starter',      tagline: 'Perfect for your first month', features: ['2 classes/week', 'Access to open gym', 'Beginner workshops'], isMostPopular: false, colour: 'blue',   sortOrder: 1 },
-  { documentId: '2', name: 'Signature',    slug: 'signature',    tagline: 'For the committed athlete',    features: ['Unlimited classes', 'Priority booking', 'Nutrition guide', 'Monthly check-in'], isMostPopular: true, colour: 'yellow', sortOrder: 2 },
-  { documentId: '3', name: 'Transformation', slug: 'transformation', tagline: 'Elite coaching + access', features: ['Everything in Signature', '1-on-1 sessions/month', 'Body composition analysis', 'Custom training plan'], isMostPopular: false, colour: 'red', sortOrder: 3 },
+  { documentId: '1', name: 'Starter',        slug: 'starter',        tagline: 'Perfect for your first month', features: '2 classes/week\nAccess to open gym\nBeginner workshops',                                                    isMostPopular: false, colour: 'blue',   sortOrder: 1 },
+  { documentId: '2', name: 'Signature',      slug: 'signature',      tagline: 'For the committed athlete',    features: 'Unlimited classes\nPriority booking\nNutrition guide\nMonthly check-in',                                    isMostPopular: true,  colour: 'yellow', sortOrder: 2 },
+  { documentId: '3', name: 'Transformation', slug: 'transformation', tagline: 'Elite coaching + access',     features: 'Everything in Signature\n1-on-1 sessions/month\nBody composition analysis\nCustom training plan',            isMostPopular: false, colour: 'red',    sortOrder: 3 },
 ];
 
 const displayTiers = tiers.length > 0 ? tiers : fallbackTiers;
@@ -34,6 +34,14 @@ function cheapestPrice(tierId: string): string | null {
   const min = Math.min(...tierPasses.map((p) => p.priceLKR));
   return `LKR ${min.toLocaleString()}`;
 }
+
+// Handle features as either a newline-string (schema: text) or legacy array (old JSON column)
+const toLines = (v: unknown): string[] => {
+  if (!v) return [];
+  if (Array.isArray(v)) return (v as string[]).filter(Boolean);
+  if (typeof v === 'string') return v.split('\n').filter(Boolean);
+  return [];
+};
 
 const tierColour: Record<string, { bg: string; text: string; border: string }> = {
   yellow: { bg: 'var(--color-twh-yellow)',    text: 'var(--color-twh-black)',  border: 'var(--color-twh-yellow)' },
@@ -76,9 +84,9 @@ const tierColour: Record<string, { bg: string; text: string; border: string }> =
                   <a href="/pricing" class="twh-pricing__price-link" style={`color: ${colors.bg};`}>See prices →</a>
                 </div>
               )}
-              {tier.features && tier.features.trim().length > 0 && (
+              {toLines(tier.features).length > 0 && (
                 <ul class="twh-pricing__features" role="list">
-                  {tier.features.split('\n').filter(Boolean).map((f) => (
+                  {toLines(tier.features).map((f) => (
                     <li class="twh-pricing__feature">
                       <span class="twh-pricing__feature-check" aria-hidden="true" style={`color: ${colors.bg};`}>✓</span>
                       {f}

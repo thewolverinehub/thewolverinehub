@@ -221,9 +221,12 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
 
   let coachIds: Record<string, string> = {};
   await tryRun('coaches', async () => {
-    coachIds = (await count('api::coach.coach')) > 0
-      ? await getExistingIds(strapi, 'api::coach.coach', 'slug')
-      : await seedCoaches(strapi, disciplineIds);
+    if ((await count('api::coach.coach')) > 0) {
+      coachIds = await getExistingIds(strapi, 'api::coach.coach', 'slug');
+      await fixArrayFields(strapi, 'api::coach.coach', 'specialties');
+    } else {
+      coachIds = await seedCoaches(strapi, disciplineIds);
+    }
   });
 
   strapi.log.info(`[seed:patch] Reference IDs — disciplines:${Object.keys(disciplineIds).length} classes:${Object.keys(classIds).length} coaches:${Object.keys(coachIds).length}`);
@@ -241,6 +244,9 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     if ((await count('api::pricing-tier.pricing-tier')) === 0) {
       await seedPricing(strapi);
       strapi.log.info('[seed:patch] Created pricing tiers + passes');
+    } else {
+      // Fix legacy records where features was stored as a JSON array (pre-schema-change)
+      await fixArrayFields(strapi, 'api::pricing-tier.pricing-tier', 'features');
     }
   });
 
@@ -298,6 +304,8 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     if ((await count('api::post.post')) === 0) {
       await seedPosts(strapi, authorIds, postCatIds);
       strapi.log.info('[seed:patch] Created blog posts');
+    } else {
+      await fixArrayFields(strapi, 'api::post.post', 'tags');
     }
   });
 
@@ -374,6 +382,29 @@ function genDocId(): string {
   let id = '';
   for (let i = 0; i < 24; i++) id += chars[Math.floor(Math.random() * chars.length)];
   return id;
+}
+
+// ---------------------------------------------------------------------------
+// Helper: convert any field stored as a JSON array back to a newline string.
+// Needed when a schema changes from json → text but old rows keep array values.
+// ---------------------------------------------------------------------------
+async function fixArrayFields(
+  strapi: Core.Strapi,
+  uid: string,
+  ...fields: string[]
+): Promise<void> {
+  const rows: any[] = await (strapi.db as any).query(uid).findMany({ limit: 500 });
+  for (const row of rows) {
+    const updates: Record<string, string> = {};
+    for (const f of fields) {
+      if (Array.isArray(row[f])) {
+        updates[f] = (row[f] as string[]).filter(Boolean).join('\n');
+      }
+    }
+    if (Object.keys(updates).length > 0) {
+      await (strapi.db as any).query(uid).update({ where: { id: row.id }, data: updates });
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

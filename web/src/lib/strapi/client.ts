@@ -55,11 +55,12 @@ export async function fetchList<T>(
   contentType: string,
   params = '',
   options: FetchOptions = {}
-): Promise<StrapiListResponse<T>> {
-  return strapiRequest<StrapiListResponse<T>>(
+): Promise<T[]> {
+  const res = await strapiRequest<StrapiListResponse<T>>(
     `/${contentType}?populate=deep${params ? `&${params}` : ''}`,
     options
   );
+  return res.data;
 }
 
 export async function fetchOne<T>(
