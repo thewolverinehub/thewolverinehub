@@ -187,9 +187,10 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 async function patchMissingData(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
 
+  // Check total count regardless of published/draft status
   const count = async (uid: string): Promise<number> => {
     try {
-      const items = await docs(uid).findMany({ status: 'published', limit: 1 });
+      const items = await docs(uid).findMany({ limit: 1 });
       return items.length;
     } catch {
       return 0;
@@ -325,11 +326,16 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     }
   });
 
+  // ── Ensure everything is published ────────────────────────────────────────
+  await tryRun('publish sweep', async () => {
+    await publishAllContent(strapi);
+  });
+
   strapi.log.info('[seed:patch] Patch run complete');
 }
 
 // ---------------------------------------------------------------------------
-// Helper: get existing documentIds keyed by a slug/name field
+// Helper: get existing documentIds keyed by a slug/name field (any status)
 // ---------------------------------------------------------------------------
 async function getExistingIds(
   strapi: Core.Strapi,
@@ -337,6 +343,7 @@ async function getExistingIds(
   field: string,
 ): Promise<Record<string, string>> {
   const docs = strapi.documents as (uid: string) => any;
+  // fetch all versions — no status filter so we get draft-only docs too
   const items = await docs(uid).findMany({ limit: 200 });
   const map: Record<string, string> = {};
   for (const item of items) {
