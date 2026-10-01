@@ -79,63 +79,49 @@ export default {
 
 // ---------------------------------------------------------------------------
 async function setPublicPermissions(strapi: Core.Strapi) {
-  // Use the users-permissions plugin service API so Strapi's ORM manages the
-  // junction table correctly — raw Knex inserts bypass the ORM and cause the
-  // dedup check to fail on every restart.
-  const plugin = (strapi as any).plugin('users-permissions');
-  if (!plugin) {
-    strapi.log.warn('[bootstrap] users-permissions plugin not found — skipping permission setup');
-    return;
-  }
+  // In Strapi v5 the users-permissions roleService.findOne() only returns
+  // plugin-level actions in its permission tree — never api:: actions.
+  // We create api:: permissions directly via strapi.db.query so they land in
+  // up_permissions and up_permissions_role_lnk through the ORM.
+  const db = (strapi as any).db;
 
-  const roleService = plugin.service('role');
-
-  const roles: Array<{ id: number; type: string }> = await roleService.find();
-  const publicRole = roles.find((r) => r.type === 'public');
+  const publicRole = await db.query('plugin::users-permissions.role').findOne({
+    where: { type: 'public' },
+  });
   if (!publicRole) {
     strapi.log.warn('[bootstrap] Public role not found — skipping permission setup');
     return;
   }
 
-  // findOne returns the role with a full permission TREE:
-  // { "api::global": { controllers: { global: { find: { enabled, policy } } } } }
-  const roleWithPerms: any = await roleService.findOne(publicRole.id);
-  const permissions: Record<string, any> = roleWithPerms.permissions ?? {};
+  // Build the full set of action strings we want enabled.
+  const desired: string[] = [];
+  for (const uid of PUBLIC_READ) {
+    desired.push(`${uid}.find`, `${uid}.findOne`);
+  }
+  for (const uid of PUBLIC_CREATE_ONLY) {
+    desired.push(`${uid}.create`);
+  }
 
-  // Debug: log what top-level keys the permission tree contains
-  const treeKeys = Object.keys(permissions);
-  strapi.log.info(`[bootstrap] Permission tree top-level keys (${treeKeys.length}): ${treeKeys.slice(0, 10).join(', ')}`);
-  const apiKeys = treeKeys.filter(k => k.startsWith('api::'));
-  strapi.log.info(`[bootstrap] API keys in tree: ${apiKeys.length > 0 ? apiKeys.join(', ') : '(none)'}`);
+  // Find which actions already exist in DB for the public role.
+  const existing: Array<{ action: string }> = await db
+    .query('plugin::users-permissions.permission')
+    .findMany({ where: { role: { id: publicRole.id } } });
+  const existingSet = new Set(existing.map((p: { action: string }) => p.action));
 
-  // Helper: parse 'api::global.global' → apiKey='api::global', controller='global'
-  const enable = (uid: string, actions: string[]) => {
-    const colonIdx = uid.indexOf('::');
-    const rest     = uid.slice(colonIdx + 2); // 'global.global'
-    const dotIdx   = rest.indexOf('.');
-    const apiKey   = `api::${rest.slice(0, dotIdx)}`;       // 'api::global'
-    const ctrl     = rest.slice(dotIdx + 1);                // 'global'
+  const missing = desired.filter((a) => !existingSet.has(a));
 
-    for (const action of actions) {
-      const entry = permissions?.[apiKey]?.controllers?.[ctrl]?.[action];
-      if (entry && !entry.enabled) {
-        entry.enabled = true;
-        changed++;
-      }
-    }
-  };
-
-  let changed = 0;
-  for (const uid of PUBLIC_READ)        enable(uid, ['find', 'findOne']);
-  for (const uid of PUBLIC_CREATE_ONLY) enable(uid, ['create']);
-
-  if (changed === 0) {
+  if (missing.length === 0) {
     strapi.log.info('[bootstrap] Public permissions already up to date');
     return;
   }
 
-  await roleService.updateRole(publicRole.id, { permissions });
-  strapi.log.info(`[bootstrap] Enabled ${changed} public permissions`);
+  for (const action of missing) {
+    await db.query('plugin::users-permissions.permission').create({
+      data: { action, role: publicRole.id },
+    });
+  }
+
+  strapi.log.info(`[bootstrap] Created ${missing.length} public API permissions`);
 }
 
 function checkWebhookSecret(strapi: Core.Strapi) {
