@@ -45,7 +45,7 @@ export async function fetchSingle<T>(
   options: FetchOptions = {}
 ): Promise<T> {
   const res = await strapiRequest<StrapiSingleResponse<T>>(
-    `/${contentType}?populate=deep${params ? `&${params}` : ''}`,
+    `/${contentType}?populate=deep&status=published${params ? `&${params}` : ''}`,
     options
   );
   return res.data;
@@ -57,7 +57,7 @@ export async function fetchList<T>(
   options: FetchOptions = {}
 ): Promise<T[]> {
   const res = await strapiRequest<StrapiListResponse<T>>(
-    `/${contentType}?populate=deep${params ? `&${params}` : ''}`,
+    `/${contentType}?populate=deep&status=published${params ? `&${params}` : ''}`,
     options
   );
   return res.data;
@@ -70,7 +70,7 @@ export async function fetchOne<T>(
   options: FetchOptions = {}
 ): Promise<T | null> {
   const res = await strapiRequest<StrapiListResponse<T>>(
-    `/${contentType}?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=deep${params ? `&${params}` : ''}`,
+    `/${contentType}?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=deep&status=published${params ? `&${params}` : ''}`,
     options
   );
   return res.data[0] ?? null;
