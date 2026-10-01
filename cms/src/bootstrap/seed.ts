@@ -8,10 +8,18 @@ import type { Core } from '@strapi/strapi';
 export async function seedDefaultContent(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
 
-  // Guard — skip if global already exists
-  const existing = await docs('api::global.global').findFirst({});
-  if (existing) {
+  // Guard — only skip if global already has a PUBLISHED version
+  const publishedGlobal = await docs('api::global.global').findFirst({ status: 'published' });
+  if (publishedGlobal) {
     strapi.log.info('[seed] Content already exists — skipping seed');
+    return;
+  }
+
+  // If a draft exists but isn't published, publish it and other key content, then bail
+  const draftGlobal = await docs('api::global.global').findFirst({});
+  if (draftGlobal) {
+    strapi.log.info('[seed] Draft content found — publishing all existing content…');
+    await publishAllContent(strapi);
     return;
   }
 
@@ -353,4 +361,51 @@ export async function seedDefaultContent(strapi: Core.Strapi): Promise<void> {
   });
 
   strapi.log.info('[seed] Default content created successfully');
+}
+
+// ---------------------------------------------------------------------------
+// Publish all draft documents for the content types that the front-end reads.
+// Called when content exists but hasn't been published yet.
+// ---------------------------------------------------------------------------
+async function publishAllContent(strapi: Core.Strapi): Promise<void> {
+  const docs = strapi.documents as (uid: string) => any;
+
+  const singleTypes = [
+    'api::global.global',
+    'api::header.header',
+    'api::footer.footer',
+    'api::ui-strings.ui-strings',
+  ];
+
+  const collections = [
+    'api::page.page',
+    'api::class.class',
+    'api::discipline.discipline',
+    'api::coach.coach',
+    'api::pricing-tier.pricing-tier',
+    'api::pass.pass',
+    'api::testimonial.testimonial',
+    'api::faq.faq',
+    'api::faq-category.faq-category',
+  ];
+
+  let published = 0;
+
+  for (const uid of singleTypes) {
+    const draft = await docs(uid).findFirst({});
+    if (draft) {
+      await docs(uid).publish({ documentId: draft.documentId });
+      published++;
+    }
+  }
+
+  for (const uid of collections) {
+    const drafts = await docs(uid).findMany({ status: 'draft', limit: 200 });
+    for (const draft of drafts) {
+      await docs(uid).publish({ documentId: draft.documentId });
+      published++;
+    }
+  }
+
+  strapi.log.info(`[seed] Published ${published} draft documents`);
 }
