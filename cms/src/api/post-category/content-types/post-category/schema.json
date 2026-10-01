@@ -8,7 +8,7 @@
     "description": "A category for grouping blog/journal articles."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

@@ -79,51 +79,57 @@ export default {
 
 // ---------------------------------------------------------------------------
 async function setPublicPermissions(strapi: Core.Strapi) {
-  // Use the raw Knex connection — Strapi v5 stores role↔permission via a
-  // junction table (up_permissions_role_lnk) that the ORM query builder
-  // doesn't traverse correctly when filtering by role.
-  const knex = (strapi.db as any).connection as import('knex').Knex;
+  // Use the users-permissions plugin service API so Strapi's ORM manages the
+  // junction table correctly — raw Knex inserts bypass the ORM and cause the
+  // dedup check to fail on every restart.
+  const plugin = (strapi as any).plugin('users-permissions');
+  if (!plugin) {
+    strapi.log.warn('[bootstrap] users-permissions plugin not found — skipping permission setup');
+    return;
+  }
 
-  const [publicRole] = await knex('up_roles').where({ type: 'public' }).select('id');
+  const roleService = plugin.service('role');
+
+  const roles: Array<{ id: number; type: string }> = await roleService.find();
+  const publicRole = roles.find((r) => r.type === 'public');
   if (!publicRole) {
     strapi.log.warn('[bootstrap] Public role not found — skipping permission setup');
     return;
   }
 
-  // Fetch existing actions linked to the public role via the junction table
-  const existingPerms = await knex('up_permissions')
-    .join('up_permissions_role_lnk', 'up_permissions.id', 'up_permissions_role_lnk.permission_id')
-    .where('up_permissions_role_lnk.role_id', publicRole.id)
-    .select('up_permissions.action');
+  // findOne returns the role with a full permission TREE:
+  // { "api::global": { controllers: { global: { find: { enabled, policy } } } } }
+  const roleWithPerms: any = await roleService.findOne(publicRole.id);
+  const permissions: Record<string, any> = roleWithPerms.permissions ?? {};
 
-  const existingActions = new Set(existingPerms.map((p: { action: string }) => p.action));
+  // Helper: parse 'api::global.global' → apiKey='api::global', controller='global'
+  const enable = (uid: string, actions: string[]) => {
+    const colonIdx = uid.indexOf('::');
+    const rest     = uid.slice(colonIdx + 2); // 'global.global'
+    const dotIdx   = rest.indexOf('.');
+    const apiKey   = `api::${rest.slice(0, dotIdx)}`;       // 'api::global'
+    const ctrl     = rest.slice(dotIdx + 1);                // 'global'
 
-  const desired: string[] = [];
-  for (const uid of PUBLIC_READ)       desired.push(`${uid}.find`, `${uid}.findOne`);
-  for (const uid of PUBLIC_CREATE_ONLY) desired.push(`${uid}.create`);
+    for (const action of actions) {
+      const entry = permissions?.[apiKey]?.controllers?.[ctrl]?.[action];
+      if (entry && !entry.enabled) {
+        entry.enabled = true;
+        changed++;
+      }
+    }
+  };
 
-  const missing = desired.filter((action) => !existingActions.has(action));
+  let changed = 0;
+  for (const uid of PUBLIC_READ)        enable(uid, ['find', 'findOne']);
+  for (const uid of PUBLIC_CREATE_ONLY) enable(uid, ['create']);
 
-  if (missing.length === 0) {
+  if (changed === 0) {
     strapi.log.info('[bootstrap] Public permissions already up to date');
     return;
   }
 
-  // Insert each missing permission then link it to the public role
-  for (const action of missing) {
-    const documentId = require('crypto').randomUUID();
-    const now = new Date();
-    const [perm] = await knex('up_permissions')
-      .insert({ action, document_id: documentId, created_at: now, updated_at: now, published_at: now })
-      .returning('id');
-    await knex('up_permissions_role_lnk').insert({
-      permission_id: perm.id ?? perm,
-      role_id: publicRole.id,
-      permission_ord: 1,
-    });
-  }
-
-  strapi.log.info(`[bootstrap] Created ${missing.length} public permissions`);
+  await roleService.updateRole(publicRole.id, { permissions });
+  strapi.log.info(`[bootstrap] Enabled ${changed} public permissions`);
 }
 
 function checkWebhookSecret(strapi: Core.Strapi) {

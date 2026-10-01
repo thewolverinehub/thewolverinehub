@@ -8,7 +8,7 @@
     "description": "A key statistic for the Stat Counters section (e.g. '24 disciplines', '5 coaches')."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

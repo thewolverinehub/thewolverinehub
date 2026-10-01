@@ -8,7 +8,7 @@
     "description": "A gym facility or amenity (e.g. Showers, Sauna, Parking) shown on the Contact/About page."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

@@ -8,7 +8,7 @@
     "description": "Site-wide settings: logo, contact details, social links, SEO defaults, and experience feature flags."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

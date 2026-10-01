@@ -8,7 +8,7 @@
     "description": "A URL redirect rule. Use permanent (301) for SEO-safe redirects."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

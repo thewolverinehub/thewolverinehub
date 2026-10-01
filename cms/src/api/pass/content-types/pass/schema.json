@@ -8,7 +8,7 @@
     "description": "A class pass product — number of sessions, validity period, and price."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

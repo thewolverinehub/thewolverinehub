@@ -8,7 +8,7 @@
     "description": "An email address subscribed via the newsletter block."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

@@ -8,7 +8,7 @@
     "description": "A pricing plan shown on the Pricing page. Contains name, tagline, feature list, and colour."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

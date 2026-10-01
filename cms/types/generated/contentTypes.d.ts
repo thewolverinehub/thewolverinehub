@@ -452,7 +452,7 @@ export interface ApiAddOnAddOn extends Struct.CollectionTypeSchema {
     singularName: 'add-on';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -520,7 +520,7 @@ export interface ApiAmenityAmenity extends Struct.CollectionTypeSchema {
     singularName: 'amenity';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -571,7 +571,7 @@ export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
     singularName: 'author';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     bio: Schema.Attribute.Text &
@@ -884,7 +884,7 @@ export interface ApiDisciplineDiscipline extends Struct.CollectionTypeSchema {
     singularName: 'discipline';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     colour: Schema.Attribute.String &
@@ -942,7 +942,7 @@ export interface ApiFaqCategoryFaqCategory extends Struct.CollectionTypeSchema {
     singularName: 'faq-category';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -1061,7 +1061,7 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
     singularName: 'footer';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     columns: Schema.Attribute.Component<'navigation.footer-column', true> &
@@ -1141,7 +1141,7 @@ export interface ApiFormForm extends Struct.CollectionTypeSchema {
     singularName: 'form';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     consentText: Schema.Attribute.Text;
@@ -1256,7 +1256,7 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
     singularName: 'global';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     address: Schema.Attribute.Text &
@@ -1469,7 +1469,7 @@ export interface ApiHeaderHeader extends Struct.SingleTypeSchema {
     singularName: 'header';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     announcementBarColour: Schema.Attribute.Enumeration<
@@ -1543,7 +1543,7 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
     singularName: 'lead';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -1660,7 +1660,7 @@ export interface ApiNewsletterSubscriberNewsletterSubscriber
     singularName: 'newsletter-subscriber';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -1781,7 +1781,7 @@ export interface ApiPartnerPartner extends Struct.CollectionTypeSchema {
     singularName: 'partner';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -1833,7 +1833,7 @@ export interface ApiPassPass extends Struct.CollectionTypeSchema {
     singularName: 'pass';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -1916,7 +1916,7 @@ export interface ApiPostCategoryPostCategory
     singularName: 'post-category';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -2069,7 +2069,7 @@ export interface ApiPricingTierPricingTier extends Struct.CollectionTypeSchema {
     singularName: 'pricing-tier';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     colour: Schema.Attribute.Enumeration<['yellow', 'blue', 'red', 'white']> &

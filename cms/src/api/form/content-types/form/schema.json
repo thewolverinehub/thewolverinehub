@@ -8,7 +8,7 @@
     "description": "A form definition for contact and lead-capture forms. Configure fields and destination here."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

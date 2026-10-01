@@ -8,7 +8,7 @@
     "description": "Navigation menu links, announcement bar, and top-bar call-to-action button."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

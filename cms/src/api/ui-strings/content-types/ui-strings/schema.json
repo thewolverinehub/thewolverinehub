@@ -8,7 +8,7 @@
     "description": "All text labels used across the site UI — button copy, error messages, accessibility labels. Edit here to update wording without a code deploy."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

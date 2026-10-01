@@ -8,7 +8,7 @@
     "description": "Groups FAQs on the FAQ page (e.g. Membership, Classes, Facilities)."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

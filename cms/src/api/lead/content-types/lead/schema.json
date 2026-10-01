@@ -8,7 +8,7 @@
     "description": "An enquiry or lead captured from a site contact form."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

@@ -8,7 +8,7 @@
     "description": "Footer content: navigation columns, newsletter signup, legal links, copyright text, and wordmark."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

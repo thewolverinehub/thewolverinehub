@@ -8,7 +8,7 @@
     "description": "A training discipline (e.g. Boxing, HIIT) used to categorise classes and coaches."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

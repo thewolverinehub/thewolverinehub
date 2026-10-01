@@ -8,7 +8,7 @@
     "description": "A token bundle product that members purchase to book individual classes."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

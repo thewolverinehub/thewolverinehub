@@ -8,7 +8,7 @@
     "description": "A recurring class slot on the weekly timetable — weekday, start/end time, class, coach, and capacity."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {

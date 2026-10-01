@@ -8,7 +8,7 @@
     "description": "A blog post author — name, bio, photo, and links."
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
