@@ -34,7 +34,6 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 
   // ── Global ───────────────────────────────────────────────────────────────
   await docs('api::global.global').create({
-    status: 'published',
     data: {
       siteName: 'The Wolverine Hub',
       siteTagline: 'Where Iron Meets Instinct.',
@@ -55,7 +54,6 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 
   // ── Header ────────────────────────────────────────────────────────────────
   await docs('api::header.header').create({
-    status: 'published',
     data: {
       menuItems: [
         { label: 'Classes',  href: '/classes',  indexNumber: '01', description: '24 disciplines. Every level.' },
@@ -73,7 +71,6 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 
   // ── Footer ────────────────────────────────────────────────────────────────
   await docs('api::footer.footer').create({
-    status: 'published',
     data: {
       wordmarkText: 'THE WOLVERINE HUB',
       newsletterEnabled: true,
@@ -118,7 +115,6 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 
   // ── UI Strings ────────────────────────────────────────────────────────────
   await docs('api::ui-strings.ui-strings').create({
-    status: 'published',
     data: {
       skipLinkLabel: 'Skip to main content',
       searchPlaceholder: 'Search classes, coaches…',
@@ -177,6 +173,9 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
   // ── Home page ─────────────────────────────────────────────────────────────
   await seedHomePage(strapi);
 
+  // Publish all drafts so content is live via the REST API
+  await publishAllContent(strapi);
+
   strapi.log.info('[seed] All default content created successfully');
 }
 
@@ -186,6 +185,9 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
 // ---------------------------------------------------------------------------
 async function patchMissingData(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
+
+  // Ensure all documents have draft copies so the REST API can find them
+  await repairPublishedOnly(strapi);
 
   // Count via raw DB query — bypasses draft/published status confusion
   const count = async (uid: string): Promise<number> => {
@@ -385,6 +387,61 @@ function genDocId(): string {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: create draft copies for any published-only documents.
+//
+// In Strapi v5, docs.create({ status:'published' }) creates a single row with
+// publishedAt set but NO separate draft row.  The REST API's internal handler
+// calls findFirst()/findMany() without an explicit status — which defaults to
+// DRAFT context — so it returns null/[] for published-only documents → 404.
+//
+// Fix: for every published-only document, insert a matching draft row (same
+// documentId, publishedAt = null).  The REST API can then locate the document
+// via the draft row and serve the published content to public users.
+// ---------------------------------------------------------------------------
+async function repairPublishedOnly(strapi: Core.Strapi): Promise<void> {
+  const uids = [
+    'api::global.global', 'api::header.header', 'api::footer.footer',
+    'api::ui-strings.ui-strings', 'api::discipline.discipline',
+    'api::class.class', 'api::coach.coach', 'api::schedule-slot.schedule-slot',
+    'api::pricing-tier.pricing-tier', 'api::pass.pass',
+    'api::testimonial.testimonial', 'api::faq-category.faq-category',
+    'api::faq.faq', 'api::post-category.post-category',
+    'api::author.author', 'api::post.post', 'api::amenity.amenity',
+    'api::program.program', 'api::legal-page.legal-page', 'api::page.page',
+  ];
+
+  let created = 0;
+  for (const uid of uids) {
+    try {
+      const db = (strapi.db as any).query(uid);
+      const allRows: any[] = await db.findMany({ limit: 1000 });
+
+      const draftDocIds = new Set<string>(
+        allRows
+          .filter((r: any) => !r.publishedAt)
+          .map((r: any) => r.documentId ?? String(r.id)),
+      );
+
+      for (const row of allRows) {
+        const docId: string = row.documentId ?? String(row.id);
+        if (!row.publishedAt || draftDocIds.has(docId)) continue;
+
+        // Extract scalar fields (skip id and publishedAt — new row needs fresh id + null publishedAt)
+        const { id, publishedAt, published_at, ...draft } = row;
+        try {
+          await db.create({ data: { ...draft, documentId: docId, publishedAt: null } });
+          created++;
+        } catch { /* already exists or constraint — skip */ }
+      }
+    } catch { /* content type not yet registered — skip */ }
+  }
+
+  if (created > 0) {
+    strapi.log.info(`[seed:patch] Created ${created} draft copies for published-only documents`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Helper: convert any field stored as a JSON array back to a newline string.
 // Needed when a schema changes from json → text but old rows keep array values.
 // ---------------------------------------------------------------------------
@@ -424,7 +481,7 @@ async function seedDisciplines(strapi: Core.Strapi): Promise<Record<string, stri
   ];
   const ids: Record<string, string> = {};
   for (const d of list) {
-    const c = await docs('api::discipline.discipline').create({ status: 'published', data: d });
+    const c = await docs('api::discipline.discipline').create({ data:d });
     ids[d.slug] = c.documentId;
   }
   return ids;
@@ -517,7 +574,6 @@ async function seedClasses(
   for (const cls of list) {
     const { disciplineSlug, ...rest } = cls;
     const c = await docs('api::class.class').create({
-      status: 'published',
       data: {
         ...rest,
         discipline: disciplineIds[disciplineSlug] ? { documentId: disciplineIds[disciplineSlug] } : undefined,
@@ -609,7 +665,6 @@ async function seedCoaches(
       .filter((s: string) => disciplineIds[s])
       .map((s: string) => ({ documentId: disciplineIds[s] }));
     const c = await docs('api::coach.coach').create({
-      status: 'published',
       data: { ...rest, disciplines },
     });
     ids[coach.slug] = c.documentId;
@@ -746,7 +801,7 @@ async function seedPricing(strapi: Core.Strapi): Promise<void> {
 
   const tierIds: Record<string, string> = {};
   for (const t of tiers) {
-    const c = await docs('api::pricing-tier.pricing-tier').create({ status: 'published', data: t });
+    const c = await docs('api::pricing-tier.pricing-tier').create({ data:t });
     tierIds[t.slug] = c.documentId;
   }
 
@@ -762,7 +817,6 @@ async function seedPricing(strapi: Core.Strapi): Promise<void> {
   for (const p of passes) {
     const { tierSlug, ...rest } = p;
     await docs('api::pass.pass').create({
-      status: 'published',
       data: { ...rest, tier: tierIds[tierSlug] ? { documentId: tierIds[tierSlug] } : undefined },
     });
   }
@@ -784,7 +838,7 @@ async function seedTestimonials(strapi: Core.Strapi): Promise<void> {
     { quote: 'Tried three gyms in Colombo. Nothing comes close. The coaching quality here is different class.', authorName: 'Naomi S.', authorTitle: 'Kickboxing Member', rating: 5, isFeatured: false },
   ];
   for (const t of list) {
-    await docs('api::testimonial.testimonial').create({ status: 'published', data: t });
+    await docs('api::testimonial.testimonial').create({ data:t });
   }
 }
 
@@ -801,7 +855,7 @@ async function seedFaqCategories(strapi: Core.Strapi): Promise<Record<string, st
   ];
   const ids: Record<string, string> = {};
   for (const c of list) {
-    const created = await docs('api::faq-category.faq-category').create({ status: 'published', data: c });
+    const created = await docs('api::faq-category.faq-category').create({ data:c });
     ids[c.slug] = created.documentId;
   }
   return ids;
@@ -893,7 +947,6 @@ async function seedFaqs(strapi: Core.Strapi, catIds: Record<string, string>): Pr
   for (const faq of list) {
     const { catSlug, ...rest } = faq;
     await docs('api::faq.faq').create({
-      status: 'published',
       data: {
         ...rest,
         category: catIds[catSlug] ? { documentId: catIds[catSlug] } : undefined,
@@ -919,7 +972,7 @@ async function seedAuthors(strapi: Core.Strapi): Promise<Record<string, string>>
   ];
   const ids: Record<string, string> = {};
   for (const a of list) {
-    const c = await docs('api::author.author').create({ status: 'published', data: a });
+    const c = await docs('api::author.author').create({ data:a });
     ids[a.slug] = c.documentId;
   }
   return ids;
@@ -938,7 +991,7 @@ async function seedPostCategories(strapi: Core.Strapi): Promise<Record<string, s
   ];
   const ids: Record<string, string> = {};
   for (const c of list) {
-    const created = await docs('api::post-category.post-category').create({ status: 'published', data: c });
+    const created = await docs('api::post-category.post-category').create({ data:c });
     ids[c.slug] = created.documentId;
   }
   return ids;
@@ -1056,7 +1109,6 @@ async function seedPosts(
   for (const post of list) {
     const { authorSlug, catSlug, ...rest } = post;
     await docs('api::post.post').create({
-      status: 'published',
       data: {
         ...rest,
         author:   authorIds[authorSlug]   ? { documentId: authorIds[authorSlug] }   : undefined,
@@ -1082,7 +1134,7 @@ async function seedAmenities(strapi: Core.Strapi): Promise<void> {
     { name: 'Member Lounge', sortOrder: 8 },
   ];
   for (const a of list) {
-    await docs('api::amenity.amenity').create({ status: 'published', data: a });
+    await docs('api::amenity.amenity').create({ data:a });
   }
 }
 
@@ -1095,7 +1147,6 @@ async function seedLegalPages(strapi: Core.Strapi): Promise<void> {
   const h2 = (text: string) => ({ type: 'heading', level: 2, children: [{ type: 'text', text }] });
 
   await docs('api::legal-page.legal-page').create({
-    status: 'published',
     data: {
       title: 'Privacy Policy',
       slug: 'privacy',
@@ -1122,7 +1173,6 @@ async function seedLegalPages(strapi: Core.Strapi): Promise<void> {
   });
 
   await docs('api::legal-page.legal-page').create({
-    status: 'published',
     data: {
       title: 'Terms of Use',
       slug: 'terms',
@@ -1190,7 +1240,7 @@ async function seedPrograms(strapi: Core.Strapi): Promise<void> {
     },
   ];
   for (const prog of list) {
-    await docs('api::program.program').create({ status: 'published', data: prog });
+    await docs('api::program.program').create({ data:prog });
   }
 }
 
@@ -1200,7 +1250,6 @@ async function seedPrograms(strapi: Core.Strapi): Promise<void> {
 async function seedHomePage(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
   await docs('api::page.page').create({
-    status: 'published',
     data: {
       title: 'Home',
       slug: 'home',
