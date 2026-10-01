@@ -10,6 +10,27 @@ const year = new Date().getFullYear();
 const siteName = global?.siteName ?? 'The Wolverine Hub';
 const wordmark = footer?.wordmarkText ?? 'THE WOLVERINE HUB';
 
+const fallbackColumns: StrapiFooter['columns'] = [
+  { heading: 'Train', links: [
+    { label: 'All Classes', href: '/classes',   openInNewTab: false },
+    { label: 'Schedule',    href: '/schedule',  openInNewTab: false },
+    { label: 'Programs',    href: '/programs',  openInNewTab: false },
+    { label: 'Free Trial',  href: '/contact',   openInNewTab: false },
+  ]},
+  { heading: 'About', links: [
+    { label: 'Our Coaches', href: '/coaches',  openInNewTab: false },
+    { label: 'Pricing',     href: '/pricing',  openInNewTab: false },
+    { label: 'Gallery',     href: '/gallery',  openInNewTab: false },
+    { label: 'Contact',     href: '/contact',  openInNewTab: false },
+  ]},
+  { heading: 'Info', links: [
+    { label: 'Blog', href: '/blog', openInNewTab: false },
+    { label: 'FAQ',  href: '/faq',  openInNewTab: false },
+  ]},
+];
+
+const columns = (footer?.columns?.length ?? 0) > 0 ? footer!.columns : fallbackColumns;
+
 const socials = [
   { key: 'instagram', label: 'Instagram', short: 'IG', href: global?.instagram },
   { key: 'facebook',  label: 'Facebook',  short: 'FB', href: global?.facebook  },
@@ -83,8 +104,8 @@ const socials = [
       )}
     </div>
 
-    <!-- Navigation columns from Strapi -->
-    {footer?.columns?.map((col) => (
+    <!-- Navigation columns -->
+    {columns.map((col) => (
       <div class="twh-footer__col">
         <h3 class="twh-footer__col-heading">{col.heading}</h3>
         <ul class="twh-footer__col-links" role="list">
