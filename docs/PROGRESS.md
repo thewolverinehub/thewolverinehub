@@ -61,3 +61,46 @@
 ### Open Issues
 - Preview API endpoint (`/api/preview`) — add when preview route is needed
 - Inner pages (classes, schedule, programs, coaches, pricing, etc.) — Phase 6+
+
+---
+
+## Phase 6 — CMS data pipeline repair
+**Date:** 2026-10-01 | **Status:** Complete ✓
+
+### Root causes found and fixed
+- **Missing routes/services**: All 28 content types had no `routes/` or `services/` dirs → zero REST endpoints existed. Generated `routes/<name>.ts` + `services/<name>.ts` for all types.
+- **`checkSuites: true`**: Railway skipped every git-triggered deploy (no CI configured). Disabled via Railway agent.
+- **`populate=deep` removed in Strapi v5**: Every API call returned 400. Changed to `populate=*` in `client.ts`.
+- **`fetchList` returning wrapper**: Fixed to unwrap `.data` and return `T[]`. Updated `middleware.ts` and `api/search.ts` callers.
+- **`repairPublishedOnly` causing duplicates**: Phantom draft rows were published by `publishAllContent`, doubling every content type. Added `deduplicateDocuments()` to clean DB on next boot; removed broken repair call.
+- **Coach `specialties` null**: Old seed sent arrays into a `text` field → Strapi stored null. Added `patchCoachSpecialties()` to update on next boot.
+- **`status=published` missing**: All API requests now include `&status=published` so Strapi v5 returns published content.
+
+### Current live state
+- CMS API: all endpoints return 200 ✓
+- Web: all pages render CMS data (coaches, schedule, pricing, blog posts) ✓
+- Auto-deploy on push: working (checkSuites disabled) ✓
+- Local web build: clean ✓
+- Local CMS: `npm run develop` in `cms/` starts Strapi against Railway DB
+
+### Open issues
+- Duplicate content records being cleaned on next CMS boot (deduplicateDocuments)
+- Coach specialties being patched on next CMS boot (patchCoachSpecialties)
+- Inner pages need section-by-section content review and styling pass — Phase 7
+
+---
+
+## Phase 7 — Inner pages (in progress)
+**Date:** 2026-10-02 | **Status:** In Progress
+
+### Pages to build / review (in order)
+1. `/` — Home — sections already wired; verify all data shows correctly after dedup
+2. `/classes` — Index + `[slug]` detail
+3. `/coaches` — Index + `[slug]` detail
+4. `/schedule` — Full week grid
+5. `/pricing` — Tiers + passes + FAQ
+6. `/blog` — Index + `[slug]` article
+7. `/contact` — Form + map
+8. `/programs` — ⚠️ page missing, needs to be built
+9. `/faq` — ⚠️ page missing, needs to be built
+10. `/gallery` — ⚠️ page missing, needs to be built
