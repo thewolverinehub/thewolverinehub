@@ -7,68 +7,73 @@ interface Props {
 
 const { section } = Astro.props;
 
-const heading        = section?.heading        ?? 'Ready to Start?';
-const subheading     = section?.subheading     ?? 'Your first class is on us. No excuses. No delays.';
-const primaryCta     = section?.primaryCta     ?? { label: 'Book a Free Trial', href: '/free-trial', variant: 'primary', openInNewTab: false };
-const secondaryCta   = section?.secondaryCta;
-const backgroundToken = section?.backgroundToken ?? 'red';
-const anchorId       = section?.anchorId       ?? 'cta';
-
-const bgMap: Record<string, string> = {
-  red:        'var(--color-twh-red)',
-  yellow:     'var(--color-twh-yellow)',
-  blue:       'var(--color-twh-blue)',
-  'blue-deep': 'var(--color-twh-blue-deep)',
-  black:      'var(--color-twh-black)',
-  ink:        'var(--color-twh-ink)',
-};
-
-const textMap: Record<string, string> = {
-  red: 'var(--color-twh-white)', yellow: 'var(--color-twh-black)',
-  blue: 'var(--color-twh-white)', 'blue-deep': 'var(--color-twh-white)',
-  black: 'var(--color-twh-white)', ink: 'var(--color-twh-white)',
-};
-
-const bg   = bgMap[backgroundToken]   ?? bgMap.red;
-const text = textMap[backgroundToken] ?? textMap.red;
+const heading      = section?.heading    ?? 'Ready to Start?';
+const subheading   = section?.subheading ?? 'Your first class is free. No contracts. No excuses.';
+const primaryCta   = section?.primaryCta ?? { label: 'Book a Free Trial', href: '/contact', variant: 'primary', openInNewTab: false };
+const secondaryCta = section?.secondaryCta;
+const anchorId     = section?.anchorId ?? 'cta';
 ---
 
-<section
-  class="twh-cta-banner"
-  id={anchorId}
-  aria-label="Call to action"
-  style={`--cta-bg: ${bg}; --cta-text: ${text};`}
->
-  <div class="twh-cta-banner__slashes" aria-hidden="true">
-    <span class="twh-cta-banner__slash twh-cta-banner__slash--1">/</span>
-    <span class="twh-cta-banner__slash twh-cta-banner__slash--2">/</span>
-    <span class="twh-cta-banner__slash twh-cta-banner__slash--3">/</span>
+<section class="twh-cta-banner" id={anchorId} aria-label="Call to action">
+
+  <!-- Background slash stack -->
+  <div class="twh-cta-banner__bg" aria-hidden="true">
+    <span class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--1">/</span>
+    <span class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--2">/</span>
+    <span class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--3">/</span>
   </div>
 
+  <!-- Red accent band -->
+  <div class="twh-cta-banner__accent" aria-hidden="true"></div>
+
   <div class="twh-cta-banner__inner">
-    <h2 class="twh-cta-banner__heading">{heading}</h2>
-    {subheading && <p class="twh-cta-banner__sub">{subheading}</p>}
-    <div class="twh-cta-banner__ctas">
-      <a
-        href={primaryCta.href}
-        class={`twh-btn twh-btn--${backgroundToken === 'yellow' ? 'secondary' : 'primary'} twh-btn--lg`}
-        target={primaryCta.openInNewTab ? '_blank' : undefined}
-        rel={primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
-        style={backgroundToken === 'yellow' ? 'border-color:var(--color-twh-black);color:var(--color-twh-black);' : ''}
-      >
-        {primaryCta.label}
-      </a>
-      {secondaryCta && (
+
+    <!-- Left: eyebrow + heading + CTAs -->
+    <div class="twh-cta-banner__content">
+      <p class="twh-cta-banner__eyebrow">First Class Free</p>
+      <h2 class="twh-cta-banner__heading">{heading}</h2>
+      {subheading && <p class="twh-cta-banner__sub">{subheading}</p>}
+
+      <div class="twh-cta-banner__ctas">
         <a
-          href={secondaryCta.href}
-          class="twh-btn twh-btn--ghost twh-btn--lg twh-cta-banner__secondary"
-          target={secondaryCta.openInNewTab ? '_blank' : undefined}
-          rel={secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+          href={primaryCta.href}
+          class="twh-btn twh-btn--primary twh-btn--lg"
+          target={primaryCta.openInNewTab ? '_blank' : undefined}
+          rel={primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
         >
-          {secondaryCta.label}
+          {primaryCta.label}
         </a>
-      )}
+        {secondaryCta && (
+          <a
+            href={secondaryCta.href}
+            class="twh-btn twh-btn--ghost twh-btn--lg twh-cta-banner__secondary"
+            target={secondaryCta.openInNewTab ? '_blank' : undefined}
+            rel={secondaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+          >
+            {secondaryCta.label}
+          </a>
+        )}
+      </div>
     </div>
+
+    <!-- Right: stat cluster -->
+    <div class="twh-cta-banner__stats" aria-hidden="true">
+      <div class="twh-cta-banner__stat">
+        <span class="twh-cta-banner__stat-number">100%</span>
+        <span class="twh-cta-banner__stat-label">No lock-in</span>
+      </div>
+      <div class="twh-cta-banner__stat-divider">/</div>
+      <div class="twh-cta-banner__stat">
+        <span class="twh-cta-banner__stat-number">Day 1</span>
+        <span class="twh-cta-banner__stat-label">Free trial</span>
+      </div>
+      <div class="twh-cta-banner__stat-divider">/</div>
+      <div class="twh-cta-banner__stat">
+        <span class="twh-cta-banner__stat-number">3+</span>
+        <span class="twh-cta-banner__stat-label">Programs</span>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -81,18 +86,30 @@ const text = textMap[backgroundToken] ?? textMap.red;
 
   const section = document.querySelector('.twh-cta-banner');
   if (section) {
-    const inner = section.querySelector('.twh-cta-banner__inner');
     gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-      if (inner) {
-        gsap.fromTo(inner,
-          { y: 20, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out',
-            scrollTrigger: { trigger: section, start: 'top 80%' } }
-        );
-      }
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: section, start: 'top 78%' }
+      });
+      const eyebrow = section.querySelector('.twh-cta-banner__eyebrow');
+      const heading = section.querySelector('.twh-cta-banner__heading');
+      const sub     = section.querySelector('.twh-cta-banner__sub');
+      const ctas    = section.querySelector('.twh-cta-banner__ctas');
+      const stats   = section.querySelectorAll('.twh-cta-banner__stat');
+      const accent  = section.querySelector('.twh-cta-banner__accent') as HTMLElement | null;
+
+      if (accent) gsap.set(accent, { scaleX: 0, transformOrigin: 'left center' });
+
+      if (eyebrow) tl.fromTo(eyebrow, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' });
+      if (heading) tl.fromTo(heading, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out' }, '-=0.2');
+      if (sub)     tl.fromTo(sub,     { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.25');
+      if (ctas)    tl.fromTo(ctas,    { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.2');
+      if (accent)  tl.to(accent, { scaleX: 1, duration: 0.6, ease: 'power3.out' }, 0);
+      if (stats.length) tl.fromTo(stats, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out' }, '-=0.35');
     });
+
     gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
-      if (inner) (inner as HTMLElement).style.opacity = '1';
+      const accent = section.querySelector('.twh-cta-banner__accent') as HTMLElement | null;
+      if (accent) accent.style.transform = 'scaleX(1)';
     });
   }
 </script>

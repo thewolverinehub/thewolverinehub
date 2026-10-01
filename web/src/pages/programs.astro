@@ -1,0 +1,195 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import { getGlobal, getPrograms, getPricingTiers, getPasses } from '../lib/strapi/queries';
+import { blocksToHtml } from '../lib/strapi/blocks';
+import type { StrapiProgram, StrapiPricingTier, StrapiPass } from '../lib/strapi/types';
+
+let global, programs: StrapiProgram[] = [], tiers: StrapiPricingTier[] = [], passes: StrapiPass[] = [];
+try {
+  [global, programs, tiers, passes] = await Promise.all([
+    getGlobal(), getPrograms(), getPricingTiers(), getPasses(),
+  ]);
+} catch { /* CMS offline */ }
+
+const fallbackPrograms: StrapiProgram[] = [
+  {
+    documentId: '1', name: 'Starter', slug: 'starter', sortOrder: 1,
+    tagline: 'Your first month. Done right.',
+    shortDescription: 'Two classes a week, open gym access, and beginner workshops to build your foundation without overwhelm.',
+    isFeatured: false, isLimitedAvailability: false,
+  },
+  {
+    documentId: '2', name: 'Signature', slug: 'signature', sortOrder: 2,
+    tagline: 'For the athlete who means it.',
+    shortDescription: 'Unlimited classes, priority booking, monthly check-ins, and a nutrition guide built around your training.',
+    isFeatured: true, isLimitedAvailability: false,
+  },
+  {
+    documentId: '3', name: 'Transformation', slug: 'transformation', sortOrder: 3,
+    tagline: 'The complete performance system.',
+    shortDescription: 'Everything in Signature plus personal sessions, body composition analysis, and a custom training plan.',
+    isFeatured: false, isLimitedAvailability: true,
+  },
+];
+
+const displayPrograms = programs.length > 0 ? programs : fallbackPrograms;
+
+const tierColours = ['blue', 'yellow', 'red'];
+const colourMap: Record<string, { accent: string; text: string }> = {
+  blue:   { accent: 'var(--color-twh-blue)',   text: 'var(--color-twh-white)' },
+  yellow: { accent: 'var(--color-twh-yellow)', text: 'var(--color-twh-black)' },
+  red:    { accent: 'var(--color-twh-red)',     text: 'var(--color-twh-white)' },
+};
+
+// Map programs to matching pricing tier passes
+function programPasses(programSlug: string): StrapiPass[] {
+  const tier = tiers.find(t => t.slug === programSlug);
+  if (!tier) return [];
+  return passes.filter(p => p.tier?.documentId === tier.documentId && p.isPurchasable)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+const seo = {
+  metaTitle: 'Training Programs — The Wolverine Hub',
+  metaDescription: 'Three tiers. One standard: excellence. From your first session to competition-level coaching — find the program that fits your goals.',
+};
+---
+
+<PageLayout {seo} {global}>
+  <div class="twh-page-hero">
+    <div class="twh-page-hero__inner">
+      <p class="twh-page-hero__eyebrow">Programs</p>
+      <h1 class="twh-page-hero__heading">Train With<br/>Purpose.</h1>
+      <p class="twh-page-hero__sub">Three tiers. One standard: excellence. Pick the program that matches where you are — and where you're going.</p>
+    </div>
+  </div>
+
+  <section class="twh-programs" aria-label="Training programs">
+    <div class="twh-programs__inner">
+
+      {displayPrograms.map((prog, i) => {
+        const colour = colourMap[tierColours[i % 3]];
+        const descHtml = typeof prog.description === 'object' && prog.description ? blocksToHtml(prog.description as any) : null;
+        const pp = programPasses(prog.slug);
+        const isPopular = prog.isFeatured || (i === 1);
+        return (
+          <article class={`twh-programs__card${isPopular ? ' twh-programs__card--featured' : ''}`} id={prog.slug}>
+            {isPopular && (
+              <div class="twh-programs__badge" style={`background:${colour.accent}; color:${colour.text};`}>
+                Most Popular
+              </div>
+            )}
+            {prog.isLimitedAvailability && !isPopular && (
+              <div class="twh-programs__badge twh-programs__badge--limited">
+                Limited Availability
+              </div>
+            )}
+
+            <div class="twh-programs__card-inner" style={`--prog-accent: ${colour.accent}; --prog-text: ${colour.text};`}>
+              <div class="twh-programs__slash" aria-hidden="true">/</div>
+
+              <div class="twh-programs__header">
+                <span class="twh-programs__index">0{i + 1}</span>
+                <h2 class="twh-programs__name">{prog.name}</h2>
+                {prog.tagline && <p class="twh-programs__tagline">{prog.tagline}</p>}
+              </div>
+
+              <div class="twh-programs__body">
+                {descHtml
+                  ? <div class="twh-programs__desc prose"><Fragment set:html={descHtml} /></div>
+                  : prog.shortDescription && <p class="twh-programs__desc">{prog.shortDescription}</p>
+                }
+              </div>
+
+              {pp.length > 0 ? (
+                <div class="twh-programs__pricing">
+                  <p class="twh-programs__pricing-label">Plans</p>
+                  {pp.map(pass => (
+                    <div class="twh-programs__pass-row">
+                      <span class="twh-programs__pass-duration">{pass.duration}</span>
+                      <span class="twh-programs__pass-price">LKR {pass.priceLKR.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : prog.fromPrice ? (
+                <div class="twh-programs__pricing">
+                  <p class="twh-programs__pricing-label">From</p>
+                  <p class="twh-programs__from-price">
+                    {prog.currency ?? 'LKR'} {prog.fromPrice.toLocaleString()}
+                    {prog.minimumCommitment && <span class="twh-programs__commit"> / {prog.minimumCommitment}</span>}
+                  </p>
+                </div>
+              ) : (
+                <div class="twh-programs__pricing">
+                  <a href="/contact" class="twh-programs__enquire">Enquire for pricing →</a>
+                </div>
+              )}
+
+              <a href="/contact" class="twh-btn twh-programs__cta" style={`background:${colour.accent}; color:${colour.text}; border-color:${colour.accent};`}>
+                Start This Program
+              </a>
+            </div>
+          </article>
+        );
+      })}
+
+    </div>
+
+    <!-- Why choose us strip -->
+    <div class="twh-programs__why">
+      <div class="twh-programs__why-inner">
+        {[
+          { icon: '/', label: 'No lock-in contracts', sub: 'Cancel any month with 30 days notice.' },
+          { icon: '/', label: 'Switch tiers freely',  sub: 'Upgrade or downgrade as your goals change.' },
+          { icon: '/', label: 'First class free',     sub: 'Try before you commit. Walk in any time.' },
+        ].map(item => (
+          <div class="twh-programs__why-item">
+            <span class="twh-programs__why-icon" aria-hidden="true">{item.icon}</span>
+            <div>
+              <p class="twh-programs__why-label">{item.label}</p>
+              <p class="twh-programs__why-sub">{item.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>@import '../styles/pages/twh-programs.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+    const hero = document.querySelector('.twh-page-hero__inner');
+    if (hero) {
+      const tl = gsap.timeline();
+      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
+      const heading = hero.querySelector('.twh-page-hero__heading');
+      const sub     = hero.querySelector('.twh-page-hero__sub');
+      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
+      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
+    }
+
+    gsap.fromTo('.twh-programs__card',
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.7, stagger: 0.15, ease: 'power3.out',
+        scrollTrigger: { trigger: '.twh-programs__inner', start: 'top 80%' } }
+    );
+
+    gsap.fromTo('.twh-programs__why-item',
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out',
+        scrollTrigger: { trigger: '.twh-programs__why', start: 'top 85%' } }
+    );
+  });
+
+  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+    document.querySelectorAll<HTMLElement>('.twh-programs__card, .twh-programs__why-item')
+      .forEach(el => { el.style.opacity = '1'; });
+  });
+</script>

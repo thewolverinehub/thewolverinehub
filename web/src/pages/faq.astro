@@ -1,0 +1,174 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import { getGlobal, getFaqs, getFaqCategories } from '../lib/strapi/queries';
+import { blocksToHtml } from '../lib/strapi/blocks';
+import type { StrapiFaq, StrapiFaqCategory } from '../lib/strapi/types';
+
+let global, faqs: StrapiFaq[] = [], categories: StrapiFaqCategory[] = [];
+try {
+  [global, faqs, categories] = await Promise.all([
+    getGlobal(), getFaqs(), getFaqCategories(),
+  ]);
+} catch { /* CMS offline */ }
+
+const fallbackFaqs: StrapiFaq[] = [
+  { documentId: '1', question: 'Do I need experience to join?', answer: [{ type:'paragraph', children:[{type:'text', text:'No experience required. All our programs have beginner entry points and coaches who scale intensity to your level.'}] }], isFeatured: true, sortOrder: 1 },
+  { documentId: '2', question: 'What should I bring to my first class?', answer: [{ type:'paragraph', children:[{type:'text', text:'Comfortable training clothes, a water bottle, and an open mind. Boxing gloves and wraps can be borrowed for your first session.'}] }], isFeatured: true, sortOrder: 2 },
+  { documentId: '3', question: 'Are there lock-in contracts?', answer: [{ type:'paragraph', children:[{type:'text', text:'None. Every membership is month-to-month. Cancel with 30 days notice, no questions asked.'}] }], isFeatured: true, sortOrder: 3 },
+  { documentId: '4', question: 'Can I try before committing?', answer: [{ type:'paragraph', children:[{type:'text', text:'Yes — your first class is free. Walk in any time during open hours and try a session at no cost.'}] }], isFeatured: false, sortOrder: 4 },
+  { documentId: '5', question: 'How many classes can I attend per week?', answer: [{ type:'paragraph', children:[{type:'text', text:'Starter members get 2 classes per week. Signature and Transformation members have unlimited access to the full schedule.'}] }], isFeatured: false, sortOrder: 5 },
+  { documentId: '6', question: 'Is there parking available?', answer: [{ type:'paragraph', children:[{type:'text', text:'Yes, free parking is available in the building car park. Enter from the side street and validate at the front desk.'}] }], isFeatured: false, sortOrder: 6 },
+];
+
+const displayFaqs = faqs.length > 0 ? faqs : fallbackFaqs;
+const displayCategories: StrapiFaqCategory[] = categories.length > 0 ? categories : [];
+
+// Group by category
+const grouped = new Map<string, { label: string; items: StrapiFaq[] }>();
+grouped.set('all', { label: 'All Questions', items: displayFaqs });
+for (const cat of displayCategories) {
+  const items = displayFaqs.filter(f => f.category?.documentId === cat.documentId);
+  if (items.length > 0) grouped.set(cat.slug, { label: cat.name, items });
+}
+
+const featured = displayFaqs.filter(f => f.isFeatured).slice(0, 3);
+
+const seo = {
+  metaTitle: 'FAQ — The Wolverine Hub',
+  metaDescription: 'Everything you need to know before your first class. Memberships, classes, equipment, parking, and more.',
+};
+---
+
+<PageLayout {seo} {global}>
+  <div class="twh-page-hero">
+    <div class="twh-page-hero__inner">
+      <p class="twh-page-hero__eyebrow">FAQ</p>
+      <h1 class="twh-page-hero__heading">Got<br/>Questions?</h1>
+      <p class="twh-page-hero__sub">Everything you need to know before you walk through the door.</p>
+    </div>
+  </div>
+
+  <section class="twh-faq" aria-label="Frequently asked questions">
+    <div class="twh-faq__inner">
+
+      <!-- Featured quick answers -->
+      {featured.length > 0 && (
+        <div class="twh-faq__featured">
+          {featured.map(faq => {
+            const html = blocksToHtml(faq.answer as any);
+            return (
+              <div class="twh-faq__featured-item">
+                <p class="twh-faq__featured-q">{faq.question}</p>
+                {html
+                  ? <div class="twh-faq__featured-a"><Fragment set:html={html} /></div>
+                  : <p class="twh-faq__featured-a">Answer coming soon.</p>
+                }
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <!-- Full accordion list -->
+      <div class="twh-faq__main">
+        {displayCategories.length > 1 && (
+          <div class="twh-faq__filters" role="tablist" aria-label="Filter by category">
+            <button class="twh-faq__filter twh-faq__filter--active" data-filter="all" role="tab" aria-selected="true">All</button>
+            {displayCategories.map(cat => (
+              <button class="twh-faq__filter" data-filter={cat.slug} role="tab" aria-selected="false">
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div class="twh-faq__list">
+          {displayFaqs.map(faq => {
+            const html = blocksToHtml(faq.answer as any);
+            const catSlug = faq.category?.slug ?? 'general';
+            return (
+              <details class="twh-faq__item" data-category={catSlug}>
+                <summary class="twh-faq__question">
+                  <span class="twh-faq__question-text">{faq.question}</span>
+                  <span class="twh-faq__toggle" aria-hidden="true">
+                    <span class="twh-faq__plus">+</span>
+                    <span class="twh-faq__minus">−</span>
+                  </span>
+                </summary>
+                <div class="twh-faq__answer">
+                  {html
+                    ? <Fragment set:html={html} />
+                    : <p style="color:rgba(255,255,255,0.4);">Answer coming soon.</p>
+                  }
+                </div>
+              </details>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- Still have questions CTA -->
+      <div class="twh-faq__cta">
+        <p class="twh-faq__cta-text">Still have questions?</p>
+        <a href="/contact" class="twh-btn twh-btn--primary twh-btn--md">Talk to Us</a>
+      </div>
+
+    </div>
+  </section>
+</PageLayout>
+
+<style>@import '../styles/pages/twh-faq.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Category filter
+  const filters = document.querySelectorAll<HTMLButtonElement>('.twh-faq__filter');
+  const items   = document.querySelectorAll<HTMLDetailsElement>('.twh-faq__item');
+
+  filters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.filter ?? 'all';
+      filters.forEach(b => { b.classList.remove('twh-faq__filter--active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('twh-faq__filter--active');
+      btn.setAttribute('aria-selected', 'true');
+      items.forEach(item => {
+        const show = target === 'all' || item.dataset.category === target;
+        (item as HTMLElement).style.display = show ? '' : 'none';
+      });
+    });
+  });
+
+  // Animations
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+    const hero = document.querySelector('.twh-page-hero__inner');
+    if (hero) {
+      const tl = gsap.timeline();
+      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
+      const heading = hero.querySelector('.twh-page-hero__heading');
+      const sub     = hero.querySelector('.twh-page-hero__sub');
+      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
+      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
+    }
+
+    gsap.fromTo('.twh-faq__featured-item',
+      { y: 24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power3.out',
+        scrollTrigger: { trigger: '.twh-faq__featured', start: 'top 80%' } }
+    );
+
+    gsap.fromTo('.twh-faq__item',
+      { y: 16, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out',
+        scrollTrigger: { trigger: '.twh-faq__list', start: 'top 80%' } }
+    );
+  });
+
+  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+    document.querySelectorAll<HTMLElement>('.twh-faq__featured-item, .twh-faq__item')
+      .forEach(el => { el.style.opacity = '1'; });
+  });
+</script>

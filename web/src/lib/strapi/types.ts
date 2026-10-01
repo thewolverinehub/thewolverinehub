@@ -359,6 +359,24 @@ export interface StrapiPostCategory {
   slug: string;
 }
 
+export interface StrapiProgram {
+  documentId: string;
+  name: string;
+  slug: string;
+  tagline?: string;
+  shortDescription?: string;
+  description?: unknown; // blocks
+  thumbnail?: StrapiMedia;
+  heroImage?: StrapiMedia;
+  fromPrice?: number;
+  currency?: string;
+  minimumCommitment?: string;
+  isLimitedAvailability: boolean;
+  isFeatured: boolean;
+  sortOrder: number;
+  seo?: StrapiSeo;
+}
+
 export interface StrapiGalleryItem {
   documentId: string;
   media: StrapiMedia;

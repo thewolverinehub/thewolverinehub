@@ -4,7 +4,7 @@ import type {
   StrapiClass, StrapiCoach, StrapiScheduleSlot, StrapiPricingTier,
   StrapiPass, StrapiTestimonial, StrapiFaq, StrapiFaqCategory,
   StrapiPost, StrapiGalleryItem, StrapiRedirect,
-  StrapiPage,
+  StrapiPage, StrapiProgram,
 } from './types';
 import { cache } from '../cache';
 
@@ -91,6 +91,12 @@ export const getPosts = (page = 1, pageSize = 12) =>
 
 export const getPostBySlug = (slug: string) =>
   cache(`post:${slug}`, () => fetchOne<StrapiPost>('posts', slug), TTL);
+
+export const getPrograms = () =>
+  cache('programs', () =>
+    fetchList<StrapiProgram>('programs', 'sort=sortOrder:asc&pagination[pageSize]=20'),
+    TTL
+  );
 
 export const getGalleryItems = () =>
   cache('gallery-items', () =>

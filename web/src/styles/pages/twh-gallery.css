@@ -1,0 +1,200 @@
+/* ============================================================
+   GALLERY PAGE  — /gallery
+   Prefix: twh-gallery
+   ============================================================ */
+
+.twh-gallery {
+  padding: 4rem 0 0;
+}
+
+.twh-gallery__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ── Filter tabs ──────────────────────────────────────────── */
+
+.twh-gallery__filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.twh-gallery__filter {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--color-twh-grey-800);
+  color: var(--color-twh-grey-400);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  border-radius: 2px;
+}
+
+.twh-gallery__filter:hover {
+  border-color: var(--color-twh-grey-500);
+  color: var(--color-twh-white);
+}
+
+.twh-gallery__filter--active {
+  background: var(--color-twh-red);
+  border-color: var(--color-twh-red);
+  color: var(--color-twh-white);
+}
+
+/* ── Main grid ────────────────────────────────────────────── */
+
+.twh-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+
+@media (max-width: 1023px) {
+  .twh-gallery__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 639px) {
+  .twh-gallery__grid { grid-template-columns: 1fr; gap: 2px; }
+}
+
+/* ── Gallery item ─────────────────────────────────────────── */
+
+.twh-gallery__item {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  aspect-ratio: 4/3;
+  background: var(--color-twh-ink);
+  cursor: pointer;
+}
+
+.twh-gallery__item--featured {
+  grid-column: span 2;
+  aspect-ratio: 16/9;
+}
+
+@media (max-width: 1023px) {
+  .twh-gallery__item--featured { grid-column: span 1; aspect-ratio: 4/3; }
+}
+
+.twh-gallery__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease, filter 0.3s ease;
+}
+
+.twh-gallery__item:hover .twh-gallery__img {
+  transform: scale(1.04);
+}
+
+/* ── Caption overlay ──────────────────────────────────────── */
+
+.twh-gallery__caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem 1.25rem 1rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.twh-gallery__item:hover .twh-gallery__caption {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Placeholder cells ────────────────────────────────────── */
+
+.twh-gallery__placeholder {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4/3;
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.twh-gallery__placeholder-slash {
+  font-family: var(--font-display);
+  font-size: 6rem;
+  line-height: 1;
+  color: var(--color-twh-grey-900);
+  transform: skewX(-8deg);
+  display: block;
+  user-select: none;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+
+.twh-gallery__empty {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.twh-gallery__empty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  margin-bottom: 2.5rem;
+  opacity: 0.5;
+}
+
+@media (max-width: 639px) {
+  .twh-gallery__empty-grid { grid-template-columns: 1fr; }
+}
+
+.twh-gallery__empty-text {
+  color: var(--color-twh-grey-500);
+  font-size: 0.9375rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Follow strip ─────────────────────────────────────────── */
+
+.twh-gallery__follow {
+  border-top: 1px solid var(--color-twh-grey-900);
+  margin-top: 4rem;
+  padding: 3rem 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.twh-gallery__follow-text {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-500);
+  margin: 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .twh-gallery__inner { padding: 0 1.25rem; }
+  .twh-gallery__follow { padding: 2.5rem 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-gallery__item { opacity: 1 !important; transform: none !important; }
+  .twh-gallery__img  { transition: none; }
+}

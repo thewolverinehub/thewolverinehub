@@ -1,0 +1,166 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import { getGlobal, getGalleryItems } from '../lib/strapi/queries';
+import type { StrapiGalleryItem } from '../lib/strapi/types';
+
+let global, items: StrapiGalleryItem[] = [];
+try {
+  [global, items] = await Promise.all([getGlobal(), getGalleryItems()]);
+} catch { /* CMS offline */ }
+
+// Collect unique categories
+const categories = [...new Set(items.filter(i => i.category).map(i => i.category as string))];
+const featured = items.filter(i => i.isFeatured);
+const rest = items.filter(i => !i.isFeatured);
+const displayItems = [...featured, ...rest];
+
+const seo = {
+  metaTitle: 'Gallery — The Wolverine Hub',
+  metaDescription: 'Inside The Wolverine Hub. Real training. Real athletes. No poses.',
+};
+
+const CMS_URL = import.meta.env.CMS_PUBLIC_URL ?? 'https://cms-production-3644.up.railway.app';
+
+function mediaUrl(url: string) {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `${CMS_URL}${url}`;
+}
+---
+
+<PageLayout {seo} {global}>
+  <div class="twh-page-hero">
+    <div class="twh-page-hero__inner">
+      <p class="twh-page-hero__eyebrow">Gallery</p>
+      <h1 class="twh-page-hero__heading">Inside<br/>The Hub.</h1>
+      <p class="twh-page-hero__sub">Real training. Real athletes. No poses, no filters.</p>
+    </div>
+  </div>
+
+  <section class="twh-gallery" aria-label="Photo gallery">
+    <div class="twh-gallery__inner">
+
+      {displayItems.length === 0 ? (
+        <!-- Placeholder grid when CMS has no media yet -->
+        <div class="twh-gallery__empty">
+          <div class="twh-gallery__empty-grid">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div class="twh-gallery__placeholder">
+                <span class="twh-gallery__placeholder-slash" aria-hidden="true">/</span>
+              </div>
+            ))}
+          </div>
+          <p class="twh-gallery__empty-text">Photos coming soon. Follow us on Instagram for daily updates.</p>
+          {global?.instagram && (
+            <a href={global.instagram} class="twh-btn twh-btn--ghost twh-btn--md" target="_blank" rel="noopener noreferrer">
+              @thewolverinehub
+            </a>
+          )}
+        </div>
+      ) : (
+        <>
+          {categories.length > 1 && (
+            <div class="twh-gallery__filters">
+              <button class="twh-gallery__filter twh-gallery__filter--active" data-filter="all">All</button>
+              {categories.map(cat => (
+                <button class="twh-gallery__filter" data-filter={cat}>{cat}</button>
+              ))}
+            </div>
+          )}
+
+          <div class="twh-gallery__grid" id="gallery-grid">
+            {displayItems.map((item, i) => {
+              const src = item.media?.url ? mediaUrl(item.media.url) : '';
+              return (
+                <figure
+                  class={`twh-gallery__item${item.isFeatured ? ' twh-gallery__item--featured' : ''}`}
+                  data-category={item.category ?? 'general'}
+                >
+                  {src ? (
+                    <img
+                      src={src}
+                      alt={item.alt ?? item.caption ?? ''}
+                      loading={i < 6 ? 'eager' : 'lazy'}
+                      decoding="async"
+                      class="twh-gallery__img"
+                    />
+                  ) : (
+                    <div class="twh-gallery__placeholder">
+                      <span class="twh-gallery__placeholder-slash" aria-hidden="true">/</span>
+                    </div>
+                  )}
+                  {item.caption && (
+                    <figcaption class="twh-gallery__caption">{item.caption}</figcaption>
+                  )}
+                </figure>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      <!-- Follow strip -->
+      <div class="twh-gallery__follow">
+        <p class="twh-gallery__follow-text">More on Instagram</p>
+        {global?.instagram ? (
+          <a href={global.instagram} class="twh-btn twh-btn--primary twh-btn--md" target="_blank" rel="noopener noreferrer">
+            Follow @thewolverinehub
+          </a>
+        ) : (
+          <a href="https://instagram.com/thewolverinehub" class="twh-btn twh-btn--primary twh-btn--md" target="_blank" rel="noopener noreferrer">
+            Follow @thewolverinehub
+          </a>
+        )}
+      </div>
+
+    </div>
+  </section>
+</PageLayout>
+
+<style>@import '../styles/pages/twh-gallery.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Category filter
+  const filters = document.querySelectorAll<HTMLButtonElement>('.twh-gallery__filter');
+  const items   = document.querySelectorAll<HTMLElement>('.twh-gallery__item');
+
+  filters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.filter ?? 'all';
+      filters.forEach(b => b.classList.remove('twh-gallery__filter--active'));
+      btn.classList.add('twh-gallery__filter--active');
+      items.forEach(item => {
+        const show = target === 'all' || item.dataset.category === target;
+        item.style.display = show ? '' : 'none';
+      });
+    });
+  });
+
+  // Animations
+  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+    const hero = document.querySelector('.twh-page-hero__inner');
+    if (hero) {
+      const tl = gsap.timeline();
+      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
+      const heading = hero.querySelector('.twh-page-hero__heading');
+      const sub     = hero.querySelector('.twh-page-hero__sub');
+      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
+      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
+    }
+
+    gsap.fromTo('.twh-gallery__item',
+      { scale: 0.95, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out',
+        scrollTrigger: { trigger: '#gallery-grid', start: 'top 85%' } }
+    );
+  });
+
+  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+    document.querySelectorAll<HTMLElement>('.twh-gallery__item')
+      .forEach(el => { el.style.opacity = '1'; });
+  });
+</script>
