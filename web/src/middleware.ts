@@ -20,7 +20,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   try {
     const { getRedirects } = await import('./lib/strapi/queries');
     const redirectsRes = await getRedirects();
-    const match = redirectsRes.data.find((r) => r.from === url.pathname);
+    const match = redirectsRes.find((r) => r.from === url.pathname);
     if (match) {
       const status = match.statusCode === 'permanent' ? 301 : 302;
       return Response.redirect(new URL(match.to, url.origin), status);

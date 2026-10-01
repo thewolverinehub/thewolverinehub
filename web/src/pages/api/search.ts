@@ -24,10 +24,10 @@ export const GET: APIRoute = async ({ url }) => {
     ]);
 
     const results = {
-      classes: classes.status === 'fulfilled' ? (classes.value as { data: unknown[] }).data : [],
-      coaches: coaches.status === 'fulfilled' ? (coaches.value as { data: unknown[] }).data : [],
-      posts:   posts.status === 'fulfilled'   ? (posts.value as { data: unknown[] }).data : [],
-      faqs:    faqs.status === 'fulfilled'    ? (faqs.value as { data: unknown[] }).data : [],
+      classes: classes.status === 'fulfilled' ? classes.value : [],
+      coaches: coaches.status === 'fulfilled' ? coaches.value : [],
+      posts:   posts.status === 'fulfilled'   ? posts.value   : [],
+      faqs:    faqs.status === 'fulfilled'    ? faqs.value    : [],
     };
 
     return new Response(JSON.stringify({ results, query: q }), {
