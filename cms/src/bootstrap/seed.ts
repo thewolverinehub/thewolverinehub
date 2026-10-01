@@ -148,7 +148,7 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
   const coachIds = await seedCoaches(strapi, disciplineIds);
 
   // ── Schedule ──────────────────────────────────────────────────────────────
-  await seedSchedule(strapi, classIds, coachIds);
+  await seedSchedule(strapi);
 
   // ── Pricing tiers + passes ────────────────────────────────────────────────
   await seedPricing(strapi);
@@ -231,7 +231,7 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
   // ── Schedule slots ────────────────────────────────────────────────────────
   await tryRun('schedule slots', async () => {
     if ((await count('api::schedule-slot.schedule-slot')) === 0) {
-      await seedSchedule(strapi, classIds, coachIds);
+      await seedSchedule(strapi);
       strapi.log.info('[seed:patch] Created schedule slots');
     }
   });
@@ -345,9 +345,35 @@ async function getExistingIds(
   const items: any[] = await (strapi.db as any).query(uid).findMany({ limit: 200 });
   const map: Record<string, string> = {};
   for (const item of items) {
-    if (item[field]) map[item[field]] = item.document_id ?? item.documentId ?? item.id;
+    if (item[field]) map[item[field]] = item.documentId ?? item.document_id ?? String(item.id);
   }
   return map;
+}
+
+// ---------------------------------------------------------------------------
+// Helper: get raw integer IDs (for db.query relation inserts)
+// ---------------------------------------------------------------------------
+async function getRawIntIds(
+  strapi: Core.Strapi,
+  uid: string,
+  field: string,
+): Promise<Record<string, number>> {
+  const items: any[] = await (strapi.db as any).query(uid).findMany({ limit: 200 });
+  const map: Record<string, number> = {};
+  for (const item of items) {
+    if (item[field] && item.id) map[item[field]] = item.id;
+  }
+  return map;
+}
+
+// ---------------------------------------------------------------------------
+// Helper: generate a Strapi v5 compatible 24-char documentId
+// ---------------------------------------------------------------------------
+function genDocId(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let id = '';
+  for (let i = 0; i < 24; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
 }
 
 // ---------------------------------------------------------------------------
@@ -562,13 +588,13 @@ async function seedCoaches(
 
 // ---------------------------------------------------------------------------
 // Schedule slots — full week
+// Uses raw db.query().create() so that published-only class/coach relations
+// are resolved correctly (documents API draft-lookup fails for them).
 // ---------------------------------------------------------------------------
-async function seedSchedule(
-  strapi: Core.Strapi,
-  classIds: Record<string, string>,
-  coachIds: Record<string, string>,
-): Promise<void> {
-  const docs = strapi.documents as (uid: string) => any;
+async function seedSchedule(strapi: Core.Strapi): Promise<void> {
+  // Fetch raw integer IDs keyed by slug — bypasses draft/published confusion
+  const classRawIds = await getRawIntIds(strapi, 'api::class.class', 'slug');
+  const coachRawIds = await getRawIntIds(strapi, 'api::coach.coach', 'slug');
 
   type SlotDef = {
     weekday: string; startTime: string; endTime: string;
@@ -630,24 +656,32 @@ async function seedSchedule(
     { weekday: 'sunday', startTime: '10:30', endTime: '12:00', classSlug: 'mma',                   coachSlug: 'nadun-silva',        room: 'Main Floor',    capacity: 14 },
   ];
 
+  let created = 0;
   for (const slot of slots) {
-    const classDocId = classIds[slot.classSlug];
-    const coachDocId = coachIds[slot.coachSlug];
-    if (!classDocId) continue;
-    await docs('api::schedule-slot.schedule-slot').create({
-      status: 'published',
+    const classRawId = classRawIds[slot.classSlug];
+    const coachRawId = coachRawIds[slot.coachSlug] ?? null;
+    if (!classRawId) {
+      strapi.log.warn(`[seed] seedSchedule: no raw id for class slug "${slot.classSlug}" — skipping slot`);
+      continue;
+    }
+    await (strapi.db as any).query('api::schedule-slot.schedule-slot').create({
       data: {
-        weekday:   slot.weekday,
-        startTime: slot.startTime,
-        endTime:   slot.endTime,
-        capacity:  slot.capacity,
-        room:      slot.room,
-        isActive:  true,
-        class: { documentId: classDocId },
-        coach: coachDocId ? { documentId: coachDocId } : undefined,
+        documentId: genDocId(),
+        weekday:    slot.weekday,
+        startTime:  slot.startTime,
+        endTime:    slot.endTime,
+        capacity:   slot.capacity,
+        room:       slot.room,
+        isActive:   true,
+        publishedAt: new Date(),
+        locale:     null,
+        class:      classRawId,
+        coach:      coachRawId,
       },
     });
+    created++;
   }
+  strapi.log.info(`[seed] Created ${created} schedule slots`);
 }
 
 // ---------------------------------------------------------------------------
