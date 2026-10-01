@@ -19,10 +19,12 @@
 
 ## Phase 4 — Strapi CMS
 **Date:** 2026-09-30 | **Status:** Complete ✓
-- Strapi 5.55.1, all 42 content types, 27 components, permissions bootstrap
+- Strapi 5.55.1, all 29 content types, permissions bootstrap via `strapi.db.query`
 - Both services live and healthy on Railway
-- Admin account created, read-only API token set on web service
+- Admin account created, Full Access API token set on web service (`STRAPI_API_TOKEN`)
 - CI fully working (public repo): gitleaks + npm audit + CodeQL + lint/build
+- **Strapi v5 note:** `roleService.findOne()` never returns `api::*` actions — permissions created directly via `strapi.db.query`; Full Access token bypasses permission tree entirely
+- Seed data: global, header, footer, ui-strings, classes, coaches, pricing tiers, passes, testimonials, FAQs all published
 
 ### Decisions locked
 - Hero headline: "WHERE IRON MEETS INSTINCT."
@@ -33,25 +35,29 @@
 
 ### Open Issues
 - Full dummy seed data (spec §13.6) — extend before Phase 13
-- Strapi Preview config — complete in Phase 5 once preview route exists
+- Strapi Preview config — complete once preview route exists
 - Easter egg: confirm before Phase 7
 
 ---
 
-## Phase 5 — Astro foundation (IN PROGRESS)
+## Phase 5 — Astro foundation
+**Date:** 2026-09-30 | **Status:** Complete ✓
 
-**Date:** 2026-09-30
-**Status:** In progress
+### Built
+- Tailwind CSS v4 + brand tokens (`--twh-*`) in `global.css`
+- Self-hosted fonts; fluid type scale
+- Layouts: BaseLayout, PageLayout, ArticleLayout, LegalLayout
+- Typed Strapi client (`lib/strapi/`) with Redis cache-aside (10 min TTL)
+- SEOHead + JSON-LD builders (ExerciseGym, LocalBusiness, BreadcrumbList, FAQPage, Article)
+- Middleware: security headers (CSP, HSTS, COOP, Referrer-Policy), noindex, redirects, origin check
+- Media proxy (`pages/media/[...path].ts`) with Range support
+- API endpoints: `/api/health`, `/api/revalidate` (HMAC), `/api/search`
+- env-aware `robots.txt` + `sitemap.xml` from Strapi
+- 404 and 500 pages driven by Strapi ui-strings
+- `/styleguide` dev page
+- Homepage (`/`) with 9 section components — all CMS-driven: HeroVideo, StatCounters, Marquee, ClassRail, FeatureSplit, CoachCarousel, PricingTeaser, TestimonialSlider, CTABanner
+- Header, Footer, AnnouncementBar, SlashMenu, slash-menu JS interactions
 
-### Tasks
-- [ ] Install Tailwind CSS v4 + brand tokens in `global.css`
-- [ ] Self-hosted fonts (Anton/Bebas Neue + Inter/Manrope), fluid type scale
-- [ ] Layouts: BaseLayout, PageLayout, ArticleLayout, LegalLayout
-- [ ] Typed Strapi client (`lib/strapi/`) + Redis cache-aside
-- [ ] SEOHead component + JSON-LD builders (ExerciseGym, LocalBusiness, BreadcrumbList, FAQPage, Article)
-- [ ] Middleware: security headers, noindex, redirects, origin check
-- [ ] Media proxy (`pages/media/[...path].ts`) with Range support
-- [ ] API endpoints: health, revalidate (HMAC), preview, search
-- [ ] env-aware robots.txt + sitemap.xml from Strapi
-- [ ] 404 and 500 pages driven by Strapi ui-strings
-- [ ] `/styleguide` dev page (excluded from production)
+### Open Issues
+- Preview API endpoint (`/api/preview`) — add when preview route is needed
+- Inner pages (classes, schedule, programs, coaches, pricing, etc.) — Phase 6+
