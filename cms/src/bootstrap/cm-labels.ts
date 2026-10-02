@@ -310,6 +310,71 @@ export async function applyContentManagerLabels(strapi: Core.Strapi): Promise<vo
     updated++;
   }
 
+  // ── Components (sections.*, shared.*, etc.) ──────────────────────────────
+  // For component fields we prefer the label declared in the schema's
+  // pluginOptions["content-manager"].label before falling back to FIELD_META.
+  const componentUids = Object.keys(strapi.components ?? {});
+
+  for (const uid of componentUids) {
+    const key = `configuration_components::${uid}`;
+    const existing = (await store.get({ key })) as ContentManagerConfig | null;
+    const schema = (strapi.components as Record<string, any>)[uid];
+    const rawAttributes = schema?.attributes ?? {};
+
+    const metadatas: Record<string, FieldMeta> = { ...(existing?.metadatas ?? {}) };
+    let dirty = false;
+
+    for (const [fieldName, attr] of Object.entries(rawAttributes)) {
+      const schemaLabel = (attr as any)?.pluginOptions?.['content-manager']?.label as string | undefined;
+      const schemaDesc  = (attr as any)?.pluginOptions?.['content-manager']?.description as string | undefined;
+      const fieldMeta   = FIELD_META[fieldName];
+
+      const wantedLabel = schemaLabel ?? fieldMeta?.label;
+      const wantedDesc  = schemaDesc  ?? fieldMeta?.description ?? '';
+      if (!wantedLabel) continue;
+
+      const current  = metadatas[fieldName] ?? { edit: {}, list: {} };
+      const attrType = (attr as { type: string }).type;
+
+      const newEdit = {
+        ...current.edit,
+        label:       wantedLabel,
+        description: wantedDesc,
+        placeholder: current.edit?.placeholder ?? '',
+        visible:     current.edit?.visible     ?? true,
+        editable:    current.edit?.editable    ?? true,
+      };
+      const newList = {
+        ...current.list,
+        label:      wantedLabel,
+        searchable: current.list?.searchable ?? SEARCHABLE_TYPES.has(attrType),
+        sortable:   current.list?.sortable   ?? SORTABLE_TYPES.has(attrType),
+      };
+
+      if (current.edit?.label !== newEdit.label || current.edit?.description !== newEdit.description) {
+        metadatas[fieldName] = { edit: newEdit, list: newList };
+        dirty = true;
+      }
+    }
+
+    if (!dirty) continue;
+
+    const newConfig: ContentManagerConfig = {
+      uid,
+      settings: existing?.settings ?? {
+        bulkable: true, filterable: true, searchable: true,
+        pageSize: 10, mainField: 'title' in rawAttributes ? 'title' : ('name' in rawAttributes ? 'name' : 'id'),
+        defaultSortBy: 'id', defaultSortOrder: 'ASC',
+      },
+      metadatas,
+      layouts: existing?.layouts ?? { list: [], edit: [] },
+    };
+
+    await store.set({ key, value: newConfig });
+    strapi.log.info(`[bootstrap] Applied content-manager labels for component ${uid}`);
+    updated++;
+  }
+
   if (updated === 0) {
     strapi.log.info('[bootstrap] Content-manager labels already up to date');
   }

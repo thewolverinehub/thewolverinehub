@@ -337,13 +337,9 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     }
   });
 
-  // ── Inner pages (all routes except home) ─────────────────────────────────
+  // ── Inner pages (all routes except home) — idempotent ────────────────────
   await tryRun('inner pages', async () => {
-    const pageCount = await count('api::page.page');
-    if (pageCount < 2) {
-      await seedInnerPages(strapi);
-      strapi.log.info('[seed:patch] Created inner pages');
-    }
+    await seedInnerPages(strapi);
   });
 
   // ── Ensure everything is published ────────────────────────────────────────
@@ -1451,10 +1447,14 @@ async function publishAllContent(strapi: Core.Strapi): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Inner pages (all routes except home)
+// Inner pages (all routes except home) — idempotent
 // ---------------------------------------------------------------------------
 async function seedInnerPages(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
+
+  // Fetch existing page slugs so we skip pages already in the DB
+  const existing: any[] = await (strapi.db as any).query('api::page.page').findMany({ limit: 50 });
+  const existingSlugs = new Set(existing.map((p: any) => p.slug));
 
   const pages = [
     {
@@ -1504,7 +1504,10 @@ async function seedInnerPages(strapi: Core.Strapi): Promise<void> {
     },
   ];
 
+  let created = 0;
   for (const page of pages) {
+    if (existingSlugs.has(page.slug)) continue; // already exists — skip
+
     await docs('api::page.page').create({
       data: {
         title: page.title,
@@ -1520,5 +1523,7 @@ async function seedInnerPages(strapi: Core.Strapi): Promise<void> {
         seo: page.seo,
       },
     });
+    created++;
   }
+  if (created > 0) strapi.log.info(`[seed] Created ${created} inner page(s)`);
 }
