@@ -1,12 +1,14 @@
 ---
 import PageLayout from '../../layouts/PageLayout.astro';
-import { getCoaches, getGlobal } from '../../lib/strapi/queries';
-import type { StrapiCoach } from '../../lib/strapi/types';
+import { getCoaches, getGlobal, getPageBySlug } from '../../lib/strapi/queries';
+import type { StrapiCoach, StrapiPageHeroSection } from '../../lib/strapi/types';
 
-let global, coaches: StrapiCoach[] = [];
+let global, coaches: StrapiCoach[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, coaches] = await Promise.all([getGlobal(), getCoaches()]);
+  [global, coaches, pageData] = await Promise.all([getGlobal(), getCoaches(), getPageBySlug('coaches')]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const fallback: StrapiCoach[] = [
   { documentId: '1', name: 'Ashan Perera',       slug: 'ashan-perera',       role: 'Head Boxing Coach',          shortBio: 'National champion. 12 years ringside.',             isHeadCoach: true,  sortOrder: 1 },
@@ -30,9 +32,9 @@ const seo = {
   <!-- Page hero -->
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Expertise</p>
-      <h1 class="twh-page-hero__heading">Train With<br/>The Best.</h1>
-      <p class="twh-page-hero__sub">Every coach at The Wolverine Hub has competed, won, and still trains. No ex-gym rats, no online certificates.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Expertise'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Train With<br/>The Best.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Every coach at The Wolverine Hub has competed, won, and still trains. No ex-gym rats, no online certificates.'}</p>
     </div>
   </div>
 

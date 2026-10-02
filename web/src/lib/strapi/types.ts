@@ -128,6 +128,13 @@ export interface StrapiUiStrings {
 
 /* ── Section components ───────────────────────────────────── */
 
+export interface StrapiPageHeroSection {
+  __component: 'sections.page-hero';
+  eyebrow?: string;
+  heading: string;
+  subheading?: string;
+}
+
 export interface StrapiHeroSection {
   __component: 'sections.hero-video';
   headline: string;

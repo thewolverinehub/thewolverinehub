@@ -34,6 +34,8 @@ const FIELD_META: Record<string, { label: string; description?: string }> = {
   wordmarkText:    { label: 'Footer Wordmark',        description: 'Large brand text shown as a background watermark in the footer.' },
   headline:        { label: 'Main Headline',          description: 'Large hero headline — keep it punchy, under 6 words.' },
   subheadline:     { label: 'Subheadline',            description: 'Supporting copy beneath the headline (1–2 sentences).' },
+  eyebrow:         { label: 'Eyebrow Text',           description: 'Small label shown above the heading (e.g. "Train", "About", "Membership").' },
+  subheading:      { label: 'Subheading',             description: 'Supporting sentence shown below the heading (1–2 sentences max).' },
 
   // media
   image:           { label: 'Image',                  description: 'Upload an image. Preferred format: WebP or AVIF.' },

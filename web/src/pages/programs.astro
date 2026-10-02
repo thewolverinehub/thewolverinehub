@@ -1,15 +1,17 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getGlobal, getPrograms, getPricingTiers, getPasses } from '../lib/strapi/queries';
+import { getGlobal, getPrograms, getPricingTiers, getPasses, getPageBySlug } from '../lib/strapi/queries';
 import { blocksToHtml } from '../lib/strapi/blocks';
-import type { StrapiProgram, StrapiPricingTier, StrapiPass } from '../lib/strapi/types';
+import type { StrapiProgram, StrapiPricingTier, StrapiPass, StrapiPageHeroSection } from '../lib/strapi/types';
 
-let global, programs: StrapiProgram[] = [], tiers: StrapiPricingTier[] = [], passes: StrapiPass[] = [];
+let global, programs: StrapiProgram[] = [], tiers: StrapiPricingTier[] = [], passes: StrapiPass[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, programs, tiers, passes] = await Promise.all([
-    getGlobal(), getPrograms(), getPricingTiers(), getPasses(),
+  [global, programs, tiers, passes, pageData] = await Promise.all([
+    getGlobal(), getPrograms(), getPricingTiers(), getPasses(), getPageBySlug('programs'),
   ]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const fallbackPrograms: StrapiProgram[] = [
   {
@@ -58,9 +60,9 @@ const seo = {
 <PageLayout {seo} {global}>
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Programs</p>
-      <h1 class="twh-page-hero__heading">Train With<br/>Purpose.</h1>
-      <p class="twh-page-hero__sub">Three tiers. One standard: excellence. Pick the program that matches where you are — and where you're going.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Programs'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Train With<br/>Purpose.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? "Three tiers. One standard: excellence. Pick the program that matches where you are — and where you're going."}</p>
     </div>
   </div>
 

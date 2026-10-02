@@ -1,12 +1,14 @@
 ---
 import PageLayout from '../../layouts/PageLayout.astro';
-import { getClasses, getGlobal } from '../../lib/strapi/queries';
-import type { StrapiClass } from '../../lib/strapi/types';
+import { getClasses, getGlobal, getPageBySlug } from '../../lib/strapi/queries';
+import type { StrapiClass, StrapiPageHeroSection } from '../../lib/strapi/types';
 
-let global, classes: StrapiClass[] = [];
+let global, classes: StrapiClass[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, classes] = await Promise.all([getGlobal(), getClasses()]);
+  [global, classes, pageData] = await Promise.all([getGlobal(), getClasses(), getPageBySlug('classes')]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const fallback: StrapiClass[] = [
   { documentId: '1', name: 'Boxing',               slug: 'boxing',               tagline: 'The sweet science',        durationMinutes: 60, intensity: 'high',    level: 'all',          isFree: false, sortOrder: 1 },
@@ -48,9 +50,9 @@ const seo = {
   <!-- Page Hero -->
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Train</p>
-      <h1 class="twh-page-hero__heading">Every Discipline.<br/>Every Level.</h1>
-      <p class="twh-page-hero__sub">From your first session to your hundredth fight — we have a class built for where you are right now.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Train'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Every Discipline.<br/>Every Level.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'From your first session to your hundredth fight — we have a class built for where you are right now.'}</p>
     </div>
   </div>
 

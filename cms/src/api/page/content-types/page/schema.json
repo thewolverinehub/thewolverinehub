@@ -36,6 +36,7 @@
     "sections": {
       "type": "dynamiczone",
       "components": [
+        "sections.page-hero",
         "sections.hero-video",
         "sections.stat-counters",
         "sections.marquee",

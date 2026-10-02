@@ -1,10 +1,14 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getGlobal } from '../lib/strapi/queries';
-import type { StrapiGlobal } from '../lib/strapi/types';
+import { getGlobal, getPageBySlug } from '../lib/strapi/queries';
+import type { StrapiGlobal, StrapiPageHeroSection } from '../lib/strapi/types';
 
-let global: StrapiGlobal | undefined;
-try { global = await getGlobal(); } catch { /* CMS offline */ }
+let global: StrapiGlobal | undefined, pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
+try {
+  [global, pageData] = await Promise.all([getGlobal(), getPageBySlug('contact')]);
+} catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const phone    = global?.phone    ?? '+94 11 234 5678';
 const email    = global?.email    ?? 'hello@thewolverinehub.com';
@@ -26,9 +30,9 @@ const seo = {
   <!-- Page hero -->
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Get In Touch</p>
-      <h1 class="twh-page-hero__heading">Start Here.</h1>
-      <p class="twh-page-hero__sub">Questions, free trial bookings, or just want to know if this place is right for you — send us a message.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Get In Touch'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Start Here.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Questions, free trial bookings, or just want to know if this place is right for you — send us a message.'}</p>
     </div>
   </div>
 

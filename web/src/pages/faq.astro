@@ -1,15 +1,17 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getGlobal, getFaqs, getFaqCategories } from '../lib/strapi/queries';
+import { getGlobal, getFaqs, getFaqCategories, getPageBySlug } from '../lib/strapi/queries';
 import { blocksToHtml } from '../lib/strapi/blocks';
-import type { StrapiFaq, StrapiFaqCategory } from '../lib/strapi/types';
+import type { StrapiFaq, StrapiFaqCategory, StrapiPageHeroSection } from '../lib/strapi/types';
 
-let global, faqs: StrapiFaq[] = [], categories: StrapiFaqCategory[] = [];
+let global, faqs: StrapiFaq[] = [], categories: StrapiFaqCategory[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, faqs, categories] = await Promise.all([
-    getGlobal(), getFaqs(), getFaqCategories(),
+  [global, faqs, categories, pageData] = await Promise.all([
+    getGlobal(), getFaqs(), getFaqCategories(), getPageBySlug('faq'),
   ]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const fallbackFaqs: StrapiFaq[] = [
   { documentId: '1', question: 'Do I need experience to join?', answer: [{ type:'paragraph', children:[{type:'text', text:'No experience required. All our programs have beginner entry points and coaches who scale intensity to your level.'}] }], isFeatured: true, sortOrder: 1 },
@@ -42,9 +44,9 @@ const seo = {
 <PageLayout {seo} {global}>
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">FAQ</p>
-      <h1 class="twh-page-hero__heading">Got<br/>Questions?</h1>
-      <p class="twh-page-hero__sub">Everything you need to know before you walk through the door.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'FAQ'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Got<br/>Questions?'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Everything you need to know before you walk through the door.'}</p>
     </div>
   </div>
 

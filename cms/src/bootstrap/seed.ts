@@ -170,8 +170,9 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
   // ── Programs ─────────────────────────────────────────────────────────────
   await seedPrograms(strapi);
 
-  // ── Home page ─────────────────────────────────────────────────────────────
+  // ── Home page + inner pages ───────────────────────────────────────────────
   await seedHomePage(strapi);
+  await seedInnerPages(strapi);
 
   // Publish all drafts so content is live via the REST API
   await publishAllContent(strapi);
@@ -333,6 +334,15 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     if ((await count('api::program.program')) === 0) {
       await seedPrograms(strapi);
       strapi.log.info('[seed:patch] Created programs');
+    }
+  });
+
+  // ── Inner pages (all routes except home) ─────────────────────────────────
+  await tryRun('inner pages', async () => {
+    const pageCount = await count('api::page.page');
+    if (pageCount < 2) {
+      await seedInnerPages(strapi);
+      strapi.log.info('[seed:patch] Created inner pages');
     }
   });
 
@@ -1438,4 +1448,77 @@ async function publishAllContent(strapi: Core.Strapi): Promise<void> {
   }
 
   strapi.log.info(`[seed] Published ${published} draft documents`);
+}
+
+// ---------------------------------------------------------------------------
+// Inner pages (all routes except home)
+// ---------------------------------------------------------------------------
+async function seedInnerPages(strapi: Core.Strapi): Promise<void> {
+  const docs = strapi.documents as (uid: string) => any;
+
+  const pages = [
+    {
+      title: 'Classes', slug: 'classes',
+      hero: { eyebrow: 'Train', heading: 'Every Discipline.\nEvery Level.', subheading: 'From your first session to your hundredth fight — we have a class built for where you are right now.' },
+      seo: { metaTitle: 'Classes — The Wolverine Hub', metaDescription: '24+ martial arts and fitness disciplines for every level. Boxing, Muay Thai, BJJ, Strength, and more.' },
+    },
+    {
+      title: 'Coaches', slug: 'coaches',
+      hero: { eyebrow: 'Expertise', heading: 'Train With\nThe Best.', subheading: 'Every coach at The Wolverine Hub has competed, won, and still trains. No ex-gym rats, no online certificates.' },
+      seo: { metaTitle: 'Coaches — The Wolverine Hub', metaDescription: 'Meet the coaches. Every one has competed, won, and still trains.' },
+    },
+    {
+      title: 'Pricing', slug: 'pricing',
+      hero: { eyebrow: 'Membership', heading: 'Simple,\nHonest Pricing.', subheading: 'Pick your tier. Book your first class. No hidden fees, no lock-in contracts.' },
+      seo: { metaTitle: 'Pricing — The Wolverine Hub', metaDescription: 'Passes, tokens, and add-ons. No hidden fees, no lock-in contracts.' },
+    },
+    {
+      title: 'Schedule', slug: 'schedule',
+      hero: { eyebrow: 'Timetable', heading: 'Weekly\nSchedule.', subheading: 'Classes run seven days a week. Pick a day and find your next session.' },
+      seo: { metaTitle: 'Schedule — The Wolverine Hub', metaDescription: 'Weekly class timetable. Seven days a week. Find your next session.' },
+    },
+    {
+      title: 'Programs', slug: 'programs',
+      hero: { eyebrow: 'Programs', heading: 'Train With\nPurpose.', subheading: 'Three tiers. One standard: excellence. Pick the program that matches where you are — and where you\'re going.' },
+      seo: { metaTitle: 'Programs — The Wolverine Hub', metaDescription: 'Starter, Signature, and Transformation programs. Structured training for every ambition.' },
+    },
+    {
+      title: 'Gallery', slug: 'gallery',
+      hero: { eyebrow: 'Gallery', heading: 'Inside\nThe Hub.', subheading: 'Real training. Real athletes. No poses, no filters.' },
+      seo: { metaTitle: 'Gallery — The Wolverine Hub', metaDescription: 'Photos from inside The Wolverine Hub. Real training, real athletes.' },
+    },
+    {
+      title: 'Blog', slug: 'blog',
+      hero: { eyebrow: 'Journal', heading: 'Inside\nThe Hub.', subheading: 'Training guides, fighter spotlights, nutrition, and stories from inside The Wolverine Hub.' },
+      seo: { metaTitle: 'Blog — The Wolverine Hub', metaDescription: 'Training guides, fighter spotlights, nutrition, and stories from inside The Wolverine Hub.' },
+    },
+    {
+      title: 'FAQ', slug: 'faq',
+      hero: { eyebrow: 'FAQ', heading: 'Got\nQuestions?', subheading: 'Everything you need to know before you walk through the door.' },
+      seo: { metaTitle: 'FAQ — The Wolverine Hub', metaDescription: 'Answers to common questions about classes, membership, and training at The Wolverine Hub.' },
+    },
+    {
+      title: 'Contact', slug: 'contact',
+      hero: { eyebrow: 'Get In Touch', heading: 'Start Here.', subheading: 'Questions, free trial bookings, or just want to know if this place is right for you — send us a message.' },
+      seo: { metaTitle: 'Contact — The Wolverine Hub', metaDescription: 'Get in touch. Book a free trial or ask us anything.' },
+    },
+  ];
+
+  for (const page of pages) {
+    await docs('api::page.page').create({
+      data: {
+        title: page.title,
+        slug: page.slug,
+        sections: [
+          {
+            __component: 'sections.page-hero',
+            eyebrow: page.hero.eyebrow,
+            heading: page.hero.heading,
+            subheading: page.hero.subheading,
+          },
+        ],
+        seo: page.seo,
+      },
+    });
+  }
 }

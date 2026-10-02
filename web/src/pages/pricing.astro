@@ -1,15 +1,17 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getPricingTiers, getPasses, getFaqs, getGlobal } from '../lib/strapi/queries';
-import type { StrapiPricingTier, StrapiPass, StrapiFaq } from '../lib/strapi/types';
+import { getPricingTiers, getPasses, getFaqs, getGlobal, getPageBySlug } from '../lib/strapi/queries';
+import type { StrapiPricingTier, StrapiPass, StrapiFaq, StrapiPageHeroSection } from '../lib/strapi/types';
 import { blocksToHtml } from '../lib/strapi/blocks';
 
-let global, tiers: StrapiPricingTier[] = [], passes: StrapiPass[] = [], faqs: StrapiFaq[] = [];
+let global, tiers: StrapiPricingTier[] = [], passes: StrapiPass[] = [], faqs: StrapiFaq[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, tiers, passes, faqs] = await Promise.all([
-    getGlobal(), getPricingTiers(), getPasses(), getFaqs(),
+  [global, tiers, passes, faqs, pageData] = await Promise.all([
+    getGlobal(), getPricingTiers(), getPasses(), getFaqs(), getPageBySlug('pricing'),
   ]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const fallbackTiers: StrapiPricingTier[] = [
   { documentId: '1', name: 'Starter',        slug: 'starter',        tagline: 'Perfect for your first month',  features: '2 classes/week\nAccess to open gym\nBeginner workshops',                                    isMostPopular: false, colour: 'blue',   sortOrder: 1 },
@@ -57,9 +59,9 @@ const seo = {
   <!-- Page hero -->
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Membership</p>
-      <h1 class="twh-page-hero__heading">Simple,<br/>Honest Pricing.</h1>
-      <p class="twh-page-hero__sub">Pick your tier. Book your first class. No hidden fees, no lock-in contracts.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Membership'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Simple,<br/>Honest Pricing.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Pick your tier. Book your first class. No hidden fees, no lock-in contracts.'}</p>
     </div>
   </div>
 

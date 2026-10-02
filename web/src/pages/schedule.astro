@@ -1,12 +1,14 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getScheduleSlots, getGlobal } from '../lib/strapi/queries';
-import type { StrapiScheduleSlot } from '../lib/strapi/types';
+import { getScheduleSlots, getGlobal, getPageBySlug } from '../lib/strapi/queries';
+import type { StrapiScheduleSlot, StrapiPageHeroSection } from '../lib/strapi/types';
 
-let global, slots: StrapiScheduleSlot[] = [];
+let global, slots: StrapiScheduleSlot[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, slots] = await Promise.all([getGlobal(), getScheduleSlots()]);
+  [global, slots, pageData] = await Promise.all([getGlobal(), getScheduleSlots(), getPageBySlug('schedule')]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as const;
 type Day = typeof DAYS[number];
@@ -39,9 +41,9 @@ const seo = {
 <PageLayout {seo} {global}>
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Timetable</p>
-      <h1 class="twh-page-hero__heading">Weekly<br/>Schedule.</h1>
-      <p class="twh-page-hero__sub">Classes run seven days a week. Pick a day and find your next session.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Timetable'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Weekly<br/>Schedule.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Classes run seven days a week. Pick a day and find your next session.'}</p>
     </div>
   </div>
 

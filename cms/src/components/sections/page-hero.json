@@ -1,0 +1,38 @@
+{
+  "collectionName": "components_sections_page_heroes",
+  "info": {
+    "displayName": "Page Hero",
+    "icon": "layout"
+  },
+  "options": {},
+  "attributes": {
+    "eyebrow": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Eyebrow Text",
+          "description": "Small label shown above the heading (e.g. 'Train', 'About', 'Membership')."
+        }
+      }
+    },
+    "heading": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Main Heading",
+          "description": "Large page heading. Use a newline to control line breaks."
+        }
+      }
+    },
+    "subheading": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Subheading",
+          "description": "Supporting sentence below the heading (1–2 sentences max)."
+        }
+      }
+    }
+  }
+}

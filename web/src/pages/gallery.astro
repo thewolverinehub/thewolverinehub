@@ -1,12 +1,14 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getGlobal, getGalleryItems } from '../lib/strapi/queries';
-import type { StrapiGalleryItem } from '../lib/strapi/types';
+import { getGlobal, getGalleryItems, getPageBySlug } from '../lib/strapi/queries';
+import type { StrapiGalleryItem, StrapiPageHeroSection } from '../lib/strapi/types';
 
-let global, items: StrapiGalleryItem[] = [];
+let global, items: StrapiGalleryItem[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, items] = await Promise.all([getGlobal(), getGalleryItems()]);
+  [global, items, pageData] = await Promise.all([getGlobal(), getGalleryItems(), getPageBySlug('gallery')]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 // Collect unique categories
 const categories = [...new Set(items.filter(i => i.category).map(i => i.category as string))];
@@ -30,9 +32,9 @@ function mediaUrl(url: string) {
 <PageLayout {seo} {global}>
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Gallery</p>
-      <h1 class="twh-page-hero__heading">Inside<br/>The Hub.</h1>
-      <p class="twh-page-hero__sub">Real training. Real athletes. No poses, no filters.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Gallery'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Inside<br/>The Hub.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Real training. Real athletes. No poses, no filters.'}</p>
     </div>
   </div>
 

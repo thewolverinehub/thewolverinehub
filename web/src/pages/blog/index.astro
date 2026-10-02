@@ -1,12 +1,14 @@
 ---
 import PageLayout from '../../layouts/PageLayout.astro';
-import { getPosts, getGlobal } from '../../lib/strapi/queries';
-import type { StrapiPost } from '../../lib/strapi/types';
+import { getPosts, getGlobal, getPageBySlug } from '../../lib/strapi/queries';
+import type { StrapiPost, StrapiPageHeroSection } from '../../lib/strapi/types';
 
-let global, posts: StrapiPost[] = [];
+let global, posts: StrapiPost[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, posts] = await Promise.all([getGlobal(), getPosts(1, 13)]);
+  [global, posts, pageData] = await Promise.all([getGlobal(), getPosts(1, 13), getPageBySlug('blog')]);
 } catch { /* CMS offline */ }
+
+const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const featured = posts.find(p => p.isFeatured) ?? posts[0];
 const rest     = posts.filter(p => p.documentId !== featured?.documentId);
@@ -24,9 +26,9 @@ const seo = {
 <PageLayout {seo} {global}>
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">Journal</p>
-      <h1 class="twh-page-hero__heading">Inside<br/>The Hub.</h1>
-      <p class="twh-page-hero__sub">Training guides, fighter spotlights, nutrition, and stories from inside The Wolverine Hub.</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Journal'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Inside<br/>The Hub.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Training guides, fighter spotlights, nutrition, and stories from inside The Wolverine Hub.'}</p>
     </div>
   </div>
 
