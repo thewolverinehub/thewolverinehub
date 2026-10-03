@@ -337,6 +337,11 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     }
   });
 
+  // ── Home page — always upsert so version-bump rewrites sections ──────────
+  await tryRun('home page', async () => {
+    await seedHomePage(strapi);
+  });
+
   // ── Inner pages (all routes except home) — idempotent ────────────────────
   await tryRun('inner pages', async () => {
     await seedInnerPages(strapi);
