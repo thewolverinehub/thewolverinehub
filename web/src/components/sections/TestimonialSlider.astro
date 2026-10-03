@@ -1,6 +1,7 @@
 ---
 import type { StrapiTestimonialSliderSection, StrapiTestimonial } from '../../lib/strapi/types';
 import { getTestimonials } from '../../lib/strapi/queries';
+import WolverineSlash from '../ui/WolverineSlash.astro';
 
 interface Props {
   section?: Partial<StrapiTestimonialSliderSection>;
@@ -27,6 +28,11 @@ const display = all.slice(0, maxItems);
 ---
 
 <section class="twh-testi" id={anchorId} aria-label="Member testimonials">
+  <!-- Decorative wolverine scratch marks at low opacity -->
+  <WolverineSlash class="twh-testi__bg-slash twh-testi__bg-slash--1" />
+  <WolverineSlash class="twh-testi__bg-slash twh-testi__bg-slash--2" />
+  <WolverineSlash class="twh-testi__bg-slash twh-testi__bg-slash--3" />
+
   <div class="twh-testi__inner">
     <header class="twh-testi__header">
       <span class="twh-testi__eyebrow">What members say</span>

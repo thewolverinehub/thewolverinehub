@@ -4,7 +4,7 @@ import { seedDefaultContent } from './bootstrap/seed';
 
 // Bump this string whenever you change seed data, schemas, or labels.
 // Heavy bootstrap ops are skipped when the stored value matches — fast restarts.
-const BOOTSTRAP_VERSION = '2025-10-03-v3';
+const BOOTSTRAP_VERSION = '2026-10-03-v4';
 
 // ---------------------------------------------------------------------------
 // Public read-only content types — Public role gets find + findOne on these.
@@ -96,6 +96,14 @@ export default {
     }
 
     checkWebhookSecret(strapi);
+
+    // ── Revalidation webhook (lightweight — always run) ───────────────────
+    try {
+      await ensureRevalidateWebhook(strapi);
+    } catch (err) {
+      strapi.log.warn('[bootstrap] Could not auto-create revalidation webhook — create it manually in Settings → Webhooks.');
+      strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
+    }
   },
 };
 
@@ -151,4 +159,47 @@ function checkWebhookSecret(strapi: Core.Strapi) {
   if (!secret || secret.length < 32) {
     strapi.log.warn('[bootstrap] WEBHOOK_SECRET is missing or too short. Set it before going live.');
   }
+}
+
+async function ensureRevalidateWebhook(strapi: Core.Strapi) {
+  const siteUrl = process.env.PUBLIC_SITE_URL;
+  const secret = process.env.WEBHOOK_SECRET;
+
+  if (!siteUrl || !secret) {
+    strapi.log.info('[bootstrap] Skipping revalidation webhook — PUBLIC_SITE_URL or WEBHOOK_SECRET not set');
+    return;
+  }
+
+  const webhookUrl = `${siteUrl}/api/revalidate`;
+
+  // strapi::webhook is Strapi v5's internal webhook entity
+  const db = (strapi as any).db;
+  const existing: Array<{ url: string }> = await db.query('strapi::webhook').findMany({});
+  if (existing.some((w) => w.url === webhookUrl)) {
+    strapi.log.info('[bootstrap] Revalidation webhook already registered');
+    return;
+  }
+
+  // Strapi v5 has no built-in signing — pass the secret as a Bearer token in headers.
+  // The Astro /api/revalidate endpoint verifies the Authorization header.
+  await db.query('strapi::webhook').create({
+    data: {
+      name: 'Astro Revalidate',
+      url: webhookUrl,
+      headers: { Authorization: `Bearer ${secret}` },
+      events: [
+        'entry.create',
+        'entry.update',
+        'entry.delete',
+        'entry.publish',
+        'entry.unpublish',
+        'media.create',
+        'media.update',
+        'media.delete',
+      ],
+      enabled: true,
+    },
+  });
+
+  strapi.log.info(`[bootstrap] Created revalidation webhook → ${webhookUrl}`);
 }

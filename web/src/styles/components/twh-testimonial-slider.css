@@ -6,6 +6,44 @@
 .twh-testi {
   background: var(--color-twh-black);
   padding: var(--spacing-section) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Decorative wolverine scratch marks ──────────────────── */
+
+.twh-testi__bg-slash {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  color: var(--color-twh-red);
+}
+
+.twh-testi__bg-slash--1 {
+  left: 4%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
+  height: 180px;
+  opacity: 0.055;
+}
+
+.twh-testi__bg-slash--2 {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 140px;
+  opacity: 0.03;
+}
+
+.twh-testi__bg-slash--3 {
+  right: 4%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
+  height: 180px;
+  opacity: 0.055;
 }
 
 .twh-testi__inner {
@@ -13,6 +51,8 @@
   margin: 0 auto;
   padding: 0 4rem;
   opacity: 0; /* animated */
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Header ──────────────────────────────────────────────── */

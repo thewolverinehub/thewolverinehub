@@ -201,6 +201,23 @@ export interface StrapiCoachCarouselSection {
   anchorId?: string;
 }
 
+export interface StrapiCoachSpotlightSection {
+  __component: 'sections.coach-spotlight';
+  heading?: string;
+  cta?: StrapiCtaButton;
+  visible?: boolean;
+  anchorId?: string;
+}
+
+export interface StrapiProgramTiersSection {
+  __component: 'sections.program-tiers';
+  heading?: string;
+  subheading?: string;
+  cta?: StrapiCtaButton;
+  visible?: boolean;
+  anchorId?: string;
+}
+
 export interface StrapiPricingTeaserSection {
   __component: 'sections.pricing-teaser';
   heading?: string;

@@ -1,0 +1,181 @@
+---
+import type { StrapiClassRailSection, StrapiClass } from '../../lib/strapi/types';
+import { getClasses } from '../../lib/strapi/queries';
+
+interface Props {
+  section?: Partial<StrapiClassRailSection>;
+}
+
+const { section } = Astro.props;
+
+const heading  = section?.heading ?? 'Every Discipline. Every Level.';
+const cta      = section?.cta     ?? { label: 'View All Classes', href: '/classes', variant: 'ghost', openInNewTab: false };
+const anchorId = section?.anchorId ?? 'classes';
+
+const intensityColour: Record<string, string> = {
+  low:     'var(--color-twh-blue)',
+  medium:  'var(--color-twh-yellow)',
+  high:    'var(--color-twh-red)',
+  extreme: 'var(--color-twh-red-deep)',
+};
+
+let classes: StrapiClass[] = [];
+try { classes = await getClasses(); } catch { /* CMS offline */ }
+
+const fallbackClasses: StrapiClass[] = [
+  { documentId: '1', name: 'Boxing',                   slug: 'boxing',                tagline: 'The sweet science',      durationMinutes: 60, intensity: 'high',    level: 'all',          isFree: false, sortOrder: 1 },
+  { documentId: '2', name: 'Muay Thai',                slug: 'muay-thai',             tagline: 'Eight limbs',            durationMinutes: 90, intensity: 'high',    level: 'intermediate', isFree: false, sortOrder: 2 },
+  { documentId: '3', name: 'BJJ',                      slug: 'bjj',                   tagline: 'Ground game',            durationMinutes: 90, intensity: 'medium',  level: 'all',          isFree: false, sortOrder: 3 },
+  { documentId: '4', name: 'Kickboxing',               slug: 'kickboxing',            tagline: 'Power & precision',      durationMinutes: 60, intensity: 'high',    level: 'all',          isFree: false, sortOrder: 4 },
+  { documentId: '5', name: 'Strength & Conditioning',  slug: 'strength-conditioning', tagline: 'Build the base',         durationMinutes: 60, intensity: 'medium',  level: 'all',          isFree: false, sortOrder: 5 },
+  { documentId: '6', name: 'Wrestling',                slug: 'wrestling',             tagline: 'Control the mat',        durationMinutes: 75, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 6 },
+  { documentId: '7', name: 'MMA',                      slug: 'mma',                   tagline: 'The complete fighter',   durationMinutes: 90, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 7 },
+  { documentId: '8', name: 'Yoga',                     slug: 'yoga',                  tagline: 'Recovery & mobility',    durationMinutes: 60, intensity: 'low',     level: 'all',          isFree: false, sortOrder: 8 },
+  { documentId: '9', name: 'HIIT',                     slug: 'hiit',                  tagline: 'Push the limit',         durationMinutes: 45, intensity: 'high',    level: 'all',          isFree: false, sortOrder: 9 },
+];
+
+const displayClasses = (classes.length > 0 ? classes : fallbackClasses).slice(0, 9);
+---
+
+<section class="twh-cgrid" id={anchorId} aria-label="Classes">
+  <div class="twh-cgrid__header">
+    <div class="twh-cgrid__header-inner">
+      <div class="twh-cgrid__title-group">
+        <span class="twh-cgrid__eyebrow">What we train</span>
+        <h2 class="twh-cgrid__heading">{heading}</h2>
+      </div>
+      <a
+        href={cta.href}
+        class={`twh-btn twh-btn--${cta.variant} twh-btn--sm`}
+        target={cta.openInNewTab ? '_blank' : undefined}
+        rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
+      >
+        {cta.label}
+      </a>
+    </div>
+  </div>
+
+  <ul class="twh-cgrid__list" role="list" aria-label="Class list">
+    {displayClasses.map((cls) => {
+      const colour = intensityColour[cls.intensity] ?? 'var(--color-twh-grey-700)';
+      const hasVideo = Boolean(cls.previewVideo?.url);
+      return (
+        <li class="twh-cgrid__card" data-has-video={hasVideo}>
+          <a href={`/classes/${cls.slug}`} class="twh-cgrid__card-link">
+            <div class="twh-cgrid__card-media">
+              {cls.thumbnail ? (
+                <img
+                  class="twh-cgrid__card-img"
+                  src={cls.thumbnail.url}
+                  alt={cls.thumbnail.alternativeText ?? cls.name}
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  class="twh-cgrid__card-placeholder"
+                  style={`background: linear-gradient(135deg, ${colour}22 0%, transparent 80%), var(--color-twh-ink);`}
+                  aria-hidden="true"
+                >
+                  <span class="twh-cgrid__placeholder-slash" aria-hidden="true">///</span>
+                </div>
+              )}
+
+              {hasVideo && (
+                <video
+                  class="twh-cgrid__card-video"
+                  src={cls.previewVideo!.url}
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                  tabindex="-1"
+                />
+              )}
+
+              <span
+                class="twh-cgrid__badge"
+                style={`background: ${colour}; color: ${cls.intensity === 'medium' ? 'var(--color-twh-black)' : 'var(--color-twh-white)'};`}
+              >
+                {cls.intensity}
+              </span>
+
+              {hasVideo && (
+                <span class="twh-cgrid__play-hint" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                    <path d="M3 2l9 5-9 5V2z"/>
+                  </svg>
+                  hover to preview
+                </span>
+              )}
+            </div>
+
+            <div class="twh-cgrid__card-body">
+              <h3 class="twh-cgrid__card-name">{cls.name}</h3>
+              {cls.tagline && <p class="twh-cgrid__card-tagline">{cls.tagline}</p>}
+              <div class="twh-cgrid__card-meta">
+                <span>{cls.durationMinutes} min</span>
+                <span class="twh-cgrid__card-meta-sep" aria-hidden="true">/</span>
+                <span>{cls.level}</span>
+              </div>
+            </div>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</section>
+
+<style>@import '../../styles/components/twh-class-grid.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ── Entrance animation ──────────────────────────────────────
+  const section = document.querySelector('.twh-cgrid');
+  if (section) {
+    const header = section.querySelector('.twh-cgrid__header');
+    const cards  = section.querySelectorAll('.twh-cgrid__card');
+
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      if (header) {
+        gsap.fromTo(header,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out',
+            scrollTrigger: { trigger: section, start: 'top 85%' } }
+        );
+      }
+      gsap.fromTo(cards,
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: { each: 0.07, from: 'start' }, ease: 'power3.out',
+          scrollTrigger: { trigger: section, start: 'top 75%' } }
+      );
+    });
+
+    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+      cards.forEach(el => { (el as HTMLElement).style.opacity = '1'; });
+    });
+  }
+
+  // ── Video hover (desktop only, skip touch) ──────────────────
+  const isTouchDevice = window.matchMedia('(hover: none)').matches;
+  if (!isTouchDevice) {
+    document.querySelectorAll<HTMLElement>('.twh-cgrid__card[data-has-video="true"]').forEach(card => {
+      const video = card.querySelector<HTMLVideoElement>('.twh-cgrid__card-video');
+      if (!video) return;
+
+      card.addEventListener('mouseenter', () => {
+        card.classList.add('is-playing');
+        video.play().catch(() => { /* autoplay blocked */ });
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('is-playing');
+        video.pause();
+        video.currentTime = 0;
+      });
+    });
+  }
+</script>

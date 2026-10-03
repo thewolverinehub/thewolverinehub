@@ -75,8 +75,11 @@
 @import "./components/twh-stat-counters.css";
 @import "./components/twh-marquee.css";
 @import "./components/twh-class-rail.css";
+@import "./components/twh-class-grid.css";
 @import "./components/twh-feature-split.css";
 @import "./components/twh-coach-carousel.css";
+@import "./components/twh-coach-spotlight.css";
+@import "./components/twh-program-panels.css";
 @import "./components/twh-pricing-teaser.css";
 @import "./components/twh-testimonial-slider.css";
 @import "./components/twh-cta-banner.css";

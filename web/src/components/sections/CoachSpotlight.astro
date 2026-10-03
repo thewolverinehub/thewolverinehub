@@ -1,0 +1,167 @@
+---
+import type { StrapiCoachCarouselSection, StrapiCoach } from '../../lib/strapi/types';
+import { getCoaches } from '../../lib/strapi/queries';
+import WolverineSlash from '../ui/WolverineSlash.astro';
+
+interface Props {
+  section?: Partial<StrapiCoachCarouselSection>;
+}
+
+const { section } = Astro.props;
+
+const heading  = section?.heading ?? 'The Mind Behind The Method.';
+const cta      = section?.cta     ?? { label: 'Meet the Full Team', href: '/coaches', variant: 'ghost', openInNewTab: false };
+const anchorId = section?.anchorId ?? 'coach';
+
+let coaches: StrapiCoach[] = [];
+try { coaches = await getCoaches(); } catch { /* CMS offline */ }
+
+const fallbackCoach: StrapiCoach = {
+  documentId: '1',
+  name: 'Malshan Jayasekara',
+  slug: 'malshan-jayasekara',
+  role: 'Head Coach & Founder',
+  shortBio: 'A decade building Sri Lanka\'s most demanding training programme. Malshan blends combat sports science with elite athletic conditioning — forging athletes who compete, and people who last.',
+  yearsExperience: 12,
+  specialties: 'Boxing\nMuay Thai\nStrength & Conditioning\nSports Psychology',
+  isHeadCoach: true,
+  sortOrder: 1,
+};
+
+// Prefer head coach, fall back to first
+const rawCoach = coaches.find(c => c.isHeadCoach) ?? coaches[0] ?? fallbackCoach;
+const coach = rawCoach;
+
+const specialtyList = coach.specialties
+  ? coach.specialties.split('\n').filter(Boolean)
+  : [];
+
+const instagramUrl = coach.instagram
+  ? (coach.instagram.startsWith('http') ? coach.instagram : `https://instagram.com/${coach.instagram.replace('@','')}`)
+  : null;
+---
+
+<section class="twh-spotlight" id={anchorId} aria-label="Head coach">
+  <div class="twh-spotlight__inner">
+
+    <!-- Photo column -->
+    <div class="twh-spotlight__photo-col">
+      <WolverineSlash class="twh-spotlight__bg-slash twh-spotlight__bg-slash--1" />
+      <WolverineSlash class="twh-spotlight__bg-slash twh-spotlight__bg-slash--2" />
+
+      <div class="twh-spotlight__photo-wrap">
+        {coach.photo ? (
+          <img
+            class="twh-spotlight__photo"
+            src={coach.photo.url}
+            alt={coach.photo.alternativeText ?? coach.name}
+            loading="lazy"
+          />
+        ) : (
+          <div class="twh-spotlight__photo-placeholder" aria-hidden="true">
+            <span class="twh-spotlight__photo-initials">
+              {coach.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+            </span>
+          </div>
+        )}
+
+        {coach.isHeadCoach && (
+          <div class="twh-spotlight__photo-badge">
+            <span class="twh-spotlight__photo-badge-slash" aria-hidden="true">/</span>
+            Head Coach
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- Content column -->
+    <div class="twh-spotlight__content">
+      <span class="twh-spotlight__eyebrow">Our coach</span>
+      <h2 class="twh-spotlight__name">{heading !== 'The Mind Behind The Method.' ? heading : coach.name}</h2>
+      {coach.role && <p class="twh-spotlight__role">{coach.role}</p>}
+
+      {coach.shortBio && (
+        <p class="twh-spotlight__bio">{coach.shortBio}</p>
+      )}
+
+      <div class="twh-spotlight__stats">
+        {coach.yearsExperience && (
+          <div class="twh-spotlight__stat">
+            <span class="twh-spotlight__stat-num">{coach.yearsExperience}+</span>
+            <span class="twh-spotlight__stat-label">Years Experience</span>
+          </div>
+        )}
+        {specialtyList.length > 0 && (
+          <div class="twh-spotlight__stat">
+            <span class="twh-spotlight__stat-num">{specialtyList.length}</span>
+            <span class="twh-spotlight__stat-label">Disciplines</span>
+          </div>
+        )}
+      </div>
+
+      {specialtyList.length > 0 && (
+        <ul class="twh-spotlight__specialties" role="list" aria-label="Specialties">
+          {specialtyList.map(s => (
+            <li class="twh-spotlight__specialty">
+              <span class="twh-spotlight__specialty-slash" aria-hidden="true">/</span>
+              {s}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div class="twh-spotlight__cta-row">
+        <a
+          href={`/coaches/${coach.slug}`}
+          class="twh-btn twh-btn--primary twh-btn--md"
+        >
+          Full Profile
+        </a>
+        <a
+          href={cta.href}
+          class={`twh-btn twh-btn--${cta.variant} twh-btn--md`}
+          target={cta.openInNewTab ? '_blank' : undefined}
+          rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
+        >
+          {cta.label}
+        </a>
+        {instagramUrl && (
+          <a
+            href={instagramUrl}
+            class="twh-spotlight__ig-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Follow ${coach.name} on Instagram`}
+          >
+            IG
+          </a>
+        )}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>@import '../../styles/components/twh-coach-spotlight.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector('.twh-spotlight');
+  if (section) {
+    const photo   = section.querySelector('.twh-spotlight__photo-col');
+    const content = section.querySelector('.twh-spotlight__content');
+
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section, start: 'top 75%' } });
+      if (photo)   tl.fromTo(photo,   { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' });
+      if (content) tl.fromTo(content, { x: 40,  opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.6');
+    });
+
+    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
+      [photo, content].forEach(el => { if (el) (el as HTMLElement).style.opacity = '1'; });
+    });
+  }
+</script>

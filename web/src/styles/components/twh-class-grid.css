@@ -1,0 +1,264 @@
+/* ============================================================
+   CLASS GRID SECTION
+   Component: sections/ClassGrid.astro   Prefix: twh-cgrid
+   3×3 grid with thumbnail + hover-to-play video preview
+   ============================================================ */
+
+.twh-cgrid {
+  background: var(--color-twh-black);
+  padding: var(--spacing-section) 0;
+}
+
+/* ── Section header ──────────────────────────────────────── */
+
+.twh-cgrid__header {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 4rem;
+  margin-bottom: 3rem;
+}
+
+.twh-cgrid__header-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.twh-cgrid__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.twh-cgrid__eyebrow {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-twh-red);
+}
+
+.twh-cgrid__heading {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-twh-white);
+  margin: 0;
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+
+.twh-cgrid__list {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 4rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  list-style: none;
+  background: var(--color-twh-grey-900);
+  border: 1px solid var(--color-twh-grey-900);
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+
+.twh-cgrid__card {
+  background: var(--color-twh-ink);
+  opacity: 0; /* animated in */
+  overflow: hidden;
+}
+
+.twh-cgrid__card-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  transition: background 0.25s;
+}
+
+.twh-cgrid__card-link:hover {
+  background: var(--color-twh-grey-900);
+}
+
+/* ── Card media ──────────────────────────────────────────── */
+
+.twh-cgrid__card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-twh-grey-900);
+}
+
+/* Image — shown by default, fades out on hover when video plays */
+.twh-cgrid__card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 2;
+  transition: opacity 0.35s ease, transform 0.45s var(--ease-snappy);
+}
+
+/* Video — hidden until hover */
+.twh-cgrid__card-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* State: video playing */
+.twh-cgrid__card.is-playing .twh-cgrid__card-img   { opacity: 0; transform: scale(1.04); }
+.twh-cgrid__card.is-playing .twh-cgrid__card-video { opacity: 1; }
+
+/* Non-video hover — still zoom image */
+.twh-cgrid__card:not([data-has-video="true"]) .twh-cgrid__card-link:hover .twh-cgrid__card-img {
+  transform: scale(1.04);
+}
+
+/* Placeholder when no thumbnail */
+.twh-cgrid__card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.twh-cgrid__placeholder-slash {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  color: rgba(255, 255, 255, 0.06);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  transform: skewX(-8deg);
+  display: block;
+}
+
+/* Intensity badge */
+.twh-cgrid__badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 3;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 2px;
+}
+
+/* "hover to preview" hint — shows only when has video */
+.twh-cgrid__play-hint {
+  position: absolute;
+  bottom: 0.625rem;
+  right: 0.75rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  opacity: 1;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.twh-cgrid__card.is-playing .twh-cgrid__play-hint { opacity: 0; }
+
+/* ── Card body ───────────────────────────────────────────── */
+
+.twh-cgrid__card-body {
+  padding: 1.125rem 1.25rem 1.375rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-top: 1px solid var(--color-twh-grey-800);
+}
+
+.twh-cgrid__card-name {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-twh-white);
+  margin: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.twh-cgrid__card-link:hover .twh-cgrid__card-name {
+  color: var(--color-twh-yellow);
+}
+
+.twh-cgrid__card-tagline {
+  font-size: 0.8rem;
+  color: var(--color-twh-grey-500);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.twh-cgrid__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-700);
+  margin-top: auto;
+  padding-top: 0.625rem;
+}
+
+.twh-cgrid__card-meta-sep {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--color-twh-red);
+  transform: skewX(-8deg);
+  display: inline-block;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .twh-cgrid__header { padding: 0 3rem; margin-bottom: 2.5rem; }
+  .twh-cgrid__list   { padding: 0 3rem; }
+}
+
+@media (max-width: 1023px) {
+  .twh-cgrid__header { padding: 0 2rem; }
+  .twh-cgrid__list   { padding: 0 2rem; grid-template-columns: repeat(2, 1fr); }
+  .twh-cgrid__header-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}
+
+@media (max-width: 640px) {
+  .twh-cgrid__header { padding: 0 1.5rem; }
+  .twh-cgrid__list   { padding: 0 1.5rem; grid-template-columns: 1fr; }
+  .twh-cgrid__play-hint { display: none; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-cgrid__card { opacity: 1 !important; transform: none !important; }
+  .twh-cgrid__card-img,
+  .twh-cgrid__card-video { transition: none; }
+  .twh-cgrid__card.is-playing .twh-cgrid__card-img { transform: none; }
+}

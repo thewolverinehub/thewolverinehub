@@ -9,9 +9,11 @@ import type { StrapiSection } from '../../lib/strapi/types';
 import HeroVideo          from './HeroVideo.astro';
 import StatCounters       from './StatCounters.astro';
 import Marquee            from './Marquee.astro';
-import ClassRail          from './ClassRail.astro';
+import ClassGrid          from './ClassGrid.astro';
 import FeatureSplit       from './FeatureSplit.astro';
 import CoachCarousel      from './CoachCarousel.astro';
+import CoachSpotlight     from './CoachSpotlight.astro';
+import ProgramPanels      from './ProgramPanels.astro';
 import PricingTeaser      from './PricingTeaser.astro';
 import TestimonialSlider  from './TestimonialSlider.astro';
 import CTABanner          from './CTABanner.astro';
@@ -34,11 +36,15 @@ const visible = sections.filter((s) => s.visible !== false);
     case 'sections.marquee':
       return <Marquee section={s as any} />;
     case 'sections.class-rail':
-      return <ClassRail section={s as any} />;
+      return <ClassGrid section={s as any} />;
     case 'sections.feature-split':
       return <FeatureSplit section={s as any} />;
     case 'sections.coach-carousel':
       return <CoachCarousel section={s as any} />;
+    case 'sections.coach-spotlight':
+      return <CoachSpotlight section={s as any} />;
+    case 'sections.program-tiers':
+      return <ProgramPanels section={s as any} />;
     case 'sections.pricing-teaser':
       return <PricingTeaser section={s as any} />;
     case 'sections.testimonial-slider':

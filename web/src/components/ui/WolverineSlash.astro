@@ -1,0 +1,22 @@
+---
+/**
+ * Three parallel diagonal claw marks — the Wolverine Hub signature brand device.
+ * Angle matches the CSS skewX(-35deg) slashes used site-wide.
+ * Colour is currentColor; control opacity and size via CSS on the parent.
+ */
+interface Props {
+  class?: string;
+}
+const { class: cls = '' } = Astro.props;
+---
+<svg
+  class={cls}
+  viewBox="0 0 180 160"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  <path d="M6 160L118 0"  stroke="currentColor" stroke-width="2"   stroke-linecap="round"/>
+  <path d="M34 160L146 0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M62 160L174 0" stroke="currentColor" stroke-width="2"   stroke-linecap="round"/>
+</svg>
