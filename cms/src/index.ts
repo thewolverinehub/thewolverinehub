@@ -2,6 +2,10 @@ import type { Core } from '@strapi/strapi';
 import { applyContentManagerLabels } from './bootstrap/cm-labels';
 import { seedDefaultContent } from './bootstrap/seed';
 
+// Bump this string whenever you change seed data, schemas, or labels.
+// Heavy bootstrap ops are skipped when the stored value matches — fast restarts.
+const BOOTSTRAP_VERSION = '2025-10-03-v3';
+
 // ---------------------------------------------------------------------------
 // Public read-only content types — Public role gets find + findOne on these.
 // ---------------------------------------------------------------------------
@@ -52,6 +56,7 @@ export default {
   register(_ctx: { strapi: Core.Strapi }) {},
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    // ── Permissions (lightweight — always run) ────────────────────────────
     try {
       await setPublicPermissions(strapi);
     } catch (err) {
@@ -59,18 +64,35 @@ export default {
       strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    try {
-      await applyContentManagerLabels(strapi);
-    } catch (err) {
-      strapi.log.warn('[bootstrap] Could not apply content-manager labels.');
-      strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
-    }
+    // ── Version-gated heavy ops (labels + seed) ───────────────────────────
+    // Skip when the stored version matches — saves 80+ remote DB round trips
+    // on every restart. Bump BOOTSTRAP_VERSION above when making schema/seed changes.
+    const bsStore = (strapi as any).store({ type: 'plugin', name: 'wolverine-bootstrap' });
+    let storedVersion: string | null = null;
+    try { storedVersion = await bsStore.get({ key: 'version' }); } catch { /* first run */ }
 
-    try {
-      await seedDefaultContent(strapi);
-    } catch (err) {
-      strapi.log.warn('[bootstrap] Seed failed — create content manually in the admin.');
-      strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
+    if (storedVersion === BOOTSTRAP_VERSION) {
+      strapi.log.info(`[bootstrap] Version ${BOOTSTRAP_VERSION} already applied — skipping heavy ops`);
+    } else {
+      strapi.log.info(`[bootstrap] Version changed (${storedVersion ?? 'none'} → ${BOOTSTRAP_VERSION}) — running full bootstrap`);
+
+      try {
+        await applyContentManagerLabels(strapi);
+      } catch (err) {
+        strapi.log.warn('[bootstrap] Could not apply content-manager labels.');
+        strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      try {
+        await seedDefaultContent(strapi);
+      } catch (err) {
+        strapi.log.warn('[bootstrap] Seed failed — create content manually in the admin.');
+        strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      try {
+        await bsStore.set({ key: 'version', value: BOOTSTRAP_VERSION });
+      } catch { /* non-fatal */ }
     }
 
     checkWebhookSecret(strapi);
