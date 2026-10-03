@@ -33,7 +33,7 @@
   top: -10%;
   width: 340px;
   height: 300px;
-  opacity: 0.06;
+  opacity: 0.12;
   transform: rotate(-8deg);
 }
 
@@ -42,7 +42,7 @@
   bottom: -10%;
   width: 280px;
   height: 250px;
-  opacity: 0.04;
+  opacity: 0.09;
   transform: rotate(172deg);
 }
 
@@ -52,7 +52,7 @@
   transform: translate(-50%, -50%) rotate(4deg);
   width: 900px;
   height: 800px;
-  opacity: 0.018;
+  opacity: 0.04;
 }
 
 /* Giant wordmark */
