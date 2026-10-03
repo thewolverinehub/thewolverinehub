@@ -54,9 +54,9 @@
 .twh-cgrid__list {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0 4rem;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1px;
   list-style: none;
   background: var(--color-twh-grey-900);
@@ -239,18 +239,16 @@
 
 @media (max-width: 1200px) {
   .twh-cgrid__header { padding: 0 3rem; margin-bottom: 2.5rem; }
-  .twh-cgrid__list   { padding: 0 3rem; }
 }
 
 @media (max-width: 1023px) {
   .twh-cgrid__header { padding: 0 2rem; }
-  .twh-cgrid__list   { padding: 0 2rem; grid-template-columns: repeat(2, 1fr); }
   .twh-cgrid__header-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
 }
 
 @media (max-width: 640px) {
   .twh-cgrid__header { padding: 0 1.5rem; }
-  .twh-cgrid__list   { padding: 0 1.5rem; grid-template-columns: 1fr; }
+  .twh-cgrid__list   { grid-template-columns: 1fr; }
   .twh-cgrid__play-hint { display: none; }
 }
 
