@@ -1,8 +1,9 @@
 ---
 /**
- * Three organic diagonal claw scratch marks — the Wolverine Hub brand device.
- * Filled paths simulate torn-surface claw texture at ~70° from horizontal.
- * Use currentColor + CSS opacity/size on the parent to control appearance.
+ * Three ragged diagonal claw scratch marks — the Wolverine Hub brand device.
+ * Each mark is a filled closed path tracing both jagged edges of the scratch.
+ * Left mark is narrowest, centre widest, right medium — matching reference art.
+ * Colour = currentColor; control size and opacity via CSS on the parent.
  */
 interface Props {
   class?: string;
@@ -11,91 +12,51 @@ const { class: cls = '' } = Astro.props;
 ---
 <svg
   class={cls}
-  viewBox="0 0 240 260"
+  viewBox="0 0 320 280"
   fill="currentColor"
   xmlns="http://www.w3.org/2000/svg"
   aria-hidden="true"
 >
-  <!-- Left claw mark -->
+  <!-- Left claw mark — thin, ~14px wide at peak -->
   <path d="
-    M 14 254
-    Q 17 244 19 234
-    Q 22 222 25 212
-    Q 29 199 32 189
-    Q 35 177 38 167
-    Q 42 153 45 143
-    Q 49 129 52 119
-    Q 56 105 59 95
-    Q 62 81 66 70
-    Q 70 56 73 45
-    Q 77 31 80 20
-    L 84 6
-    L 88 3
-    Q 86 14 83 25
-    Q 79 39 76 51
-    Q 72 65 69 76
-    Q 65 90 62 101
-    Q 58 115 55 126
-    Q 51 140 48 151
-    Q 44 165 41 176
-    Q 37 190 34 201
-    Q 30 215 27 226
-    Q 23 239 20 250
-    Q 18 256 17 259
+    M 14 255
+    L 14 242 L 19 229 L 18 216 L 26 203 L 24 190
+    L 33 177 L 31 164 L 28 158 L 40 151 L 39 138
+    L 35 132 L 50 125 L 49 112 L 58 99  L 58 86
+    L 67 73  L 68 60  L 76 47  L 79 34  L 85 21
+    L 90 8   L 90 5
+    L 88 21  L 86 34  L 80 47  L 81 60  L 73 73
+    L 75 86  L 70 99  L 68 112 L 58 125 L 62 138
+    L 64 144 L 51 151 L 54 164 L 44 177 L 45 190
+    L 34 203 L 34 216 L 25 229 L 22 242
     Z
   "/>
 
-  <!-- Centre claw mark (widest) -->
+  <!-- Centre claw mark — widest, ~35px at peak, most dramatic -->
   <path d="
-    M 82 258
-    Q 85 247 88 236
-    Q 92 222 95 210
-    Q 99 196 103 184
-    Q 107 170 111 157
-    Q 115 143 119 130
-    Q 123 116 127 103
-    Q 131 89 135 76
-    Q 139 62 143 49
-    Q 147 35 151 22
-    L 155 8
-    L 161 4
-    Q 158 17 154 31
-    Q 150 44 146 58
-    Q 142 71 138 85
-    Q 134 98 130 112
-    Q 126 125 122 139
-    Q 118 152 114 166
-    Q 110 179 106 193
-    Q 102 207 98 220
-    Q 94 234 90 247
-    Q 87 254 86 260
+    M 100 265
+    L 99  249 L 105 233 L 101 217 L 111 201 L 107 185
+    L 104 178 L 118 169 L 116 153 L 112 146 L 130 137
+    L 128 121 L 124 114 L 140 105 L 140 89  L 153 73
+    L 153 57  L 163 41  L 168 25  L 175 10
+    L 175 25  L 169 41  L 170 57  L 161 73
+    L 164 89  L 154 105 L 158 112 L 157 121 L 146 137
+    L 150 144 L 151 153 L 138 169 L 142 176 L 141 185
+    L 127 201 L 127 217 L 113 233 L 111 249
     Z
   "/>
 
-  <!-- Right claw mark -->
+  <!-- Right claw mark — medium, ~25px at peak -->
   <path d="
-    M 152 256
-    Q 155 245 158 234
-    Q 161 221 164 210
-    Q 168 196 171 184
-    Q 174 171 177 159
-    Q 181 145 184 133
-    Q 187 119 190 107
-    Q 194 93 197 81
-    Q 200 67 203 55
-    Q 207 41 210 28
-    L 213 15
-    L 217 10
-    Q 214 22 211 35
-    Q 208 48 204 62
-    Q 201 74 198 88
-    Q 195 100 191 114
-    Q 188 126 185 140
-    Q 181 154 178 166
-    Q 175 180 172 192
-    Q 168 206 165 218
-    Q 162 231 159 244
-    Q 157 251 155 258
+    M 192 258
+    L 192 243 L 198 228 L 196 213 L 204 198 L 201 183
+    L 199 176 L 211 168 L 209 153 L 206 146 L 221 138
+    L 221 123 L 229 108 L 230 93  L 240 78  L 242 63
+    L 250 48  L 253 33  L 259 18  L 260 14
+    L 257 33  L 252 48  L 252 63  L 246 78
+    L 246 93  L 239 108 L 240 123 L 231 138
+    L 234 145 L 234 153 L 224 168 L 226 175 L 225 183
+    L 214 198 L 214 213 L 202 228 L 200 243
     Z
   "/>
 </svg>
