@@ -59,8 +59,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     "default-src 'self'",
     `script-src 'self' 'unsafe-inline'`, // tightened with nonces in Phase 14
     `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' data: blob: ${CMS_PUBLIC_URL} ${BUCKET_ENDPOINT} https://t3.storageapi.dev`,
-    `media-src 'self' blob: ${CMS_PUBLIC_URL} ${BUCKET_ENDPOINT} https://t3.storageapi.dev`,
+    `img-src 'self' data: blob: https: ${CMS_PUBLIC_URL} ${BUCKET_ENDPOINT}`,
+    `media-src 'self' blob: https: ${CMS_PUBLIC_URL} ${BUCKET_ENDPOINT}`,
     `font-src 'self'`,
     `connect-src 'self' ${CMS_PUBLIC_URL}`,
     `frame-src 'none'`,

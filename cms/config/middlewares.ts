@@ -10,17 +10,11 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewar
         useDefaults: true,
         directives: {
           'connect-src': ["'self'", 'https:'],
-          'img-src': [
-            "'self'",
-            'data:',
-            'blob:',
+          'img-src': ["'self'", 'data:', 'blob:', 'https:',
             env('BUCKET_ENDPOINT', 'http://localhost:9000'),
             env('PUBLIC_SITE_URL', 'http://localhost:4321'),
           ],
-          'media-src': [
-            "'self'",
-            'data:',
-            'blob:',
+          'media-src': ["'self'", 'data:', 'blob:', 'https:',
             env('BUCKET_ENDPOINT', 'http://localhost:9000'),
             env('PUBLIC_SITE_URL', 'http://localhost:4321'),
           ],

@@ -37,18 +37,18 @@
 .twh-pricing__bg-slash--l {
   left: -2%;
   top: 5%;
-  width: 260px;
-  height: 230px;
-  opacity: 0.04;
+  width: 320px;
+  height: 290px;
+  opacity: 0.15;
   transform: scale(1.8) rotate(-5deg);
 }
 
 .twh-pricing__bg-slash--r {
   right: -2%;
   bottom: 5%;
-  width: 200px;
-  height: 180px;
-  opacity: 0.03;
+  width: 260px;
+  height: 235px;
+  opacity: 0.12;
   transform: scale(1.4) rotate(175deg);
 }
 
