@@ -1319,85 +1319,100 @@ async function seedPrograms(strapi: Core.Strapi): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Home page
+// Home page — upsert so re-runs on version bump replace old sections
 // ---------------------------------------------------------------------------
 async function seedHomePage(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents as (uid: string) => any;
-  await docs('api::page.page').create({
-    data: {
-      title: 'Home',
-      slug: 'home',
-      sections: [
-        {
-          __component: 'sections.hero-video',
-          headline: 'Where Iron Meets Instinct.',
-          subheadline: "Sri Lanka's most demanding training ground. Classes, coaching and programs built for those who mean it.",
-          primaryCta:   { label: 'Book a Free Trial', href: '/free-trial', variant: 'primary', openInNewTab: false },
-          secondaryCta: { label: 'Explore Classes',   href: '/classes',    variant: 'ghost',   openInNewTab: false },
-          visible: true, anchorId: 'hero',
-        },
-        {
-          __component: 'sections.stat-counters',
-          stats: [
-            { number: '24+',   label: 'Disciplines' },
-            { number: '1,200+', label: 'Active Members' },
-            { number: '18',    label: 'Expert Coaches' },
-            { number: '5',     label: 'Years Strong' },
-          ],
-          visible: true, anchorId: 'stats',
-        },
-        {
-          __component: 'sections.marquee',
-          items: ['Boxing', 'Muay Thai', 'Brazilian Jiu-Jitsu', 'Kickboxing', 'Strength & Conditioning', 'Wrestling', 'MMA', 'Yoga & Mobility', 'HIIT', 'Calisthenics'],
-          speed: 'normal', visible: true,
-        },
-        {
-          __component: 'sections.class-rail',
-          heading: 'Every Discipline. Every Level.',
-          cta: { label: 'All Classes', href: '/classes', variant: 'ghost', openInNewTab: false },
-          visible: true, anchorId: 'classes',
-        },
-        {
-          __component: 'sections.program-tiers',
-          heading: 'Programs Built for Results.',
-          subheading: 'Every programme is structured, coach-led, and designed to take you somewhere specific.',
-          cta: { label: 'All Programs', href: '/programs', variant: 'primary', openInNewTab: false },
-          visible: true, anchorId: 'programs',
-        },
-        {
-          __component: 'sections.coach-spotlight',
-          heading: 'Meet the Head Coach.',
-          cta: { label: 'All Coaches', href: '/coaches', variant: 'ghost', openInNewTab: false },
-          visible: true, anchorId: 'coaches',
-        },
-        {
-          __component: 'sections.pricing-teaser',
-          heading: 'Simple, Honest Pricing.',
-          subheading: 'Pick a tier. Book your first class. No lock-ins.',
-          cta: { label: 'See All Plans', href: '/pricing', variant: 'primary', openInNewTab: false },
-          visible: true, anchorId: 'pricing',
-        },
-        {
-          __component: 'sections.testimonial-slider',
-          heading: 'The Members Speak.',
-          maxItems: 6,
-          visible: true, anchorId: 'testimonials',
-        },
-        {
-          __component: 'sections.cta-banner',
-          heading: 'Ready to Start?',
-          subheading: 'Your first class is on us. No excuses. No delays.',
-          primaryCta:   { label: 'Book a Free Trial', href: '/free-trial', variant: 'primary', openInNewTab: false },
-          secondaryCta: { label: 'View Pricing',      href: '/pricing',    variant: 'ghost',   openInNewTab: false },
-          backgroundToken: 'red', visible: true, anchorId: 'cta',
-        },
-      ],
-      seo: {
-        metaTitle: 'The Wolverine Hub — Where Iron Meets Instinct',
-        metaDescription: "Sri Lanka's most demanding training ground. 24+ disciplines. Elite coaches. Classes for every level. Book your free trial today.",
+
+  const homeData = {
+    title: 'Home',
+    slug: 'home',
+    sections: [
+      {
+        __component: 'sections.hero-video',
+        headline: 'Where Iron Meets Instinct.',
+        subheadline: "Sri Lanka's most demanding training ground. Classes, coaching and programs built for those who mean it.",
+        primaryCta:   { label: 'Book a Free Trial', href: '/free-trial', variant: 'primary', openInNewTab: false },
+        secondaryCta: { label: 'Explore Classes',   href: '/classes',    variant: 'ghost',   openInNewTab: false },
+        visible: true, anchorId: 'hero',
       },
+      {
+        __component: 'sections.stat-counters',
+        stats: [
+          { number: '24+',    label: 'Disciplines' },
+          { number: '1,200+', label: 'Active Members' },
+          { number: '18',     label: 'Expert Coaches' },
+          { number: '5',      label: 'Years Strong' },
+        ],
+        visible: true, anchorId: 'stats',
+      },
+      {
+        __component: 'sections.marquee',
+        items: ['Boxing', 'Muay Thai', 'Brazilian Jiu-Jitsu', 'Kickboxing', 'Strength & Conditioning', 'Wrestling', 'MMA', 'Yoga & Mobility', 'HIIT', 'Calisthenics'],
+        speed: 'normal', visible: true,
+      },
+      {
+        __component: 'sections.class-rail',
+        heading: 'Every Discipline. Every Level.',
+        cta: { label: 'All Classes', href: '/classes', variant: 'ghost', openInNewTab: false },
+        visible: true, anchorId: 'classes',
+      },
+      {
+        __component: 'sections.program-tiers',
+        heading: 'Programs Built for Results.',
+        subheading: 'Every programme is structured, coach-led, and designed to take you somewhere specific.',
+        cta: { label: 'All Programs', href: '/programs', variant: 'primary', openInNewTab: false },
+        visible: true, anchorId: 'programs',
+      },
+      {
+        __component: 'sections.coach-spotlight',
+        heading: 'Meet the Head Coach.',
+        cta: { label: 'All Coaches', href: '/coaches', variant: 'ghost', openInNewTab: false },
+        visible: true, anchorId: 'coaches',
+      },
+      {
+        __component: 'sections.pricing-teaser',
+        heading: 'Simple, Honest Pricing.',
+        subheading: 'Pick a tier. Book your first class. No lock-ins.',
+        cta: { label: 'See All Plans', href: '/pricing', variant: 'primary', openInNewTab: false },
+        visible: true, anchorId: 'pricing',
+      },
+      {
+        __component: 'sections.testimonial-slider',
+        heading: 'The Members Speak.',
+        maxItems: 6,
+        visible: true, anchorId: 'testimonials',
+      },
+      {
+        __component: 'sections.cta-banner',
+        heading: 'Ready to Start?',
+        subheading: 'Your first class is on us. No excuses. No delays.',
+        primaryCta:   { label: 'Book a Free Trial', href: '/free-trial', variant: 'primary', openInNewTab: false },
+        secondaryCta: { label: 'View Pricing',      href: '/pricing',    variant: 'ghost',   openInNewTab: false },
+        backgroundToken: 'red', visible: true, anchorId: 'cta',
+      },
+    ],
+    seo: {
+      metaTitle: 'The Wolverine Hub — Where Iron Meets Instinct',
+      metaDescription: "Sri Lanka's most demanding training ground. 24+ disciplines. Elite coaches. Classes for every level. Book your free trial today.",
     },
+  };
+
+  // Upsert: update existing home page if it exists, otherwise create it fresh.
+  const existing = await docs('api::page.page').findFirst({
+    filters: { slug: 'home' },
   });
+
+  if (existing?.documentId) {
+    await docs('api::page.page').update({
+      documentId: existing.documentId,
+      data: homeData,
+    });
+    strapi.log.info('[bootstrap] Home page sections updated (upsert)');
+  } else {
+    await docs('api::page.page').create({ data: homeData });
+    strapi.log.info('[bootstrap] Home page created');
+  }
 }
 
 // ---------------------------------------------------------------------------
