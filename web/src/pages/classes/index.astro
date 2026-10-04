@@ -43,15 +43,19 @@ const intensityTextColour: Record<string, string> = {
   extreme: 'var(--color-twh-white)',
 };
 
-// Ordered filter categories — "All" is frontend-only, not a Strapi level
-const FILTERS = [
-  { label: 'All',          value: 'all',          type: 'all',       accent: 'var(--color-twh-white)' },
-  { label: 'Extreme',      value: 'extreme',      type: 'intensity', accent: 'var(--color-twh-red-deep)' },
-  { label: 'Advanced',     value: 'advanced',     type: 'level',     accent: 'var(--color-twh-red)' },
-  { label: 'High',         value: 'high',         type: 'intensity', accent: 'var(--color-twh-red)' },
-  { label: 'Intermediate', value: 'intermediate', type: 'level',     accent: 'var(--color-twh-yellow)' },
-  { label: 'Medium',       value: 'medium',       type: 'intensity', accent: 'var(--color-twh-yellow)' },
-  { label: 'Low',          value: 'low',          type: 'intensity', accent: 'var(--color-twh-blue)' },
+// Filter groups — "All" is frontend-only. Level and intensity combine (AND).
+const FILTER_GROUPS = [
+  { key: 'level', label: 'Level', options: [
+    { label: 'Beginner',     value: 'beginner',     accent: 'var(--color-twh-blue)' },
+    { label: 'Intermediate', value: 'intermediate', accent: 'var(--color-twh-yellow)' },
+    { label: 'Advanced',     value: 'advanced',     accent: 'var(--color-twh-red)' },
+  ]},
+  { key: 'intensity', label: 'Intensity', options: [
+    { label: 'Low',     value: 'low',     accent: 'var(--color-twh-blue)' },
+    { label: 'Medium',  value: 'medium',  accent: 'var(--color-twh-yellow)' },
+    { label: 'High',    value: 'high',    accent: 'var(--color-twh-red)' },
+    { label: 'Extreme', value: 'extreme', accent: 'var(--color-twh-red-deep)' },
+  ]},
 ];
 
 const seo = {
@@ -81,17 +85,32 @@ const seo = {
   <!-- Filter bar -->
   <nav class="twh-classes__filters" aria-label="Filter classes">
     <div class="twh-classes__filters-inner">
-      {FILTERS.map((f, i) => (
-        <button
-          class="twh-classes__filter-btn"
-          data-filter={f.value}
-          data-filter-type={f.type}
-          aria-pressed={i === 0 ? 'true' : 'false'}
-          style={`--btn-accent: ${f.accent};`}
-        >
-          <span class="twh-classes__filter-dot" aria-hidden="true"></span>
-          {f.label}
-        </button>
+      <button
+        class="twh-classes__filter-btn"
+        data-filter-group="all"
+        data-filter="all"
+        aria-pressed="true"
+        style="--btn-accent: var(--color-twh-white);"
+      >
+        <span class="twh-classes__filter-dot" aria-hidden="true"></span>
+        All
+      </button>
+      {FILTER_GROUPS.map((group) => (
+        <div class="twh-classes__filter-group" role="group" aria-label={group.label}>
+          <span class="twh-classes__filter-group-label">{group.label}</span>
+          {group.options.map((o) => (
+            <button
+              class="twh-classes__filter-btn"
+              data-filter-group={group.key}
+              data-filter={o.value}
+              aria-pressed="false"
+              style={`--btn-accent: ${o.accent};`}
+            >
+              <span class="twh-classes__filter-dot" aria-hidden="true"></span>
+              {o.label}
+            </button>
+          ))}
+        </div>
       ))}
     </div>
   </nav>
@@ -172,14 +191,14 @@ const seo = {
       <div class="twh-classes__empty" id="no-results" style="display:none;" aria-live="polite">
         <WolverineSlash class="twh-classes__empty-icon" aria-hidden="true" />
         <p class="twh-classes__empty-heading">No Classes at the Moment</p>
-        <p class="twh-classes__empty-sub">We don't have any classes in this category right now. Check back soon or <a href="/contact">get in touch</a>.</p>
+        <p class="twh-classes__empty-sub" id="no-results-sub">We don't have any classes in this category right now. Check back soon or <a href="/contact">get in touch</a>.</p>
       </div>
     </div>
   </section>
 
 </PageLayout>
 
-<style>@import '../../styles/pages/twh-classes.css';</style>
+<style is:global>@import '../../styles/pages/twh-classes.css';</style>
 
 <script>
   import gsap from 'gsap';
@@ -187,31 +206,46 @@ const seo = {
   gsap.registerPlugin(ScrollTrigger);
 
   // ── Filter ──────────────────────────────────────────────────
+  // Level and intensity are independent groups, combined with AND.
+  // Clicking the active option again (or "All") clears that selection.
   const btns  = document.querySelectorAll<HTMLButtonElement>('.twh-classes__filter-btn');
   const cards = document.querySelectorAll<HTMLElement>('.twh-classes__card');
   const noRes = document.getElementById('no-results')!;
+  const state: Record<string, string> = { level: 'all', intensity: 'all' };
 
-  function applyFilter(value: string, type: string) {
-    btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.filter === value ? 'true' : 'false'));
+  function applyFilter() {
+    const none = state.level === 'all' && state.intensity === 'all';
+    btns.forEach(b => {
+      const group = b.dataset.filterGroup!;
+      const on = group === 'all' ? none : state[group] === b.dataset.filter;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
     let visible = 0;
     cards.forEach(card => {
-      let show = false;
-      if (type === 'all') {
-        show = true;
-      } else if (type === 'intensity') {
-        show = card.dataset.intensity === value;
-      } else if (type === 'level') {
-        show = card.dataset.level === value;
-      }
+      const show =
+        (state.level === 'all'     || card.dataset.level === state.level) &&
+        (state.intensity === 'all' || card.dataset.intensity === state.intensity);
       card.classList.toggle('is-filtered-out', !show);
-      if (show) visible++;
+      if (show) {
+        visible++;
+        // Entrance tween may not have run yet for cards that were off-screen.
+        gsap.set(card, { clearProps: 'transform', opacity: 1 });
+      }
     });
-    noRes.style.display = visible === 0 ? 'block' : 'none';
+    noRes.style.display = visible === 0 ? 'flex' : 'none';
   }
 
   btns.forEach(btn => {
     btn.addEventListener('click', () => {
-      applyFilter(btn.dataset.filter ?? 'all', btn.dataset.filterType ?? 'all');
+      const group = btn.dataset.filterGroup!;
+      if (group === 'all') {
+        state.level = 'all';
+        state.intensity = 'all';
+      } else {
+        state[group] = state[group] === btn.dataset.filter ? 'all' : btn.dataset.filter!;
+      }
+      applyFilter();
     });
   });
 
