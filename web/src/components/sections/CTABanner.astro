@@ -1,5 +1,6 @@
 ---
 import type { StrapiCtaBannerSection } from '../../lib/strapi/types';
+import WolverineSlash from '../ui/WolverineSlash.astro';
 
 interface Props {
   section?: Partial<StrapiCtaBannerSection>;
@@ -18,9 +19,9 @@ const anchorId     = section?.anchorId ?? 'cta';
 
   <!-- Background slash stack -->
   <div class="twh-cta-banner__bg" aria-hidden="true">
-    <span class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--1">/</span>
-    <span class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--2">/</span>
-    <span class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--3">/</span>
+    <WolverineSlash class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--1" />
+    <WolverineSlash class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--2" />
+    <WolverineSlash class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--3" />
   </div>
 
   <!-- Red accent band -->

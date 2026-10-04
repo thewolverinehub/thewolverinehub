@@ -605,6 +605,38 @@ export interface SectionsNewsletterBlock extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsPageHero extends Struct.ComponentSchema {
+  collectionName: 'components_sections_page_heroes';
+  info: {
+    displayName: 'Page Hero';
+    icon: 'layout';
+  };
+  attributes: {
+    eyebrow: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: "Small label shown above the heading (e.g. 'Train', 'About', 'Membership').";
+          label: 'Eyebrow Text';
+        };
+      }>;
+    heading: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Large page heading. Use a newline to control line breaks.';
+          label: 'Main Heading';
+        };
+      }>;
+    subheading: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Supporting sentence below the heading (1\u20132 sentences max).';
+          label: 'Subheading';
+        };
+      }>;
+  };
+}
+
 export interface SectionsPartnerStrip extends Struct.ComponentSchema {
   collectionName: 'components_sections_partner_strips';
   info: {
@@ -1145,6 +1177,7 @@ declare module '@strapi/strapi' {
       'sections.location-block': SectionsLocationBlock;
       'sections.marquee': SectionsMarquee;
       'sections.newsletter-block': SectionsNewsletterBlock;
+      'sections.page-hero': SectionsPageHero;
       'sections.partner-strip': SectionsPartnerStrip;
       'sections.pricing-teaser': SectionsPricingTeaser;
       'sections.program-tiers': SectionsProgramTiers;

@@ -1,6 +1,7 @@
 ---
 import type { StrapiClassRailSection, StrapiClass } from '../../lib/strapi/types';
 import { getClasses } from '../../lib/strapi/queries';
+import WolverineSlash from '../ui/WolverineSlash.astro';
 
 interface Props {
   section?: Partial<StrapiClassRailSection>;
@@ -76,7 +77,7 @@ const displayClasses = (classes.length > 0 ? classes : fallbackClasses).slice(0,
                   style={`background: linear-gradient(135deg, ${colour}22 0%, transparent 80%), var(--color-twh-ink);`}
                   aria-hidden="true"
                 >
-                  <span class="twh-cgrid__placeholder-slash" aria-hidden="true">///</span>
+                  <WolverineSlash class="twh-cgrid__placeholder-slash" />
                 </div>
               )}
 

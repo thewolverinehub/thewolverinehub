@@ -1,6 +1,7 @@
 ---
 import type { StrapiProgram } from '../../lib/strapi/types';
 import { getPrograms } from '../../lib/strapi/queries';
+import WolverineSlash from '../ui/WolverineSlash.astro';
 
 interface Props {
   section?: {
@@ -69,7 +70,7 @@ const displayPrograms = programs.length > 0 ? programs : fallbackPrograms;
             />
           ) : (
             <div class="twh-programs__panel-bg twh-programs__panel-bg--placeholder" aria-hidden="true">
-              <span class="twh-programs__panel-slash" aria-hidden="true">///</span>
+              <WolverineSlash class="twh-programs__panel-slash" />
             </div>
           )}
           <div class="twh-programs__panel-overlay" aria-hidden="true" />

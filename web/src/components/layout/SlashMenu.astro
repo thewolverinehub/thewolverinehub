@@ -1,5 +1,6 @@
 ---
 import type { StrapiHeader, StrapiGlobal } from '../../lib/strapi/types';
+import WolverineSlash from '../ui/WolverineSlash.astro';
 
 interface Props {
   header?: StrapiHeader;
@@ -86,9 +87,9 @@ const items = (header?.menuItems?.length ?? 0) > 0
     <div class="twh-sm__preview" aria-hidden="true">
       <div class="twh-sm__preview-mask">
         <div class="twh-sm__preview-default">
-          <span class="twh-sm__preview-slash twh-sm__preview-slash--1"></span>
-          <span class="twh-sm__preview-slash twh-sm__preview-slash--2"></span>
-          <span class="twh-sm__preview-slash twh-sm__preview-slash--3"></span>
+          <WolverineSlash class="twh-sm__preview-slash twh-sm__preview-slash--1" />
+          <WolverineSlash class="twh-sm__preview-slash twh-sm__preview-slash--2" />
+          <WolverineSlash class="twh-sm__preview-slash twh-sm__preview-slash--3" />
         </div>
         <div class="twh-sm__preview-media" id="sm-preview-media"></div>
         <div class="twh-sm__preview-num" id="sm-preview-num" aria-hidden="true">01</div>

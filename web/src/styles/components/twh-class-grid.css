@@ -137,13 +137,10 @@
 }
 
 .twh-cgrid__placeholder-slash {
-  font-family: var(--font-display);
-  font-size: 4rem;
-  color: rgba(255, 255, 255, 0.06);
-  letter-spacing: 0.1em;
-  line-height: 1;
-  transform: skewX(-8deg);
-  display: block;
+  width: 140px;
+  height: 130px;
+  color: rgba(255, 255, 255, 0.09);
+  flex-shrink: 0;
 }
 
 /* Intensity badge */

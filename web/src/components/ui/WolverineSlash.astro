@@ -1,9 +1,14 @@
 ---
 /**
- * Three ragged diagonal claw scratch marks — the Wolverine Hub brand device.
- * Each mark is a filled closed path tracing both jagged edges of the scratch.
- * Left mark is narrowest, centre widest, right medium — matching reference art.
- * Colour = currentColor; control size and opacity via CSS on the parent.
+ * Three organic diagonal wolverine claw scratch marks — the TWH brand device.
+ * 3D "cuts through the screen" effect via CSS drop-shadow + torn-edge highlights.
+ *
+ * Each mark is a closed filled path (dark = the cut) with:
+ *   • CSS drop-shadow filter  →  depth / sunken appearance
+ *   • White stroke highlights →  torn surface edge catching light
+ *   • Dark right-edge stroke  →  shadow inside the cut
+ *
+ * Use currentColor + CSS opacity/size on the parent to control appearance.
  */
 interface Props {
   class?: string;
@@ -13,50 +18,68 @@ const { class: cls = '' } = Astro.props;
 <svg
   class={cls}
   viewBox="0 0 320 280"
-  fill="currentColor"
+  fill="none"
   xmlns="http://www.w3.org/2000/svg"
   aria-hidden="true"
 >
-  <!-- Left claw mark — thin, ~14px wide at peak -->
-  <path d="
-    M 14 255
-    L 14 242 L 19 229 L 18 216 L 26 203 L 24 190
-    L 33 177 L 31 164 L 28 158 L 40 151 L 39 138
-    L 35 132 L 50 125 L 49 112 L 58 99  L 58 86
-    L 67 73  L 68 60  L 76 47  L 79 34  L 85 21
-    L 90 8   L 90 5
-    L 88 21  L 86 34  L 80 47  L 81 60  L 73 73
-    L 75 86  L 70 99  L 68 112 L 58 125 L 62 138
-    L 64 144 L 51 151 L 54 164 L 44 177 L 45 190
-    L 34 203 L 34 216 L 25 229 L 22 242
-    Z
-  "/>
+  <!-- ── Deep-cut marks (filled, with CSS drop-shadow for 3D depth) ─────── -->
+  <g style="filter: drop-shadow(2px 4px 5px rgba(0,0,0,0.85)) drop-shadow(0px 1px 2px rgba(0,0,0,0.6))">
 
-  <!-- Centre claw mark — widest, ~35px at peak, most dramatic -->
-  <path d="
-    M 100 265
-    L 99  249 L 105 233 L 101 217 L 111 201 L 107 185
-    L 104 178 L 118 169 L 116 153 L 112 146 L 130 137
-    L 128 121 L 124 114 L 140 105 L 140 89  L 153 73
-    L 153 57  L 163 41  L 168 25  L 175 10
-    L 175 25  L 169 41  L 170 57  L 161 73
-    L 164 89  L 154 105 L 158 112 L 157 121 L 146 137
-    L 150 144 L 151 153 L 138 169 L 142 176 L 141 185
-    L 127 201 L 127 217 L 113 233 L 111 249
-    Z
-  "/>
+    <!-- Left mark — thinner -->
+    <path fill="currentColor" d="
+      M 14 255
+      L 14 242 L 19 229 L 18 216 L 26 203 L 24 190
+      L 33 177 L 31 164 L 28 158 L 40 151 L 39 138
+      L 35 132 L 50 125 L 49 112 L 58 99  L 58 86
+      L 67 73  L 68 60  L 76 47  L 79 34  L 85 21
+      L 90 8   L 90 5
+      L 88 21  L 86 34  L 80 47  L 81 60  L 73 73
+      L 75 86  L 70 99  L 68 112 L 58 125 L 62 138
+      L 64 144 L 51 151 L 54 164 L 44 177 L 45 190
+      L 34 203 L 34 216 L 25 229 L 22 242
+      Z
+    "/>
 
-  <!-- Right claw mark — medium, ~25px at peak -->
-  <path d="
-    M 192 258
-    L 192 243 L 198 228 L 196 213 L 204 198 L 201 183
-    L 199 176 L 211 168 L 209 153 L 206 146 L 221 138
-    L 221 123 L 229 108 L 230 93  L 240 78  L 242 63
-    L 250 48  L 253 33  L 259 18  L 260 14
-    L 257 33  L 252 48  L 252 63  L 246 78
-    L 246 93  L 239 108 L 240 123 L 231 138
-    L 234 145 L 234 153 L 224 168 L 226 175 L 225 183
-    L 214 198 L 214 213 L 202 228 L 200 243
-    Z
-  "/>
+    <!-- Centre mark — widest, most dramatic -->
+    <path fill="currentColor" d="
+      M 100 265
+      L 99  249 L 105 233 L 101 217 L 111 201 L 107 185
+      L 104 178 L 118 169 L 116 153 L 112 146 L 130 137
+      L 128 121 L 124 114 L 140 105 L 140 89  L 153 73
+      L 153 57  L 163 41  L 168 25  L 175 10
+      L 175 25  L 169 41  L 170 57  L 161 73
+      L 164 89  L 154 105 L 158 112 L 157 121 L 146 137
+      L 150 144 L 151 153 L 138 169 L 142 176 L 141 185
+      L 127 201 L 127 217 L 113 233 L 111 249
+      Z
+    "/>
+
+    <!-- Right mark — medium width -->
+    <path fill="currentColor" d="
+      M 192 258
+      L 192 243 L 198 228 L 196 213 L 204 198 L 201 183
+      L 199 176 L 211 168 L 209 153 L 206 146 L 221 138
+      L 221 123 L 229 108 L 230 93  L 240 78  L 242 63
+      L 250 48  L 253 33  L 259 18  L 260 14
+      L 257 33  L 252 48  L 252 63  L 246 78
+      L 246 93  L 239 108 L 240 123 L 231 138
+      L 234 145 L 234 153 L 224 168 L 226 175 L 225 183
+      L 214 198 L 214 213 L 202 228 L 200 243
+      Z
+    "/>
+  </g>
+
+  <!-- ── Left-edge highlight — torn surface catching light from upper-left ── -->
+  <g fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 14 255 L 14 242 L 19 229 L 18 216 L 26 203 L 24 190 L 33 177 L 31 164 L 28 158 L 40 151 L 39 138 L 35 132 L 50 125 L 49 112 L 58 99 L 58 86 L 67 73 L 68 60 L 76 47 L 79 34 L 85 21 L 90 8"/>
+    <path d="M 100 265 L 99 249 L 105 233 L 101 217 L 111 201 L 107 185 L 104 178 L 118 169 L 116 153 L 112 146 L 130 137 L 128 121 L 124 114 L 140 105 L 140 89 L 153 73 L 153 57 L 163 41 L 168 25 L 175 10"/>
+    <path d="M 192 258 L 192 243 L 198 228 L 196 213 L 204 198 L 201 183 L 199 176 L 211 168 L 209 153 L 206 146 L 221 138 L 221 123 L 229 108 L 230 93 L 240 78 L 242 63 L 250 48 L 253 33 L 259 18"/>
+  </g>
+
+  <!-- ── Right-edge shadow — inside the cut, in darkness ─────────────────── -->
+  <g fill="none" stroke="rgba(0,0,0,0.45)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 90 5 L 88 21 L 86 34 L 80 47 L 81 60 L 73 73 L 75 86 L 70 99 L 68 112 L 58 125 L 62 138 L 64 144 L 51 151 L 54 164 L 44 177 L 45 190 L 34 203 L 34 216 L 25 229 L 22 242 L 14 255"/>
+    <path d="M 175 10 L 175 25 L 169 41 L 170 57 L 161 73 L 164 89 L 154 105 L 158 112 L 157 121 L 146 137 L 150 144 L 151 153 L 138 169 L 142 176 L 141 185 L 127 201 L 127 217 L 113 233 L 111 249 L 100 265"/>
+    <path d="M 260 14 L 257 33 L 252 48 L 252 63 L 246 78 L 246 93 L 239 108 L 240 123 L 231 138 L 234 145 L 234 153 L 224 168 L 226 175 L 225 183 L 214 198 L 214 213 L 202 228 L 200 243 L 192 258"/>
+  </g>
 </svg>

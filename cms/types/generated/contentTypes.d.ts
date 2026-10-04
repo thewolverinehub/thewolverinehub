@@ -454,6 +454,11 @@ export interface ApiAddOnAddOn extends Struct.CollectionTypeSchema {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+  };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -521,6 +526,11 @@ export interface ApiAmenityAmenity extends Struct.CollectionTypeSchema {
   };
   options: {
     draftAndPublish: true;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -886,6 +896,11 @@ export interface ApiDisciplineDiscipline extends Struct.CollectionTypeSchema {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+  };
   attributes: {
     colour: Schema.Attribute.String &
       Schema.Attribute.SetPluginOptions<{
@@ -1142,6 +1157,11 @@ export interface ApiFormForm extends Struct.CollectionTypeSchema {
   };
   options: {
     draftAndPublish: true;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
   };
   attributes: {
     consentText: Schema.Attribute.Text;
@@ -1714,6 +1734,7 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     sections: Schema.Attribute.DynamicZone<
       [
+        'sections.page-hero',
         'sections.hero-video',
         'sections.stat-counters',
         'sections.marquee',
@@ -1782,6 +1803,11 @@ export interface ApiPartnerPartner extends Struct.CollectionTypeSchema {
   };
   options: {
     draftAndPublish: true;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -2258,6 +2284,11 @@ export interface ApiRedirectRedirect extends Struct.CollectionTypeSchema {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+  };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -2426,6 +2457,11 @@ export interface ApiStatStat extends Struct.CollectionTypeSchema {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+  };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -2586,6 +2622,11 @@ export interface ApiTokenPackTokenPack extends Struct.CollectionTypeSchema {
   };
   options: {
     draftAndPublish: true;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
