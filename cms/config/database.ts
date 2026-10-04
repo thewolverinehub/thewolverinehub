@@ -35,6 +35,9 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
       client: 'postgres',
       connection: {
         connectionString: env('DATABASE_URL'),
+        // Railway's public TCP proxy drops idle sockets (ECONNRESET) — keep them alive.
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000,
         host: env('DATABASE_HOST', 'localhost'),
         port: env.int('DATABASE_PORT', 5432),
         database: env('DATABASE_NAME', 'strapi'),
@@ -50,7 +53,12 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
         },
         schema: env('DATABASE_SCHEMA', 'public'),
       },
-      pool: { min: env.int('DATABASE_POOL_MIN', 2), max: env.int('DATABASE_POOL_MAX', 10) },
+      pool: {
+        min: env.int('DATABASE_POOL_MIN', 0),
+        max: env.int('DATABASE_POOL_MAX', 10),
+        idleTimeoutMillis: env.int('DATABASE_POOL_IDLE_MS', 10000),
+        reapIntervalMillis: 5000,
+      },
     },
     sqlite: {
       client: 'sqlite',
