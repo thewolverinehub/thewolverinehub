@@ -207,7 +207,7 @@ const seo = {
       } else if (type === 'level') {
         show = card.dataset.level === value;
       }
-      card.dataset.hidden = show ? 'false' : 'true';
+      (card as HTMLElement).style.display = show ? '' : 'none';
       if (show) visible++;
     });
     noRes.style.display = visible === 0 ? 'block' : 'none';

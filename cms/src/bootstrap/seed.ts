@@ -222,6 +222,11 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
       : await seedClasses(strapi, disciplineIds);
   });
 
+  await tryRun('class content', async () => {
+    await patchClassContent(strapi);
+    strapi.log.info('[seed:patch] Class descriptions and levels patched');
+  });
+
   let coachIds: Record<string, string> = {};
   await tryRun('coaches', async () => {
     if ((await count('api::coach.coach')) > 0) {
@@ -521,6 +526,151 @@ async function patchCoachSpecialties(strapi: Core.Strapi): Promise<void> {
         data: { specialties: specialtiesMap[row.slug] },
       });
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Patch class descriptions, levels, and taglines for a complete demo
+// ---------------------------------------------------------------------------
+async function patchClassContent(strapi: Core.Strapi): Promise<void> {
+  const docs = strapi.documents as (uid: string) => any;
+  const db   = (strapi.db as any);
+
+  const h3 = (text: string) => ({ type: 'heading', level: 3, children: [{ type: 'text', text }] });
+  const p   = (text: string) => ({ type: 'paragraph', children: [{ type: 'text', text }] });
+  const ul  = (...items: string[]) => ({
+    type: 'list', format: 'unordered',
+    children: items.map(t => ({ type: 'list-item', children: [{ type: 'text', text: t }] })),
+  });
+
+  const contentMap: Record<string, { level: string; tagline: string; description: unknown[] }> = {
+    'boxing-fundamentals': {
+      level: 'beginner',
+      tagline: 'Master the sweet science from day one.',
+      description: [
+        p('The foundation of every combat discipline starts here. Boxing Fundamentals builds the technical base that makes every strike, movement, and combination in your martial arts career cleaner and more effective.'),
+        h3('What You\'ll Train'),
+        ul('Stance, guard, and footwork patterns', 'Jab–cross–hook–uppercut mechanics', 'Defensive slipping, rolling, and parrying', 'Structured pad work with partner drills', 'Heavy bag rounds with coach feedback', 'Shadow boxing for pattern ingraining'),
+        h3('Who This Class Is For'),
+        p('Complete beginners through intermediate fighters wanting to sharpen the basics. No prior boxing or martial arts experience is required. Coach Ashan structures each session to challenge every level in the room.'),
+        h3('What To Bring'),
+        ul('16oz boxing gloves (available to purchase at reception)', 'Hand wraps — 180cm cotton (essential)', 'Mouth guard recommended from session 2 onward', 'Training shoes with lateral support', 'Water bottle'),
+      ],
+    },
+    'muay-thai': {
+      level: 'intermediate',
+      tagline: 'Eight limbs. One complete striking system.',
+      description: [
+        p('The art of eight limbs demands total-body coordination, timing, and explosive output. Our Muay Thai programme is built on authentic Thai methodology — structured rounds, dedicated pad holding, and a pace that develops real fight conditioning.'),
+        h3('What You\'ll Train'),
+        ul('Teep (push kick) and round kick mechanics', 'Elbow and knee striking — entries and exits', 'Clinch work, sweeps, and break sequences', 'Thai-style pad holding technique', 'Controlled sparring rounds (gear required)', 'Timing drills and counter-attack patterns'),
+        h3('Who This Class Is For'),
+        p('Members with 3+ months of any striking base — boxing, kickboxing, or prior Muay Thai. Basic conditioning is recommended; classes run at authentic Thai tempo with timed rounds. Coach Nadun will assess your level before your first session.'),
+        h3('What To Bring'),
+        ul('16oz boxing gloves or Muay Thai gloves', 'Shin guards (mandatory)', 'Hand wraps', 'Mouth guard', 'Optional: ankle supports'),
+      ],
+    },
+    'bjj-open-mat': {
+      level: 'beginner',
+      tagline: 'Live drilling and rolling. Every session.',
+      description: [
+        p('Brazilian Jiu-Jitsu at its most effective is learned by doing — not watching. Our Open Mat sessions run structured position drilling before opening the mat for live rolling, giving every student real reps in every class.'),
+        h3('What You\'ll Train'),
+        ul('Guard pass and sweep mechanics', 'Mount and back control positions', 'Submission entries: armbar, triangle, RNC, guillotine', 'Escapes from dominant positions', 'Timed positional sparring', 'Full live rolling rounds'),
+        h3('Who This Class Is For'),
+        p('All levels are genuinely welcome. Beginners are partnered with patient upper belts who understand how to develop new grapplers without injury. No prior experience required — show up curious and ready to learn.'),
+        h3('What To Bring'),
+        ul('Clean gi (rental available at reception — ask in advance)', 'Or rash guard + shorts for no-gi', 'Mouth guard strongly recommended', 'Nail clippers — please trim before class', 'Water bottle'),
+      ],
+    },
+    'kickboxing': {
+      level: 'beginner',
+      tagline: 'Power, speed, precision — in every combination.',
+      description: [
+        p('Kickboxing strips combat sport down to its most explosive expression — high-percentage strikes delivered with power, speed, and timing. Every class builds technical striking skill alongside the conditioning to use it.'),
+        h3('What You\'ll Train'),
+        ul('Round kick, teep, and side kick mechanics', 'Punch–kick integration and combination flow', 'Head movement and evasive footwork', 'Partner pad rounds with structured combos', 'Heavy bag circuits and finisher drills', 'Basic defensive counters'),
+        h3('Who This Class Is For'),
+        p('All levels — from complete beginners to cross-trainers from boxing or Muay Thai. Excellent as a standalone fitness and skills class, or as a technical foundation before moving into full Muay Thai.'),
+        h3('What To Bring'),
+        ul('Boxing gloves (16oz recommended)', 'Shin guards', 'Hand wraps', 'Training shoes', 'Water bottle'),
+      ],
+    },
+    'strength-conditioning': {
+      level: 'beginner',
+      tagline: 'Build the athletic base that makes everything else better.',
+      description: [
+        p('Combat athletes don\'t just need fitness — they need explosive power, injury resilience, and the capacity to sustain high output. Coach Tharaka programmes across rolling 8-week blocks with progressive overload built in from day one.'),
+        h3('What You\'ll Train'),
+        ul('Barbell squat and deadlift progressions', 'Upper body push and pull — bench, row, overhead', 'Explosive variations: hang cleans, jump squats', 'Metabolic conditioning and energy system work', 'Core stability and anti-rotation strength', 'Injury prevention and mobility accessory work'),
+        h3('Who This Class Is For'),
+        p('Any background — complete beginners and experienced strength athletes train together. The programme scales to individual levels. Ideal as a complement to your combat training, or as a standalone performance programme.'),
+        h3('What To Bring'),
+        ul('Training shoes with flat sole (lifting shoes optional)', 'Lifting belt (optional — provided for heavy days)', 'Chalk available', 'Water bottle'),
+      ],
+    },
+    'wrestling': {
+      level: 'advanced',
+      tagline: 'Control the mat. Dominate the fight.',
+      description: [
+        p('The most physically demanding 75 minutes at The Wolverine Hub. Wrestling is the skill that decides where the fight happens — and the athlete who controls position controls the outcome. Coach Chamara\'s wrestling programme is built on competition-proven technique.'),
+        h3('What You\'ll Train'),
+        ul('Penetration step and level change mechanics', 'Double leg and single leg takedowns', 'Sprawl defence and hip blocking', 'Mat return and ride control', 'Cage and wall wrestling entries', 'Tie-up positions and grip fighting'),
+        h3('Who This Class Is For'),
+        p('Athletes with serious combat experience — minimum 12 active months of consistent training in any combat sport. You should be capable of sustaining near-maximal output for 7-minute rounds. This class is not scaled for beginners.'),
+        h3('What To Bring'),
+        ul('Wrestling shoes (strongly recommended)', 'Compression shorts or spats', 'Rash guard', 'Knee pads (recommended)', 'Mouth guard'),
+      ],
+    },
+    'mma': {
+      level: 'advanced',
+      tagline: 'The complete fighter. Built here.',
+      description: [
+        p('Mixed martial arts is the proving ground where all disciplines converge. Our MMA programme integrates striking, grappling, and transitions into a complete fighting system — structured for serious amateur and competition-level athletes.'),
+        h3('What You\'ll Train'),
+        ul('Striking-to-takedown chain attacks', 'Clinch transitions and dirty boxing', 'Takedown defence and cage control', 'Ground-and-pound positioning and mechanics', 'Stand-up grappling and trip combinations', 'Sparring: technical light and controlled hard contact'),
+        h3('Who This Class Is For'),
+        p('Athletes with 6+ months of active, consistent training in both a striking discipline and a grappling discipline. Prerequisite screening applies — book an assessment session before attending. Coach Nadun personally assesses all new MMA students.'),
+        h3('What To Bring'),
+        ul('MMA gloves (4oz)', 'Boxing or Muay Thai gloves (for sparring rounds)', 'Shin guards', 'Rash guard and shorts or spats', 'Headgear (mandatory for sparring)', 'Mouth guard'),
+      ],
+    },
+    'yoga-mobility': {
+      level: 'beginner',
+      tagline: 'Recover smarter. Move better. Last longer.',
+      description: [
+        p('The single best investment a combat athlete can make in the longevity of their training. Coach Kasuni\'s sessions target the specific restrictions and imbalances that accumulate from striking, grappling, and heavy lifting — the work that prevents you from becoming unavailable to train.'),
+        h3('What You\'ll Train'),
+        ul('Hip flexor and groin complex release', 'Thoracic spine rotation and extension', 'Hamstring and posterior chain lengthening', 'Shoulder complex — internal/external rotation', 'Active flexibility for guard and kick mechanics', 'Nervous system regulation and breath work'),
+        h3('Who This Class Is For'),
+        p('Every athlete, every level. Designed specifically for fighters and strength athletes — no yoga background or experience required. The sessions use athletic movement science, not yoga tradition. Most members notice improved range in their combat classes within 2–3 weeks.'),
+        h3('What To Bring'),
+        ul('Yoga mat (provided — bring your own if preferred)', 'Comfortable training wear — no shoes needed', 'Water bottle'),
+      ],
+    },
+  };
+
+  const rows: any[] = await db.query('api::class.class').findMany({ limit: 50 });
+  let updated = 0;
+  for (const row of rows) {
+    const patch = contentMap[row.slug];
+    if (!patch) continue;
+    try {
+      await docs('api::class.class').update({
+        documentId: row.documentId,
+        data: {
+          level:       patch.level,
+          tagline:     patch.tagline,
+          description: patch.description,
+        },
+      });
+      updated++;
+    } catch (e: any) {
+      strapi.log.warn(`[seed:patch] class ${row.slug} update failed — ${e?.message ?? e}`);
+    }
+  }
+  if (updated > 0) {
+    strapi.log.info(`[seed:patch] Updated ${updated} class descriptions and levels`);
   }
 }
 
