@@ -2,23 +2,29 @@
 import PageLayout from '../../layouts/PageLayout.astro';
 import { getClasses, getGlobal, getPageBySlug } from '../../lib/strapi/queries';
 import type { StrapiClass, StrapiPageHeroSection } from '../../lib/strapi/types';
+import WolverineSlash from '../../components/ui/WolverineSlash.astro';
 
-let global, classes: StrapiClass[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
+let global: Awaited<ReturnType<typeof getGlobal>> | undefined;
+let classes: StrapiClass[] = [];
+let pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
   [global, classes, pageData] = await Promise.all([getGlobal(), getClasses(), getPageBySlug('classes')]);
 } catch { /* CMS offline */ }
 
-const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
+const pageHero = pageData?.sections?.find(
+  s => s.__component === 'sections.page-hero'
+) as StrapiPageHeroSection | undefined;
 
 const fallback: StrapiClass[] = [
-  { documentId: '1', name: 'Boxing',               slug: 'boxing',               tagline: 'The sweet science',        durationMinutes: 60, intensity: 'high',    level: 'all',          isFree: false, sortOrder: 1 },
-  { documentId: '2', name: 'Muay Thai',            slug: 'muay-thai',            tagline: 'Eight limbs',              durationMinutes: 90, intensity: 'high',    level: 'intermediate', isFree: false, sortOrder: 2 },
-  { documentId: '3', name: 'BJJ',                  slug: 'bjj',                  tagline: 'Ground game',              durationMinutes: 90, intensity: 'medium',  level: 'all',          isFree: false, sortOrder: 3 },
-  { documentId: '4', name: 'Kickboxing',           slug: 'kickboxing',           tagline: 'Power & precision',        durationMinutes: 60, intensity: 'high',    level: 'all',          isFree: false, sortOrder: 4 },
-  { documentId: '5', name: 'Strength & Conditioning', slug: 'strength-conditioning', tagline: 'Build the base',       durationMinutes: 60, intensity: 'medium',  level: 'all',          isFree: false, sortOrder: 5 },
-  { documentId: '6', name: 'Wrestling',            slug: 'wrestling',            tagline: 'Control the mat',          durationMinutes: 75, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 6 },
-  { documentId: '7', name: 'MMA',                  slug: 'mma',                  tagline: 'The complete fighter',     durationMinutes: 90, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 7 },
-  { documentId: '8', name: 'Yoga',                 slug: 'yoga',                 tagline: 'Recovery & mobility',      durationMinutes: 60, intensity: 'low',     level: 'all',          isFree: false, sortOrder: 8 },
+  { documentId: '1', name: 'Boxing',                  slug: 'boxing',                tagline: 'The sweet science',    durationMinutes: 60, intensity: 'high',    level: 'beginner',     isFree: false, sortOrder: 1 },
+  { documentId: '2', name: 'Muay Thai',               slug: 'muay-thai',             tagline: 'Eight limbs',          durationMinutes: 90, intensity: 'high',    level: 'intermediate', isFree: false, sortOrder: 2 },
+  { documentId: '3', name: 'BJJ',                     slug: 'bjj',                   tagline: 'Ground game',          durationMinutes: 90, intensity: 'medium',  level: 'beginner',     isFree: false, sortOrder: 3 },
+  { documentId: '4', name: 'Kickboxing',              slug: 'kickboxing',            tagline: 'Power & precision',    durationMinutes: 60, intensity: 'high',    level: 'beginner',     isFree: false, sortOrder: 4 },
+  { documentId: '5', name: 'Strength & Conditioning', slug: 'strength-conditioning', tagline: 'Build the base',       durationMinutes: 60, intensity: 'medium',  level: 'beginner',     isFree: false, sortOrder: 5 },
+  { documentId: '6', name: 'Wrestling',               slug: 'wrestling',             tagline: 'Control the mat',      durationMinutes: 75, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 6 },
+  { documentId: '7', name: 'MMA',                     slug: 'mma',                   tagline: 'The complete fighter', durationMinutes: 90, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 7 },
+  { documentId: '8', name: 'Yoga',                    slug: 'yoga',                  tagline: 'Recovery & mobility',  durationMinutes: 60, intensity: 'low',     level: 'beginner',     isFree: false, sortOrder: 8 },
+  { documentId: '9', name: 'HIIT',                    slug: 'hiit',                  tagline: 'Push the limit',       durationMinutes: 45, intensity: 'high',    level: 'intermediate', isFree: false, sortOrder: 9 },
 ];
 
 const display = classes.length > 0 ? classes : fallback;
@@ -30,15 +36,23 @@ const intensityColour: Record<string, string> = {
   extreme: 'var(--color-twh-red-deep)',
 };
 
-const intensityText: Record<string, string> = {
-  low: 'var(--color-twh-white)',
-  medium: 'var(--color-twh-black)',
-  high: 'var(--color-twh-white)',
+const intensityTextColour: Record<string, string> = {
+  low:     'var(--color-twh-white)',
+  medium:  'var(--color-twh-black)',
+  high:    'var(--color-twh-white)',
   extreme: 'var(--color-twh-white)',
 };
 
-const levels = [...new Set(display.map(c => c.level))].sort();
-const intensities = [...new Set(display.map(c => c.intensity))];
+// Ordered filter categories — "All" is frontend-only, not a Strapi level
+const FILTERS = [
+  { label: 'All',          value: 'all',          type: 'all',       accent: 'var(--color-twh-white)' },
+  { label: 'Extreme',      value: 'extreme',      type: 'intensity', accent: 'var(--color-twh-red-deep)' },
+  { label: 'Advanced',     value: 'advanced',     type: 'level',     accent: 'var(--color-twh-red)' },
+  { label: 'High',         value: 'high',         type: 'intensity', accent: 'var(--color-twh-red)' },
+  { label: 'Intermediate', value: 'intermediate', type: 'level',     accent: 'var(--color-twh-yellow)' },
+  { label: 'Medium',       value: 'medium',       type: 'intensity', accent: 'var(--color-twh-yellow)' },
+  { label: 'Low',          value: 'low',          type: 'intensity', accent: 'var(--color-twh-blue)' },
+];
 
 const seo = {
   metaTitle: 'Classes — The Wolverine Hub',
@@ -47,75 +61,126 @@ const seo = {
 ---
 
 <PageLayout {seo} {global}>
+
   <!-- Page Hero -->
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
       <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Train'}</p>
-      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Every Discipline.<br/>Every Level.'} />
-      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'From your first session to your hundredth fight — we have a class built for where you are right now.'}</p>
+      <h1
+        class="twh-page-hero__heading"
+        set:html={pageHero
+          ? pageHero.heading.replace(/\n/g, '<br/>')
+          : 'Every Discipline.<br/>Every Level.'}
+      />
+      <p class="twh-page-hero__sub">
+        {pageHero?.subheading ?? 'From your first session to your hundredth fight — we have a class built for where you are right now.'}
+      </p>
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="twh-classes__filters" role="navigation" aria-label="Filter classes">
+  <!-- Filter bar -->
+  <nav class="twh-classes__filters" aria-label="Filter classes">
     <div class="twh-classes__filters-inner">
-      <button class="twh-classes__filter-btn" data-filter="all" aria-pressed="true">All</button>
-      {levels.map(l => (
-        <button class="twh-classes__filter-btn" data-filter={`level:${l}`} aria-pressed="false">
-          {l}
-        </button>
-      ))}
-      <span aria-hidden="true" style="width:1px;height:20px;background:var(--color-twh-grey-800);flex-shrink:0;margin:0 0.25rem;"></span>
-      {intensities.map(i => (
-        <button class="twh-classes__filter-btn" data-filter={`intensity:${i}`} aria-pressed="false">
-          {i}
+      {FILTERS.map((f, i) => (
+        <button
+          class="twh-classes__filter-btn"
+          data-filter={f.value}
+          data-filter-type={f.type}
+          aria-pressed={i === 0 ? 'true' : 'false'}
+          style={`--btn-accent: ${f.accent};`}
+        >
+          <span class="twh-classes__filter-dot" aria-hidden="true"></span>
+          {f.label}
         </button>
       ))}
     </div>
-  </div>
+  </nav>
 
-  <!-- Grid -->
-  <section class="twh-classes__grid-section" aria-label="Classes">
-    <div class="twh-inner">
+  <!-- Classes grid -->
+  <section class="twh-classes__section" aria-label="Classes">
+
+    <!-- Parallax background scratches -->
+    <div class="twh-classes__bg-scratches" aria-hidden="true">
+      <WolverineSlash class="twh-classes__bg-scratch twh-classes__bg-scratch--1" />
+      <WolverineSlash class="twh-classes__bg-scratch twh-classes__bg-scratch--2" />
+    </div>
+
+    <div class="twh-classes__inner">
       <ul class="twh-classes__grid" role="list" id="classes-grid">
         {display.map((cls) => {
-          const bg  = intensityColour[cls.intensity] ?? 'var(--color-twh-grey-700)';
-          const txt = intensityText[cls.intensity]   ?? 'var(--color-twh-white)';
+          const accent  = intensityColour[cls.intensity]     ?? 'var(--color-twh-grey-700)';
+          const txtClr  = intensityTextColour[cls.intensity] ?? 'var(--color-twh-white)';
+          const lvlLabel = cls.level === 'all' || cls.level === 'beginner'
+            ? cls.level === 'all' ? 'All levels' : 'Beginner'
+            : cls.level.charAt(0).toUpperCase() + cls.level.slice(1);
           return (
             <li
               class="twh-classes__card"
-              data-level={cls.level}
+              style={`--card-accent: ${accent};`}
               data-intensity={cls.intensity}
+              data-level={cls.level}
             >
               <a href={`/classes/${cls.slug}`} class="twh-classes__card-link">
+
+                <!-- Left intensity stripe -->
+                <span class="twh-classes__card-stripe" aria-hidden="true"></span>
+
+                <!-- Full-bleed media -->
                 <div class="twh-classes__card-media">
                   {cls.thumbnail ? (
-                    <img src={cls.thumbnail.url} alt={cls.thumbnail.alternativeText ?? cls.name} loading="lazy" />
+                    <img
+                      src={cls.thumbnail.url}
+                      alt={cls.thumbnail.alternativeText ?? cls.name}
+                      loading="lazy"
+                    />
                   ) : (
-                    <div class="twh-classes__card-placeholder" style={`background: linear-gradient(135deg, ${bg}22 0%, transparent 80%), var(--color-twh-grey-900);`}>
-                      <span class="twh-classes__card-placeholder-slash" aria-hidden="true">/</span>
+                    <div class="twh-classes__card-placeholder" aria-hidden="true">
+                      <WolverineSlash class="twh-classes__card-ph-slash" />
                     </div>
                   )}
-                  <span class="twh-classes__card-badge" style={`background:${bg}; color:${txt};`}>
-                    {cls.intensity}
-                  </span>
+                  <div class="twh-classes__card-overlay" aria-hidden="true"></div>
                 </div>
-                <div class="twh-classes__card-body">
+
+                <!-- Intensity badge -->
+                <span
+                  class="twh-classes__card-badge"
+                  style={`background: ${accent}; color: ${txtClr};`}
+                >
+                  {cls.intensity}
+                </span>
+
+                <!-- Overlaid content -->
+                <div class="twh-classes__card-content">
                   <h2 class="twh-classes__card-name">{cls.name}</h2>
-                  {cls.tagline && <p class="twh-classes__card-tagline">{cls.tagline}</p>}
-                  <div class="twh-classes__card-meta">
-                    <span>{cls.durationMinutes} min</span>
-                    <span>{cls.level}</span>
+                  {cls.tagline && (
+                    <p class="twh-classes__card-tagline">{cls.tagline}</p>
+                  )}
+                  <div class="twh-classes__card-foot">
+                    <div class="twh-classes__card-meta">
+                      <span>{cls.durationMinutes} min</span>
+                      <span class="twh-classes__card-meta-dot" aria-hidden="true"></span>
+                      <span>{lvlLabel}</span>
+                    </div>
+                    <span class="twh-classes__card-arrow" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
                   </div>
                 </div>
+
               </a>
             </li>
           );
         })}
       </ul>
-      <p class="twh-classes__empty" id="no-results" style="display:none;">No classes match that filter.</p>
+
+      <p class="twh-classes__empty" id="no-results" style="display:none;">
+        No classes match that filter.
+      </p>
     </div>
   </section>
+
 </PageLayout>
 
 <style>@import '../../styles/pages/twh-classes.css';</style>
@@ -125,18 +190,23 @@ const seo = {
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
   gsap.registerPlugin(ScrollTrigger);
 
-  // ── Filter logic ───────────────────────────────────────────────
+  // ── Filter ──────────────────────────────────────────────────
   const btns  = document.querySelectorAll<HTMLButtonElement>('.twh-classes__filter-btn');
   const cards = document.querySelectorAll<HTMLElement>('.twh-classes__card');
   const noRes = document.getElementById('no-results')!;
 
-  function applyFilter(filter: string) {
-    btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.filter === filter ? 'true' : 'false'));
+  function applyFilter(value: string, type: string) {
+    btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.filter === value ? 'true' : 'false'));
     let visible = 0;
     cards.forEach(card => {
-      let show = filter === 'all';
-      if (!show && filter.startsWith('level:'))     show = card.dataset.level     === filter.replace('level:', '');
-      if (!show && filter.startsWith('intensity:')) show = card.dataset.intensity === filter.replace('intensity:', '');
+      let show = false;
+      if (type === 'all') {
+        show = true;
+      } else if (type === 'intensity') {
+        show = card.dataset.intensity === value;
+      } else if (type === 'level') {
+        show = card.dataset.level === value;
+      }
       card.dataset.hidden = show ? 'false' : 'true';
       if (show) visible++;
     });
@@ -144,29 +214,44 @@ const seo = {
   }
 
   btns.forEach(btn => {
-    btn.addEventListener('click', () => applyFilter(btn.dataset.filter ?? 'all'));
+    btn.addEventListener('click', () => {
+      applyFilter(btn.dataset.filter ?? 'all', btn.dataset.filterType ?? 'all');
+    });
   });
 
-  // ── Entrance animations ────────────────────────────────────────
+  // ── Hero entrance ──────────────────────────────────────────
   const hero = document.querySelector('.twh-page-hero__inner');
   if (hero) {
     gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      const tl = gsap.timeline();
       const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
       const heading = hero.querySelector('.twh-page-hero__heading');
       const sub     = hero.querySelector('.twh-page-hero__sub');
-      const tl = gsap.timeline();
       if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
-      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
+      if (heading) tl.fromTo(heading, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
       if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
     });
   }
 
+  // ── Cards entrance ─────────────────────────────────────────
   gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
     gsap.fromTo(cards,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.55, stagger: 0.07, ease: 'power3.out',
-        scrollTrigger: { trigger: '#classes-grid', start: 'top 85%' } }
+      { y: 50, opacity: 0 },
+      {
+        y: 0, opacity: 1, duration: 0.7, stagger: { each: 0.07, from: 'start' },
+        ease: 'power3.out',
+        scrollTrigger: { trigger: '#classes-grid', start: 'top 88%' }
+      }
     );
+
+    // Parallax scratch marks
+    const section  = document.querySelector('.twh-classes__section');
+    const scratch1 = document.querySelector<HTMLElement>('.twh-classes__bg-scratch--1');
+    const scratch2 = document.querySelector<HTMLElement>('.twh-classes__bg-scratch--2');
+    const base = { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.8 };
+
+    if (scratch1 && section) gsap.to(scratch1, { y: -150, ease: 'none', scrollTrigger: base });
+    if (scratch2 && section) gsap.to(scratch2, { y:  150, ease: 'none', scrollTrigger: { ...base, scrub: 2.4 } });
   });
 
   gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
