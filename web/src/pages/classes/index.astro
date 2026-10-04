@@ -99,11 +99,6 @@ const seo = {
   <!-- Classes grid -->
   <section class="twh-classes__section" aria-label="Classes">
 
-    <!-- Parallax background scratch -->
-    <div class="twh-classes__bg-scratches" aria-hidden="true">
-      <WolverineSlash class="twh-classes__bg-scratch twh-classes__bg-scratch--1" />
-    </div>
-
     <div class="twh-classes__inner">
       <ul class="twh-classes__grid" role="list" id="classes-grid">
         {display.map((cls) => {
@@ -244,13 +239,6 @@ const seo = {
         scrollTrigger: { trigger: '#classes-grid', start: 'top 88%' }
       }
     );
-
-    // Parallax scratch marks
-    const section  = document.querySelector('.twh-classes__section');
-    const scratch1 = document.querySelector<HTMLElement>('.twh-classes__bg-scratch--1');
-    const base = { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.8 };
-
-    if (scratch1 && section) gsap.to(scratch1, { y: -80, ease: 'none', scrollTrigger: base });
   });
 
   gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {

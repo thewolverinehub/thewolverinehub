@@ -85,28 +85,6 @@
   position: relative;
 }
 
-/* Parallax background scratch marks */
-.twh-classes__bg-scratches {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.twh-classes__bg-scratch {
-  position: absolute;
-  color: rgba(255, 255, 255, 0.07);
-}
-
-.twh-classes__bg-scratch--1 {
-  top: 4%;
-  right: 1rem;
-  width: 140px;
-  height: 130px;
-  transform: rotate(-8deg);
-}
-
 .twh-classes__inner {
   max-width: 1440px;
   margin: 0 auto;
@@ -391,7 +369,6 @@
     gap: 0.75rem;
   }
   .twh-classes__card-name { font-size: 1.25rem; }
-  .twh-classes__bg-scratch--1 { display: none; }
 }
 
 @media (max-width: 480px) {
