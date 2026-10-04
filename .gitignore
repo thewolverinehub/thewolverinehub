@@ -86,3 +86,7 @@ cms/coverage/
 
 # ── Misc ─────────────────────────────────────────────────────────────────────
 *.tgz
+
+# Claude agent worktrees
+.claude/
+.clone/

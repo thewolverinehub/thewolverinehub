@@ -1,0 +1,79 @@
+---
+/**
+ * Branded placeholder shown wherever a Strapi image/video hasn't been
+ * added yet. Replace by uploading media in Strapi — this component
+ * disappears automatically once real media is wired up.
+ */
+interface Props {
+  label?: string;
+  ratio?: string;      // CSS aspect-ratio value e.g. "16/9", "2/3", "1/1"
+  accent?: string;     // hex colour for the gradient tint
+  class?: string;
+}
+
+const {
+  label = 'Add media in Strapi',
+  ratio = '16/9',
+  accent = '#D7141A',
+  class: cls = '',
+} = Astro.props;
+---
+
+<div
+  class:list={['twh-placeholder', cls]}
+  style={`aspect-ratio:${ratio};--ph-accent:${accent};`}
+  aria-hidden="true"
+>
+  <div class="twh-placeholder__slashes">
+    <span class="twh-placeholder__slash"></span>
+    <span class="twh-placeholder__slash"></span>
+    <span class="twh-placeholder__slash"></span>
+  </div>
+  <span class="twh-placeholder__label">{label}</span>
+</div>
+
+<style>
+.twh-placeholder {
+  position: relative;
+  width: 100%;
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--ph-accent) 15%, transparent) 0%, transparent 60%),
+    var(--color-twh-ink);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.twh-placeholder__slashes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.twh-placeholder__slash {
+  position: absolute;
+  width: 1px;
+  height: 200%;
+  top: -50%;
+  background: rgba(255,255,255,0.05);
+  transform: rotate(-25deg);
+  transform-origin: center;
+}
+
+.twh-placeholder__slash:nth-child(1) { left: 30%; }
+.twh-placeholder__slash:nth-child(2) { left: 50%; opacity: 0.6; }
+.twh-placeholder__slash:nth-child(3) { left: 70%; opacity: 0.3; }
+
+.twh-placeholder__label {
+  position: relative;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  font-family: var(--font-body);
+  z-index: 1;
+}
+</style>
