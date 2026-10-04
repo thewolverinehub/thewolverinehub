@@ -380,7 +380,6 @@
   .twh-classes__filters-inner { padding: 0 2rem; }
   .twh-classes__inner { padding: 0 2rem; }
   .twh-classes__grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-  .twh-classes__bg-scratch { width: 200px; height: 185px; }
 }
 
 @media (max-width: 767px) {
@@ -392,7 +391,7 @@
     gap: 0.75rem;
   }
   .twh-classes__card-name { font-size: 1.25rem; }
-  .twh-classes__bg-scratch--2 { display: none; }
+  .twh-classes__bg-scratch--1 { display: none; }
 }
 
 @media (max-width: 480px) {
