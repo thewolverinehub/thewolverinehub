@@ -99,10 +99,9 @@ const seo = {
   <!-- Classes grid -->
   <section class="twh-classes__section" aria-label="Classes">
 
-    <!-- Parallax background scratches -->
+    <!-- Parallax background scratch -->
     <div class="twh-classes__bg-scratches" aria-hidden="true">
       <WolverineSlash class="twh-classes__bg-scratch twh-classes__bg-scratch--1" />
-      <WolverineSlash class="twh-classes__bg-scratch twh-classes__bg-scratch--2" />
     </div>
 
     <div class="twh-classes__inner">
@@ -175,9 +174,11 @@ const seo = {
         })}
       </ul>
 
-      <p class="twh-classes__empty" id="no-results" style="display:none;">
-        No classes match that filter.
-      </p>
+      <div class="twh-classes__empty" id="no-results" style="display:none;" aria-live="polite">
+        <WolverineSlash class="twh-classes__empty-icon" aria-hidden="true" />
+        <p class="twh-classes__empty-heading">No Classes at the Moment</p>
+        <p class="twh-classes__empty-sub">We don't have any classes in this category right now. Check back soon or <a href="/contact">get in touch</a>.</p>
+      </div>
     </div>
   </section>
 
@@ -247,11 +248,9 @@ const seo = {
     // Parallax scratch marks
     const section  = document.querySelector('.twh-classes__section');
     const scratch1 = document.querySelector<HTMLElement>('.twh-classes__bg-scratch--1');
-    const scratch2 = document.querySelector<HTMLElement>('.twh-classes__bg-scratch--2');
     const base = { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.8 };
 
-    if (scratch1 && section) gsap.to(scratch1, { y: -120, ease: 'none', scrollTrigger: base });
-    if (scratch2 && section) gsap.to(scratch2, { y:  120, ease: 'none', scrollTrigger: { ...base, scrub: 2.4 } });
+    if (scratch1 && section) gsap.to(scratch1, { y: -80, ease: 'none', scrollTrigger: base });
   });
 
   gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
