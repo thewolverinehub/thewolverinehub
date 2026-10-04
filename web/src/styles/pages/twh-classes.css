@@ -100,19 +100,17 @@
 }
 
 .twh-classes__bg-scratch--1 {
-  top: 6%;
-  right: -2%;
-  width: 280px;
-  height: 260px;
-  transform: rotate(-5deg);
+  top: 8%;
+  right: -3%;
+  width: 220px;
+  height: 200px;
 }
 
 .twh-classes__bg-scratch--2 {
-  bottom: 6%;
-  right: 3%;
-  width: 240px;
-  height: 220px;
-  transform: rotate(175deg);
+  bottom: 8%;
+  right: 1%;
+  width: 180px;
+  height: 165px;
 }
 
 .twh-classes__inner {

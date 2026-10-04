@@ -207,7 +207,10 @@ const seo = {
       } else if (type === 'level') {
         show = card.dataset.level === value;
       }
-      (card as HTMLElement).style.display = show ? '' : 'none';
+      card.style.display = show ? '' : 'none';
+      if (show) {
+        gsap.set(card, { opacity: 1, y: 0 });
+      }
       if (show) visible++;
     });
     noRes.style.display = visible === 0 ? 'block' : 'none';
@@ -250,8 +253,14 @@ const seo = {
     const scratch2 = document.querySelector<HTMLElement>('.twh-classes__bg-scratch--2');
     const base = { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.8 };
 
-    if (scratch1 && section) gsap.to(scratch1, { y: -150, ease: 'none', scrollTrigger: base });
-    if (scratch2 && section) gsap.to(scratch2, { y:  150, ease: 'none', scrollTrigger: { ...base, scrub: 2.4 } });
+    if (scratch1 && section) {
+      gsap.set(scratch1, { rotation: -5 });
+      gsap.to(scratch1, { y: -120, ease: 'none', scrollTrigger: base });
+    }
+    if (scratch2 && section) {
+      gsap.set(scratch2, { rotation: 175 });
+      gsap.to(scratch2, { y: 120, ease: 'none', scrollTrigger: { ...base, scrub: 2.4 } });
+    }
   });
 
   gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
