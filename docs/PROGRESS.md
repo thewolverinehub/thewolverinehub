@@ -90,17 +90,21 @@
 
 ---
 
-## Phase 7 — Inner pages (in progress)
-**Date:** 2026-10-02 | **Status:** In Progress
+## Phase 7 — Inner pages
+**Date:** 2026-10-02 → 2026-10-04 | **Status:** Complete ✓
 
-### Pages to build / review (in order)
-1. `/` — Home — sections already wired; verify all data shows correctly after dedup
-2. `/classes` — Index + `[slug]` detail
-3. `/coaches` — Index + `[slug]` detail
-4. `/schedule` — Full week grid
-5. `/pricing` — Tiers + passes + FAQ
-6. `/blog` — Index + `[slug]` article
-7. `/contact` — Form + map
-8. `/programs` — ⚠️ page missing, needs to be built
-9. `/faq` — ⚠️ page missing, needs to be built
-10. `/gallery` — ⚠️ page missing, needs to be built
+> Numbering note: our "Phase 7" = inner pages, which corresponds to **Phase 8 — Pages** in `CLAUDE_CODE_PROMPT.md` §17. The master-prompt Phase 7 (motion + WebGL system) is **not yet done** beyond basic GSAP interactions.
+
+### Built
+- `/` Home, `/classes` (+ `[slug]`; redesigned card grid + CSS-class filter + empty state), `/coaches` (+ `[slug]`), `/schedule`, `/pricing`, `/blog` (+ `[slug]`), `/contact` (+ `/api/contact`), `/programs`, `/faq`, `/gallery`
+- Extra section components: ClassGrid, CoachSpotlight, ProgramPanels, SectionRenderer
+- `WolverineSlash` 3D claw-mark SVG replaces all decorative slash text
+- Per-page stylesheets in `styles/pages/` and `styles/components/`
+
+### Remaining / next
+- Motion & WebGL system (ScrollSmoother, reveals, hero/menu shaders, cursor, magnetic buttons, lightbox, intro, sound toggle, experience toggles)
+- Live filters & search (command palette, Flip, URL state, no-JS fallback)
+- Forms, leads & email (free trial, PT enquiry, questionnaire, newsletter, Turnstile)
+- QA & hardening, accounts & payments, real content & go-live
+- Easter egg (Konami slash storm) decision still pending
+- `MediaPlaceholder.astro` and `public/wolverinehub-logo.png` are committed but not referenced yet
