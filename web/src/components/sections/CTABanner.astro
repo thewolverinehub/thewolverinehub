@@ -18,11 +18,7 @@ const anchorId     = section?.anchorId ?? 'cta';
 <section class="twh-cta-banner" id={anchorId} aria-label="Call to action">
 
   <!-- Background slash stack -->
-  <div class="twh-cta-banner__bg" aria-hidden="true">
-    <WolverineSlash class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--1" />
-    <WolverineSlash class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--2" />
-    <WolverineSlash class="twh-cta-banner__bg-slash twh-cta-banner__bg-slash--3" />
-  </div>
+  <div class="twh-cta-banner__bg" aria-hidden="true"></div>
 
   <!-- Red accent band -->
   <div class="twh-cta-banner__accent" aria-hidden="true"></div>
@@ -59,6 +55,7 @@ const anchorId     = section?.anchorId ?? 'cta';
 
     <!-- Right: stat cluster -->
     <div class="twh-cta-banner__stats" aria-hidden="true">
+      <WolverineSlash class="twh-cta-banner__stats-slash" />
       <div class="twh-cta-banner__stat">
         <span class="twh-cta-banner__stat-number">100%</span>
         <span class="twh-cta-banner__stat-label">No lock-in</span>
