@@ -39,7 +39,7 @@
   top: 5%;
   width: 320px;
   height: 290px;
-  opacity: 0.15;
+  opacity: 0.25;
   transform: scale(1.8) rotate(-5deg);
 }
 
@@ -48,7 +48,7 @@
   bottom: 5%;
   width: 260px;
   height: 235px;
-  opacity: 0.12;
+  opacity: 0.2;
   transform: scale(1.4) rotate(175deg);
 }
 

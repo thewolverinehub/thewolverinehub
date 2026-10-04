@@ -37,37 +37,21 @@
 .twh-cta-banner__bg-slash {
   position: absolute;
   top: 50%;
+  right: 12%;
+  width: 300px;
+  height: 280px;
+  transform: translateY(-50%) rotate(-4deg);
   user-select: none;
   pointer-events: none;
   color: rgba(255,255,255,0.07);
 }
 
-.twh-cta-banner__bg-slash--1 {
-  right: 4%;
-  width: 300px;
-  height: 280px;
-  transform: translateY(-50%) rotate(-5deg);
-  opacity: 0.9;
-}
-.twh-cta-banner__bg-slash--2 {
-  right: 19%;
-  width: 260px;
-  height: 240px;
-  transform: translateY(-52%) rotate(-2deg);
-  opacity: 0.55;
-}
-.twh-cta-banner__bg-slash--3 {
-  right: 32%;
-  width: 220px;
-  height: 200px;
-  transform: translateY(-48%) rotate(-8deg);
-  opacity: 0.3;
+@media (max-width: 1023px) {
+  .twh-cta-banner__bg-slash { width: 220px; height: 200px; right: 5%; }
 }
 
-@media (max-width: 1023px) {
-  .twh-cta-banner__bg-slash--1 { width: 220px; height: 200px; }
-  .twh-cta-banner__bg-slash--2 { width: 180px; height: 165px; }
-  .twh-cta-banner__bg-slash--3 { display: none; }
+@media (max-width: 767px) {
+  .twh-cta-banner__bg-slash { display: none; }
 }
 
 /* ── Layout ──────────────────────────────────────────────── */
