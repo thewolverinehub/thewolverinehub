@@ -18,9 +18,10 @@
       "pluginOptions": {
         "content-manager": {
           "label": "Name",
-          "description": "Full display name."
+          "description": "Class name shown on cards and pages. Max 20 characters."
         }
-      }
+      },
+      "maxLength": 20
     },
     "slug": {
       "type": "uid",
@@ -38,9 +39,10 @@
       "pluginOptions": {
         "content-manager": {
           "label": "Tagline",
-          "description": "Short punchy line shown beneath the title (one sentence max)."
+          "description": "One short line shown on the class card. Max 50 characters."
         }
-      }
+      },
+      "maxLength": 50
     },
     "description": {
       "type": "blocks",

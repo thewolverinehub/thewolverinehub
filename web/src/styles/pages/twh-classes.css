@@ -105,6 +105,8 @@
 }
 
 /* ── Card ───────────────────────────────────────────────────── */
+/* Full-bleed image (or hover video) fills the card; a black gradient rises from
+   the bottom carrying the text. Ratio 2 : 2.5. */
 
 .twh-classes__card {
   opacity: 0; /* animated in */
@@ -115,18 +117,39 @@
 .twh-classes__card-link {
   display: block;
   position: relative;
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 2 / 2.5;
   overflow: hidden;
+  isolation: isolate;
   text-decoration: none;
+  background: var(--color-twh-ink);
   border: 1px solid var(--color-twh-grey-900);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.twh-classes__card-link:hover {
+.twh-classes__card-link:hover,
+.twh-classes__card-link:focus-visible {
   border-color: var(--card-accent, var(--color-twh-red));
-  box-shadow: 0 16px 48px rgba(0,0,0,0.55), 0 0 0 1px var(--card-accent, var(--color-twh-red));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--card-accent, var(--color-twh-red));
   transform: translateY(-8px);
 }
+
+/* Bottom accent bar — draws in on hover */
+.twh-classes__card-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: var(--card-accent, var(--color-twh-red));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 5;
+}
+
+.twh-classes__card-link:hover::after,
+.twh-classes__card-link:focus-visible::after { transform: scaleX(1); }
 
 /* Left intensity stripe — animates up on hover */
 .twh-classes__card-stripe {
@@ -142,11 +165,10 @@
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.twh-classes__card-link:hover .twh-classes__card-stripe {
-  transform: scaleY(1);
-}
+.twh-classes__card-link:hover .twh-classes__card-stripe,
+.twh-classes__card-link:focus-visible .twh-classes__card-stripe { transform: scaleY(1); }
 
-/* Full-bleed media */
+/* Full-bleed media (image + placeholder + hover video) */
 .twh-classes__card-media {
   position: absolute;
   inset: 0;
@@ -157,10 +179,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.twh-classes__card-link:hover .twh-classes__card-media img {
+.twh-classes__card-link:hover .twh-classes__card-media img,
+.twh-classes__card-link:focus-visible .twh-classes__card-media img {
   transform: scale(1.08);
 }
 
@@ -170,26 +193,23 @@
   inset: 0;
   background: var(--color-twh-ink);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 18%;
 }
 
 .twh-classes__card-placeholder::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    var(--card-accent, var(--color-twh-grey-800)) 0%,
-    transparent 65%
-  );
-  opacity: 0.18;
+  background: linear-gradient(135deg, var(--card-accent, var(--color-twh-grey-800)) 0%, transparent 70%);
+  opacity: 0.3;
 }
 
 .twh-classes__card-ph-slash {
-  width: 180px;
-  height: 165px;
-  color: rgba(255,255,255,0.09);
+  width: 160px;
+  height: 147px;
+  color: rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 1;
 }
@@ -208,6 +228,15 @@
 
 .twh-classes__card.is-playing .twh-classes__card-video { opacity: 1; }
 
+/* Soft top vignette so the badge / hint stay legible on bright photos */
+.twh-classes__card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 0%, transparent 30%);
+  z-index: 1;
+  pointer-events: none;
+}
+
 /* "Hover to preview" hint */
 .twh-classes__card-playhint {
   position: absolute;
@@ -221,25 +250,11 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.8);
   transition: opacity 0.25s;
 }
 
 .twh-classes__card.is-playing .twh-classes__card-playhint { opacity: 0; }
-
-/* Dark overlay gradient */
-.twh-classes__card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(5, 5, 7, 0.97) 0%,
-    rgba(5, 5, 7, 0.6)  38%,
-    rgba(5, 5, 7, 0.15) 62%,
-    transparent 100%
-  );
-  z-index: 1;
-}
 
 /* Intensity badge */
 .twh-classes__card-badge {
@@ -247,70 +262,100 @@
   top: 1rem;
   right: 1rem;
   z-index: 3;
-  font-size: 0.52rem;
+  font-size: 0.6875rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 0.3rem 0.7rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 2px;
 }
 
-/* Content overlay at bottom */
+/* Text block — black gradient rising from the bottom edge */
 .twh-classes__card-content {
   position: absolute;
-  bottom: 0;
   left: 0;
   right: 0;
-  padding: 1.5rem 1.25rem 1.25rem;
+  bottom: 0;
   z-index: 2;
+  padding: 6rem 1.5rem 1.5rem;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.97) 0%,
+    rgba(0, 0, 0, 0.9) 40%,
+    rgba(0, 0, 0, 0.6) 70%,
+    transparent 100%
+  );
 }
 
+/* Title — single line, clipped (max 20 chars enforced in CMS + page) */
 .twh-classes__card-name {
   font-family: var(--font-display);
-  font-size: clamp(1.375rem, 1.8vw, 1.875rem);
+  font-size: clamp(1.5rem, 2vw, 2rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-twh-white);
-  margin: 0 0 0.3rem;
-  line-height: 1;
-  transition: color 0.2s;
+  margin: 0 0 0.375rem;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.25s, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.twh-classes__card-link:hover .twh-classes__card-name {
+.twh-classes__card-link:hover .twh-classes__card-name,
+.twh-classes__card-link:focus-visible .twh-classes__card-name {
   color: var(--card-accent, var(--color-twh-red));
+  transform: translateY(-6px);
 }
 
+/* Description — max 2 lines (max 50 chars enforced in CMS + page) */
 .twh-classes__card-tagline {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8rem;
-  margin: 0 0 0.875rem;
-  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  margin: 0 0 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  transition: color 0.25s, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.twh-classes__card-link:hover .twh-classes__card-tagline,
+.twh-classes__card-link:focus-visible .twh-classes__card-tagline {
+  color: var(--color-twh-white);
+  transform: translateY(-4px);
 }
 
 .twh-classes__card-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.twh-classes__card-link:hover .twh-classes__card-foot,
+.twh-classes__card-link:focus-visible .twh-classes__card-foot { transform: translateY(-2px); }
 
 .twh-classes__card-meta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .twh-classes__card-meta-dot {
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--card-accent, var(--color-twh-red));
-  opacity: 0.6;
-  flex-shrink: 0;
 }
 
 /* Arrow — slides in on hover */
@@ -318,19 +363,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--color-twh-white);
   flex-shrink: 0;
   opacity: 0;
   transform: translateX(-10px);
-  transition: opacity 0.25s, transform 0.25s cubic-bezier(0.16,1,0.3,1),
+  transition: opacity 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s, background 0.25s;
 }
 
-.twh-classes__card-link:hover .twh-classes__card-arrow {
+.twh-classes__card-link:hover .twh-classes__card-arrow,
+.twh-classes__card-link:focus-visible .twh-classes__card-arrow {
   opacity: 1;
   transform: translateX(0);
   border-color: var(--card-accent, var(--color-twh-red));
@@ -416,7 +462,7 @@
   .twh-classes__inner { padding: 0 1.25rem; }
   .twh-classes__section { padding: 2.5rem 0 4.5rem; }
   .twh-classes__grid { grid-template-columns: 1fr; gap: 1rem; }
-  .twh-classes__card-link { aspect-ratio: 4 / 5; }
+  .twh-classes__card-content { padding: 5rem 1.25rem 1.25rem; }
   .twh-classes__card-name { font-size: 1.75rem; }
   .twh-classes__filter-group { gap: 0.4rem; }
   .twh-classes__filter-btn {
@@ -450,7 +496,10 @@
   .twh-classes__card-link { transition: border-color 0.15s; }
   .twh-classes__card-link:hover { transform: none; box-shadow: none; }
   .twh-classes__card-media img,
-  .twh-classes__card-video { transition: none; }
+  .twh-classes__card-video,
+  .twh-classes__card-name,
+  .twh-classes__card-tagline,
+  .twh-classes__card-foot { transition: none; }
   .twh-classes__card-stripe { transition: none; transform: scaleY(1); }
   .twh-classes__card-arrow { opacity: 0.6; transform: none; }
 }

@@ -29,6 +29,13 @@ const fallback: StrapiClass[] = [
 
 const display = classes.length > 0 ? classes : fallback;
 
+// Card text limits (also enforced in the Strapi schema) — clip defensively so long
+// content can never break the card layout.
+const TITLE_MAX = 20;
+const DESC_MAX  = 50;
+const clip = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
+
 const intensityColour: Record<string, string> = {
   low:     'var(--color-twh-blue)',
   medium:  'var(--color-twh-yellow)',
@@ -133,7 +140,11 @@ const seo = {
               data-level={cls.level}
               data-has-video={hasVideo}
             >
-              <a href={`/classes/${cls.slug}`} class="twh-classes__card-link">
+              <a
+                href={`/classes/${cls.slug}`}
+                class="twh-classes__card-link"
+                aria-label={`${cls.name}${cls.tagline ? ` — ${cls.tagline}` : ''}, ${cls.durationMinutes} minutes, ${lvlLabel}, ${cls.intensity} intensity`}
+              >
 
                 <!-- Left intensity stripe -->
                 <span class="twh-classes__card-stripe" aria-hidden="true"></span>
@@ -184,9 +195,9 @@ const seo = {
 
                 <!-- Overlaid content -->
                 <div class="twh-classes__card-content">
-                  <h2 class="twh-classes__card-name">{cls.name}</h2>
+                  <h2 class="twh-classes__card-name" title={cls.name.length > TITLE_MAX ? cls.name : undefined}>{clip(cls.name, TITLE_MAX)}</h2>
                   {cls.tagline && (
-                    <p class="twh-classes__card-tagline">{cls.tagline}</p>
+                    <p class="twh-classes__card-tagline" title={cls.tagline.length > DESC_MAX ? cls.tagline : undefined}>{clip(cls.tagline, DESC_MAX)}</p>
                   )}
                   <div class="twh-classes__card-foot">
                     <div class="twh-classes__card-meta">

@@ -670,7 +670,13 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
           label: 'Duration (minutes)';
         };
       }>;
-    featuredVideo: Schema.Attribute.Media<'videos'>;
+    featuredVideo: Schema.Attribute.Media<'videos'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Full video shown on the class page. Visitors press play themselves (sound on).';
+          label: 'Class Video';
+        };
+      }>;
     gallery: Schema.Attribute.Media<'images' | 'videos', true> &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
@@ -713,15 +719,18 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Full display name.';
+          description: 'Class name shown on cards and pages. Max 20 characters.';
           label: 'Name';
         };
+      }> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 20;
       }>;
     previewVideo: Schema.Attribute.Media<'videos'> &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Short looping video shown when hovering over this item.';
-          label: 'Hover Preview Video';
+          description: 'Short muted loop (5-10s, under 3 MB, MP4/WebM). Plays when someone hovers the class card.';
+          label: 'Card Hover Video';
         };
       }>;
     publishedAt: Schema.Attribute.DateTime;
@@ -751,15 +760,18 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
     tagline: Schema.Attribute.String &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Short punchy line shown beneath the title (one sentence max).';
+          description: 'One short line shown on the class card. Max 50 characters.';
           label: 'Tagline';
         };
+      }> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
       }>;
     thumbnail: Schema.Attribute.Media<'images'> &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Small preview image used in grids, cards, and listings.';
-          label: 'Thumbnail';
+          description: 'Main image shown on the class card and as the video poster. Use a tall/portrait or square photo (min 1200px).';
+          label: 'Card Image';
         };
       }>;
     updatedAt: Schema.Attribute.DateTime;
