@@ -6,6 +6,87 @@
    ============================================================ */
 
 /* ── 1. Buttons ─────────────────────────────────────────────── */
+/*
+   "Slash sweep" hover — the brand's diagonal claw mark, as motion.
+   Two skewed (-35deg) panels wipe across the button: a narrow LEAD colour
+   arrives first (::after), then the main FILL follows (::before) and takes over.
+   Colours come from three per-variant custom properties:
+
+     --btn-fill        final hover background
+     --btn-lead        colour of the leading slash
+     --btn-ink-hover   text/icon colour once filled
+
+   Only transform / opacity animate. Reduced motion = instant colour swap, no travel.
+   The same engine drives the filter pills (.twh-faq__filter, .twh-gallery__filter).
+*/
+
+.twh-btn,
+.twh-faq__filter,
+.twh-gallery__filter {
+  --btn-fill: var(--color-twh-black);
+  --btn-lead: var(--color-twh-red);
+  --btn-ink-hover: var(--color-twh-white);
+  --sweep-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.twh-btn::before,
+.twh-btn::after,
+.twh-faq__filter::before,
+.twh-faq__filter::after,
+.twh-gallery__filter::before,
+.twh-gallery__filter::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: -28px;
+  right: -28px;
+  z-index: -1;
+  pointer-events: none;
+  transform: translateX(-112%) skewX(-35deg);
+  transition: transform 0.38s var(--sweep-ease);
+}
+
+/* Main fill — follows the lead slash */
+.twh-btn::before,
+.twh-faq__filter::before,
+.twh-gallery__filter::before {
+  background: var(--btn-fill);
+  transition-delay: 0.07s;
+}
+
+/* Leading slash — sits UNDER the fill so the fill takes over as it arrives */
+.twh-btn::after,
+.twh-faq__filter::after,
+.twh-gallery__filter::after {
+  background: var(--btn-lead);
+  z-index: -2;
+}
+
+@media (hover: hover) {
+  .twh-btn:hover::before,
+  .twh-btn:hover::after,
+  .twh-faq__filter:not(.twh-faq__filter--active):hover::before,
+  .twh-faq__filter:not(.twh-faq__filter--active):hover::after,
+  .twh-gallery__filter:not(.twh-gallery__filter--active):hover::before,
+  .twh-gallery__filter:not(.twh-gallery__filter--active):hover::after {
+    transform: translateX(0) skewX(-35deg);
+  }
+
+  /* Retreat: lead leaves last so the exit reads as a slash too */
+  .twh-btn:not(:hover)::before { transition-delay: 0s; }
+  .twh-btn:not(:hover)::after  { transition-delay: 0.05s; }
+}
+
+/* Keyboard focus gets the same fill, so it is never hover-only */
+.twh-btn:focus-visible::before,
+.twh-btn:focus-visible::after {
+  transform: translateX(0) skewX(-35deg);
+}
 
 .twh-btn {
   display: inline-flex;
@@ -20,12 +101,22 @@
   border: none;
   cursor: pointer;
   border-radius: 4px;
-  transition: opacity 0.15s, background-color 0.15s, color 0.15s, transform 0.1s;
+  transition: color 0.3s ease 0.08s, border-color 0.3s ease 0.08s,
+              box-shadow 0.35s ease, transform 0.2s var(--sweep-ease);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.twh-btn:active { transform: translateY(1px); }
+.twh-btn svg { transition: transform 0.35s var(--sweep-ease); }
+
+@media (hover: hover) {
+  .twh-btn:hover { color: var(--btn-ink-hover); transform: translateY(-2px); }
+  .twh-btn:hover svg { transform: translateX(4px); }
+}
+
+.twh-btn:focus-visible { color: var(--btn-ink-hover); }
+
+.twh-btn:active { transform: translateY(0) scale(0.97); }
 .twh-btn:disabled { opacity: 0.4; pointer-events: none; }
 
 /* Sizes */
@@ -33,38 +124,104 @@
 .twh-btn--md  { font-size: 0.875rem;   padding: 0.875rem 1.75rem; }
 .twh-btn--lg  { font-size: 1rem;       padding: 1.125rem 2.25rem; }
 
-/* Variants */
+/* Variants ------------------------------------------------------ */
+
+/* Primary: yellow → black slash → red fill, white text */
 .twh-btn--primary {
+  --btn-fill: var(--color-twh-red);
+  --btn-lead: var(--color-twh-black);
+  --btn-ink-hover: var(--color-twh-white);
   background: var(--color-twh-yellow);
   color: var(--color-twh-black);
 }
-.twh-btn--primary:hover { opacity: 0.88; }
+@media (hover: hover) {
+  .twh-btn--primary:hover { box-shadow: 0 10px 30px rgba(215, 20, 26, 0.4); }
+}
 
+/* Secondary: white outline → yellow slash → white fill, black text */
 .twh-btn--secondary {
+  --btn-fill: var(--color-twh-white);
+  --btn-lead: var(--color-twh-yellow);
+  --btn-ink-hover: var(--color-twh-black);
   background: transparent;
   color: var(--color-twh-white);
   border: 2px solid var(--color-twh-white);
 }
-.twh-btn--secondary:hover {
-  background: var(--color-twh-white);
-  color: var(--color-twh-black);
+@media (hover: hover) {
+  .twh-btn--secondary:hover { box-shadow: 0 10px 30px rgba(255, 255, 255, 0.18); }
 }
 
+/* Ghost: grey outline → red slash → yellow fill, black text */
 .twh-btn--ghost {
+  --btn-fill: var(--color-twh-yellow);
+  --btn-lead: var(--color-twh-red);
+  --btn-ink-hover: var(--color-twh-black);
   background: transparent;
-  color: var(--color-twh-grey-400);
-  border: 2px solid var(--color-twh-grey-700);
+  color: var(--color-twh-grey-300);
+  border: 2px solid var(--color-twh-grey-600);
 }
-.twh-btn--ghost:hover {
-  border-color: var(--color-twh-grey-400);
-  color: var(--color-twh-white);
+@media (hover: hover) {
+  .twh-btn--ghost:hover {
+    border-color: var(--color-twh-yellow);
+    box-shadow: 0 10px 30px rgba(255, 194, 14, 0.25);
+  }
 }
+.twh-btn--ghost:focus-visible { border-color: var(--color-twh-yellow); }
 
+/* Danger: red → black slash → deep-red fill, white text */
 .twh-btn--danger {
+  --btn-fill: var(--color-twh-red-deep);
+  --btn-lead: var(--color-twh-black);
+  --btn-ink-hover: var(--color-twh-white);
   background: var(--color-twh-red);
   color: var(--color-twh-white);
 }
-.twh-btn--danger:hover { background: var(--color-twh-red-deep); }
+
+/* Filter pills (FAQ + gallery): hover previews the red active state */
+.twh-faq__filter,
+.twh-gallery__filter {
+  --btn-fill: var(--color-twh-red);
+  --btn-lead: var(--color-twh-yellow);
+  --btn-ink-hover: var(--color-twh-white);
+  transition: color 0.3s ease 0.08s, border-color 0.3s ease 0.08s, background 0.2s ease;
+}
+@media (hover: hover) {
+  .twh-faq__filter:not(.twh-faq__filter--active):hover,
+  .twh-gallery__filter:not(.twh-gallery__filter--active):hover {
+    color: var(--btn-ink-hover);
+    border-color: var(--color-twh-red);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-btn,
+  .twh-btn svg,
+  .twh-faq__filter,
+  .twh-gallery__filter { transition: color 0.01s, border-color 0.01s, background 0.01s !important; }
+
+  /* No travel: fill simply fades in on hover/focus */
+  .twh-btn::before,
+  .twh-btn::after,
+  .twh-faq__filter::before,
+  .twh-faq__filter::after,
+  .twh-gallery__filter::before,
+  .twh-gallery__filter::after {
+    transform: translateX(0) skewX(-35deg);
+    opacity: 0;
+    transition: opacity 0.01s !important;
+  }
+  .twh-btn::after,
+  .twh-faq__filter::after,
+  .twh-gallery__filter::after { display: none; }
+
+  .twh-btn:hover::before,
+  .twh-btn:focus-visible::before,
+  .twh-faq__filter:not(.twh-faq__filter--active):hover::before,
+  .twh-gallery__filter:not(.twh-gallery__filter--active):hover::before { opacity: 1; }
+
+  .twh-btn:hover { transform: none; }
+  .twh-btn:hover svg { transform: none; }
+}
 
 /* ── 2. Badges ──────────────────────────────────────────────── */
 

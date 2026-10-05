@@ -217,7 +217,7 @@
   transition: opacity 0.15s, transform 0.15s;
 }
 
-.twh-programs__cta:hover { opacity: 0.85; transform: translateY(-1px); }
+/* hover handled by the shared .twh-btn slash sweep */
 
 /* ── Why strip ────────────────────────────────────────────── */
 

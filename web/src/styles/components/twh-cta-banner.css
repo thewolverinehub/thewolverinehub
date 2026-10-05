@@ -116,10 +116,10 @@
   color: var(--color-twh-grey-300) !important;
 }
 
-.twh-cta-banner__secondary:hover {
-  border-color: var(--color-twh-white) !important;
-  color: var(--color-twh-white) !important;
-  background: transparent !important;
+.twh-cta-banner__secondary:hover,
+.twh-cta-banner__secondary:focus-visible {
+  border-color: var(--color-twh-yellow) !important;
+  color: var(--btn-ink-hover) !important;
 }
 
 /* ── Stats cluster ───────────────────────────────────────── */

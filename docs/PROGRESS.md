@@ -123,3 +123,8 @@
 - Page transition script skips `data-lightbox` / `data-no-transition` links
 - Dev servers: `node scripts/dev-detached.mjs [stop]` (console-less, survives stray Ctrl-C)
 - **Open:** no class media uploaded yet (add in Strapi: Card Image, Card Hover Video, Class Video, Gallery); class text still mentions removed coaches
+
+### Buttons (site-wide)
+- `.twh-btn` now uses a "slash sweep" hover (two -35° panels: lead colour then fill) driven by --btn-fill / --btn-lead / --btn-ink-hover per variant. Primary: yellow → red; Secondary: outline → white; Ghost: outline → yellow; Danger: red → deep red. Same engine on FAQ/gallery filter pills. Hover-capable devices only; reduced-motion = instant colour swap.
+- Removed stale `components/twh-classes-page.css` (conflicting duplicate)
+- **Note for page reviews:** other `components/twh-*-page.css` files duplicate `pages/twh-*.css` (coaches, pricing, schedule, blog, contact) and may conflict like classes did; FAQ page shows duplicated entries in the data.
