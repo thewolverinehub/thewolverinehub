@@ -108,3 +108,18 @@
 - QA & hardening, accounts & payments, real content & go-live
 - Easter egg (Konami slash storm) decision still pending
 - `MediaPlaceholder.astro` and `public/wolverinehub-logo.png` are committed but not referenced yet
+
+---
+
+## Page-by-page polish (post Phase 7)
+**Date:** 2026-10-05
+
+### /classes
+- Grid: 3 cols desktop / 2 tablet / 1 mobile; taller cards
+- Filter bar: larger accessible text, 44px targets, strong hover + solid selected state; stacks (no scroll) on tablet/mobile
+- Cards: hover (and keyboard focus) plays `previewVideo`; click opens the class
+- /classes/[slug]: class video (manual play) + photo/video gallery with lightbox (`components/ui/Lightbox.astro`)
+- CMS: new `gallery` multi-media field on Class; clearer labels for Card Image / Card Hover Video / Class Video
+- Page transition script skips `data-lightbox` / `data-no-transition` links
+- Dev servers: `node scripts/dev-detached.mjs [stop]` (console-less, survives stray Ctrl-C)
+- **Open:** no class media uploaded yet (add in Strapi: Card Image, Card Hover Video, Class Video, Gallery); class text still mentions removed coaches

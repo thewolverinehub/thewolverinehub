@@ -50,6 +50,8 @@ export function initPageTransition(): void {
   document.addEventListener('click', (e) => {
     const anchor = (e.target as Element).closest<HTMLAnchorElement>('a[href]');
     if (!anchor) return;
+    // Lightbox triggers and opt-outs handle their own click (no page exit animation)
+    if (anchor.hasAttribute('data-lightbox') || anchor.hasAttribute('data-no-transition')) return;
 
     const href = anchor.getAttribute('href') ?? '';
     if (

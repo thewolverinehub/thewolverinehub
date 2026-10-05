@@ -112,8 +112,8 @@
       ],
       "pluginOptions": {
         "content-manager": {
-          "label": "Thumbnail",
-          "description": "Small preview image used in grids, cards, and listings."
+          "label": "Card Image",
+          "description": "Main image shown on the class card and as the video poster. Use a tall/portrait or square photo (min 1200px)."
         }
       }
     },
@@ -125,8 +125,8 @@
       ],
       "pluginOptions": {
         "content-manager": {
-          "label": "Hover Preview Video",
-          "description": "Short looping video shown when hovering over this item."
+          "label": "Card Hover Video",
+          "description": "Short muted loop (5-10s, under 3 MB, MP4/WebM). Plays when someone hovers the class card."
         }
       }
     },
@@ -135,7 +135,27 @@
       "multiple": false,
       "allowedTypes": [
         "videos"
-      ]
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Class Video",
+          "description": "Full video shown on the class page. Visitors press play themselves (sound on)."
+        }
+      }
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "videos"
+      ],
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Gallery (photos & videos)",
+          "description": "Photos and clips for this class. Shown as a clickable gallery on the class page (opens in a lightbox). Add as many as you like; order = display order."
+        }
+      }
     },
     "whatToExpect": {
       "type": "blocks"

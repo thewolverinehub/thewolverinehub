@@ -2,6 +2,8 @@
 import PageLayout from '../../layouts/PageLayout.astro';
 import { getClassBySlug, getScheduleSlots, getGlobal } from '../../lib/strapi/queries';
 import { blocksToHtml } from '../../lib/strapi/blocks';
+import Lightbox from '../../components/ui/Lightbox.astro';
+import type { StrapiMedia } from '../../lib/strapi/types';
 
 const { slug } = Astro.params;
 
@@ -35,6 +37,13 @@ const intensityColour: Record<string, string> = {
 };
 
 const bodyHtml = blocksToHtml(cls.description);
+
+// ── Media ────────────────────────────────────────────────────
+const featuredVideo = cls.featuredVideo?.url ? cls.featuredVideo : undefined;
+const gallery: StrapiMedia[] = (cls.gallery ?? []).filter((m) => m?.url);
+const isVideo = (m: StrapiMedia) => m.mime?.startsWith('video/');
+const tileSrc = (m: StrapiMedia) => m.formats?.medium?.url ?? m.formats?.small?.url ?? m.url;
+const posterUrl = cls.thumbnail?.formats?.large?.url ?? cls.thumbnail?.url;
 const accentColor = intensityColour[cls.intensity] ?? 'var(--color-twh-grey-600)';
 
 const seo = cls.seo ?? {
@@ -73,6 +82,60 @@ const seo = cls.seo ?? {
           <p style="color:rgba(255,255,255,0.4);">
             Full class description coming soon.
           </p>
+        )}
+
+        {featuredVideo && (
+          <section class="twh-class-detail__media" aria-labelledby="cls-video-h">
+            <h2 id="cls-video-h">Watch the class</h2>
+            <video
+              class="twh-class-detail__video"
+              src={featuredVideo.url}
+              poster={posterUrl}
+              controls
+              playsinline
+              preload="metadata"
+              aria-label={`${cls.name} class video`}
+            >
+              Your browser does not support embedded video.
+              <a href={featuredVideo.url}>Download the video</a>.
+            </video>
+          </section>
+        )}
+
+        {gallery.length > 0 && (
+          <section class="twh-class-detail__media" aria-labelledby="cls-gallery-h">
+            <h2 id="cls-gallery-h">Gallery</h2>
+            <ul class="twh-class-detail__gallery" role="list">
+              {gallery.map((m, i) => {
+                const video = isVideo(m);
+                const label = m.caption ?? m.alternativeText ?? `${cls.name} ${video ? 'video' : 'photo'} ${i + 1}`;
+                return (
+                  <li class="twh-class-detail__gallery-item">
+                    <a
+                      href={m.url}
+                      class="twh-class-detail__gallery-link"
+                      data-lightbox="class-gallery"
+                      data-type={video ? 'video' : 'image'}
+                      data-caption={m.caption ?? ''}
+                      data-alt={m.alternativeText ?? label}
+                      aria-label={`Open ${label}`}
+                    >
+                      {video ? (
+                        <>
+                          <video src={`${m.url}#t=0.5`} muted playsinline preload="metadata" aria-hidden="true" tabindex="-1" />
+                          <span class="twh-class-detail__gallery-play" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 14 14" fill="currentColor"><path d="M3 2l9 5-9 5V2z" /></svg>
+                          </span>
+                        </>
+                      ) : (
+                        <img src={tileSrc(m)} alt={m.alternativeText ?? ''} loading="lazy" width={m.width ?? undefined} height={m.height ?? undefined} />
+                      )}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         )}
       </div>
 
@@ -130,9 +193,10 @@ const seo = cls.seo ?? {
       </aside>
     </div>
   </div>
+  {gallery.length > 0 && <Lightbox />}
 </PageLayout>
 
-<style>@import '../../styles/pages/twh-class-detail.css';</style>
+<style is:global>@import '../../styles/pages/twh-class-detail.css';</style>
 
 <script>
   import gsap from 'gsap';

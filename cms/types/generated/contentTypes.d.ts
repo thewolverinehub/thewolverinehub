@@ -671,6 +671,13 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
         };
       }>;
     featuredVideo: Schema.Attribute.Media<'videos'>;
+    gallery: Schema.Attribute.Media<'images' | 'videos', true> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Photos and clips for this class. Shown as a clickable gallery on the class page (opens in a lightbox). Add as many as you like; order = display order.';
+          label: 'Gallery (photos & videos)';
+        };
+      }>;
     intensity: Schema.Attribute.Enumeration<
       ['low', 'medium', 'high', 'extreme']
     > &

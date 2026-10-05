@@ -11,6 +11,7 @@ export interface StrapiMedia {
   mime: string;
   size: number;
   name: string;
+  formats?: Record<string, { url: string; width: number; height: number }> | null;
 }
 
 export interface StrapiSeo {
@@ -260,6 +261,8 @@ export interface StrapiClass {
   discipline?: StrapiDiscipline;
   thumbnail?: StrapiMedia;
   previewVideo?: StrapiMedia;
+  featuredVideo?: StrapiMedia;
+  gallery?: StrapiMedia[];
   isFree: boolean;
   sortOrder: number;
   seo?: StrapiSeo;

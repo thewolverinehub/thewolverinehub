@@ -1,0 +1,159 @@
+---
+/**
+ * Lightbox — one instance per page. Any element with `data-lightbox` becomes a trigger:
+ *
+ *   <a href="/media/photo.jpg"
+ *      data-lightbox="class-gallery"        // group id (prev/next stay inside the group)
+ *      data-type="image | video"            // default: image
+ *      data-caption="Optional caption"
+ *      data-poster="/media/poster.jpg">     // video only
+ *
+ * Without JS the anchors simply open the file. Built on <dialog> so focus trapping,
+ * Esc-to-close and focus restore come from the browser.
+ */
+---
+
+<dialog class="twh-lightbox" aria-label="Media viewer">
+  <div class="twh-lightbox__chrome">
+    <p class="twh-lightbox__count" aria-live="polite"></p>
+    <button type="button" class="twh-lightbox__btn twh-lightbox__close" aria-label="Close viewer">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+  </div>
+
+  <button type="button" class="twh-lightbox__btn twh-lightbox__nav twh-lightbox__prev" aria-label="Previous">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <path d="M14 4l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+  <button type="button" class="twh-lightbox__btn twh-lightbox__nav twh-lightbox__next" aria-label="Next">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <path d="M8 4l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <figure class="twh-lightbox__figure">
+    <div class="twh-lightbox__stage"></div>
+    <figcaption class="twh-lightbox__caption"></figcaption>
+  </figure>
+</dialog>
+
+<style is:global>@import '../../styles/components/twh-lightbox.css';</style>
+
+<script>
+  type Item = { type: 'image' | 'video'; src: string; caption: string; poster: string; alt: string };
+
+  const dialog = document.querySelector<HTMLDialogElement>('.twh-lightbox');
+
+  if (dialog) {
+    const stage   = dialog.querySelector<HTMLElement>('.twh-lightbox__stage')!;
+    const caption = dialog.querySelector<HTMLElement>('.twh-lightbox__caption')!;
+    const count   = dialog.querySelector<HTMLElement>('.twh-lightbox__count')!;
+    const prevBtn = dialog.querySelector<HTMLButtonElement>('.twh-lightbox__prev')!;
+    const nextBtn = dialog.querySelector<HTMLButtonElement>('.twh-lightbox__next')!;
+    const closeBtn = dialog.querySelector<HTMLButtonElement>('.twh-lightbox__close')!;
+
+    let items: Item[] = [];
+    let index = 0;
+
+    const readItem = (el: HTMLElement): Item => ({
+      type: el.dataset.type === 'video' ? 'video' : 'image',
+      src: el.getAttribute('href') ?? el.dataset.src ?? '',
+      caption: el.dataset.caption ?? '',
+      poster: el.dataset.poster ?? '',
+      alt: el.dataset.alt ?? el.dataset.caption ?? '',
+    });
+
+    function clearStage() {
+      stage.querySelectorAll('video').forEach((v) => { v.pause(); v.removeAttribute('src'); v.load(); });
+      stage.replaceChildren();
+    }
+
+    function show(i: number) {
+      index = (i + items.length) % items.length;
+      const item = items[index];
+      clearStage();
+
+      if (item.type === 'video') {
+        const v = document.createElement('video');
+        v.src = item.src;
+        v.controls = true;
+        v.autoplay = true;
+        v.playsInline = true;
+        if (item.poster) v.poster = item.poster;
+        v.className = 'twh-lightbox__media';
+        stage.append(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = item.alt;
+        img.className = 'twh-lightbox__media';
+        stage.append(img);
+      }
+
+      caption.textContent = item.caption;
+      caption.hidden = !item.caption;
+      count.textContent = items.length > 1 ? `${index + 1} / ${items.length}` : '';
+      const multi = items.length > 1;
+      prevBtn.hidden = !multi;
+      nextBtn.hidden = !multi;
+    }
+
+    function open(group: string, trigger: HTMLElement) {
+      const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-lightbox]'))
+        .filter((el) => el.dataset.lightbox === group);
+      items = triggers.map(readItem);
+      show(Math.max(0, triggers.indexOf(trigger)));
+      dialog!.showModal();
+      document.documentElement.classList.add('twh-lightbox-open');
+    }
+
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as HTMLElement).closest<HTMLElement>('[data-lightbox]');
+      if (!trigger || e.defaultPrevented) return;
+      // Let modified clicks (new tab etc.) behave normally.
+      if (e instanceof MouseEvent && (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)) return;
+      e.preventDefault();
+      open(trigger.dataset.lightbox ?? 'default', trigger);
+    });
+
+    prevBtn.addEventListener('click', () => show(index - 1));
+    nextBtn.addEventListener('click', () => show(index + 1));
+    // Cleanup is idempotent: runs from our own close paths and from the native 'close' event (Esc).
+    function cleanup() {
+      clearStage();
+      document.documentElement.classList.remove('twh-lightbox-open');
+    }
+    function closeLightbox() {
+      if (dialog!.open) dialog!.close();
+      cleanup();
+    }
+
+    closeBtn.addEventListener('click', closeLightbox);
+
+    // Click on the dark backdrop (outside the media) closes.
+    dialog.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t === dialog || t.classList.contains('twh-lightbox__figure') || t === stage) closeLightbox();
+    });
+
+    dialog.addEventListener('keydown', (e) => {
+      if (items.length < 2) return;
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); show(index - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(index + 1); }
+    });
+
+    // Swipe on touch screens.
+    let startX = 0;
+    stage.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    stage.addEventListener('pointerup', (e) => {
+      const dx = e.clientX - startX;
+      if (e.pointerType === 'touch' && Math.abs(dx) > 50 && items.length > 1) show(index + (dx < 0 ? 1 : -1));
+    });
+
+    // A queued 'close' event can arrive after a quick re-open — only clean up if really closed.
+    dialog.addEventListener('close', () => { if (!dialog.open) cleanup(); });
+  }
+</script>

@@ -46,15 +46,15 @@ const intensityTextColour: Record<string, string> = {
 // Filter groups — "All" is frontend-only. Level and intensity combine (AND).
 const FILTER_GROUPS = [
   { key: 'level', label: 'Level', options: [
-    { label: 'Beginner',     value: 'beginner',     accent: 'var(--color-twh-blue)' },
-    { label: 'Intermediate', value: 'intermediate', accent: 'var(--color-twh-yellow)' },
-    { label: 'Advanced',     value: 'advanced',     accent: 'var(--color-twh-red)' },
+    { label: 'Beginner',     value: 'beginner',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
+    { label: 'Intermediate', value: 'intermediate', accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
+    { label: 'Advanced',     value: 'advanced',     accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
   ]},
   { key: 'intensity', label: 'Intensity', options: [
-    { label: 'Low',     value: 'low',     accent: 'var(--color-twh-blue)' },
-    { label: 'Medium',  value: 'medium',  accent: 'var(--color-twh-yellow)' },
-    { label: 'High',    value: 'high',    accent: 'var(--color-twh-red)' },
-    { label: 'Extreme', value: 'extreme', accent: 'var(--color-twh-red-deep)' },
+    { label: 'Low',     value: 'low',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
+    { label: 'Medium',  value: 'medium',  accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
+    { label: 'High',    value: 'high',    accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
+    { label: 'Extreme', value: 'extreme', accent: 'var(--color-twh-red-deep)', ink: 'var(--color-twh-white)' },
   ]},
 ];
 
@@ -90,9 +90,8 @@ const seo = {
         data-filter-group="all"
         data-filter="all"
         aria-pressed="true"
-        style="--btn-accent: var(--color-twh-white);"
+        style="--btn-accent: var(--color-twh-white); --btn-ink: var(--color-twh-black);"
       >
-        <span class="twh-classes__filter-dot" aria-hidden="true"></span>
         All
       </button>
       {FILTER_GROUPS.map((group) => (
@@ -104,9 +103,8 @@ const seo = {
               data-filter-group={group.key}
               data-filter={o.value}
               aria-pressed="false"
-              style={`--btn-accent: ${o.accent};`}
+              style={`--btn-accent: ${o.accent}; --btn-ink: ${o.ink};`}
             >
-              <span class="twh-classes__filter-dot" aria-hidden="true"></span>
               {o.label}
             </button>
           ))}
@@ -121,6 +119,7 @@ const seo = {
     <div class="twh-classes__inner">
       <ul class="twh-classes__grid" role="list" id="classes-grid">
         {display.map((cls) => {
+          const hasVideo = Boolean(cls.previewVideo?.url);
           const accent  = intensityColour[cls.intensity]     ?? 'var(--color-twh-grey-700)';
           const txtClr  = intensityTextColour[cls.intensity] ?? 'var(--color-twh-white)';
           const lvlLabel = cls.level === 'all' || cls.level === 'beginner'
@@ -132,6 +131,7 @@ const seo = {
               style={`--card-accent: ${accent};`}
               data-intensity={cls.intensity}
               data-level={cls.level}
+              data-has-video={hasVideo}
             >
               <a href={`/classes/${cls.slug}`} class="twh-classes__card-link">
 
@@ -151,6 +151,19 @@ const seo = {
                       <WolverineSlash class="twh-classes__card-ph-slash" />
                     </div>
                   )}
+                  {hasVideo && (
+                    <video
+                      class="twh-classes__card-video"
+                      src={cls.previewVideo!.url}
+                      poster={cls.thumbnail?.url}
+                      muted
+                      loop
+                      playsinline
+                      preload="none"
+                      aria-hidden="true"
+                      tabindex="-1"
+                    />
+                  )}
                   <div class="twh-classes__card-overlay" aria-hidden="true"></div>
                 </div>
 
@@ -161,6 +174,13 @@ const seo = {
                 >
                   {cls.intensity}
                 </span>
+
+                {hasVideo && (
+                  <span class="twh-classes__card-playhint" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="currentColor"><path d="M3 2l9 5-9 5V2z"/></svg>
+                    Hover to preview
+                  </span>
+                )}
 
                 <!-- Overlaid content -->
                 <div class="twh-classes__card-content">
@@ -248,6 +268,30 @@ const seo = {
       applyFilter();
     });
   });
+
+  // ── Card hover video (mouse + keyboard focus; not on touch, not with reduced motion) ──
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const reduced  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (canHover && !reduced) {
+    cards.forEach(card => {
+      if (card.dataset.hasVideo !== 'true') return;
+      const video = card.querySelector<HTMLVideoElement>('.twh-classes__card-video');
+      if (!video) return;
+      const start = () => {
+        card.classList.add('is-playing');
+        video.play().catch(() => { card.classList.remove('is-playing'); });
+      };
+      const stop = () => {
+        card.classList.remove('is-playing');
+        video.pause();
+        video.currentTime = 0;
+      };
+      card.addEventListener('mouseenter', start);
+      card.addEventListener('mouseleave', stop);
+      card.addEventListener('focusin', start);
+      card.addEventListener('focusout', stop);
+    });
+  }
 
   // ── Hero entrance ──────────────────────────────────────────
   const hero = document.querySelector('.twh-page-hero__inner');
