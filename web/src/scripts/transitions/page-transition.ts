@@ -30,6 +30,16 @@ export function initPageTransition(): void {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const { overlay, panels } = getOrCreateOverlay();
 
+  // Back/forward button restores the old page from bfcache with the curtain still
+  // covering it and isNavigating stuck on — reset both so the page is usable.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    isNavigating = false;
+    gsap.killTweensOf(panels);
+    gsap.set(panels, { clipPath: HIDDEN_L });
+    overlay.classList.remove('is-active');
+  });
+
   if (reducedMotion) {
     gsap.set(panels, { clipPath: HIDDEN_L });
     return;
@@ -48,6 +58,7 @@ export function initPageTransition(): void {
 
   // ── Intercept same-origin link clicks for exit animation ──────
   document.addEventListener('click', (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const anchor = (e.target as Element).closest<HTMLAnchorElement>('a[href]');
     if (!anchor) return;
     // Lightbox triggers and opt-outs handle their own click (no page exit animation)
@@ -97,5 +108,14 @@ export function initPageTransition(): void {
       stagger: 0.08,
       onComplete: () => { window.location.href = href; },
     });
+
+    // If the page is still here after a while (blocked / failed navigation), lift the curtain.
+    window.setTimeout(() => {
+      if (!isNavigating) return;
+      isNavigating = false;
+      gsap.killTweensOf(panels);
+      gsap.set(panels, { clipPath: HIDDEN_L });
+      overlay.classList.remove('is-active');
+    }, 8000);
   }, true); // capture phase — fires before menu link listeners
 }

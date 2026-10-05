@@ -118,7 +118,7 @@
 
 .twh-cta-banner__secondary:hover,
 .twh-cta-banner__secondary:focus-visible {
-  border-color: var(--color-twh-yellow) !important;
+  border-color: #4a73d6 !important;
   color: var(--btn-ink-hover) !important;
 }
 

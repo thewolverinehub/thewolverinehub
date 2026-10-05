@@ -134,3 +134,11 @@
 - All now/today/dates come from `lib/utils/colombo.ts` (never server/device tz); status logic in `lib/utils/schedule.ts`
 - Removed stale `components/twh-schedule-page.css`
 - **Data issue:** the 39 schedule slots in Strapi have no class or coach linked (Phase 6 dedupe / coach swap). Page falls back to "Class session". Needs relink (script ready, awaiting approval to modify live DB)
+
+### Two-coach cleanup + schedule data (2026-10-06)
+- Client has **2 coaches** (Dilshan Wickramasinghe, Sachini Perera). All 39 schedule slots relinked to a class + coach (Dilshan: boxing/striking/grappling/MMA; Sachini: strength + yoga). Old coach names removed from class text, testimonials, blog posts/author, fallbacks and seed. Home stat "Expert Coaches" = 2.
+- Class "Strength & Conditioning" renamed **Strength Training** (CMS name limit 20; slug unchanged) with a 48-char tagline.
+- Seed hardening: `patchClassContent` no longer overwrites existing class content (admin edits stick); one-time stat patch only touches the old seeded value 18. BOOTSTRAP_VERSION bumped to 2026-10-05-v1 (first boot after a bump takes long against a remote DB).
+- Page transition fixes: Back-button (bfcache) restore resets the curtain + link lock; Ctrl/Cmd/middle-click no longer hijacked; 8s safety reset.
+- Ghost button hover is now blue (distinct from the yellow primary).
+- **Planned:** login replaces the Free Trial CTA; logged-in users book classes + pay (PayHere) — see Phase 12.

@@ -4,7 +4,7 @@ import { seedDefaultContent } from './bootstrap/seed';
 
 // Bump this string whenever you change seed data, schemas, or labels.
 // Heavy bootstrap ops are skipped when the stored value matches — fast restarts.
-const BOOTSTRAP_VERSION = '2026-10-04-v1';
+const BOOTSTRAP_VERSION = '2026-10-05-v1';
 
 // ---------------------------------------------------------------------------
 // Public read-only content types — Public role gets find + findOne on these.

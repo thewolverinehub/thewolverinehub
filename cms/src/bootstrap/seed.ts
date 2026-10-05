@@ -240,6 +240,8 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
 
   strapi.log.info(`[seed:patch] Reference IDs — disciplines:${Object.keys(disciplineIds).length} classes:${Object.keys(classIds).length} coaches:${Object.keys(coachIds).length}`);
 
+  await tryRun('expert coaches stat', async () => patchExpertCoachesStat(strapi));
+
   // ── Schedule slots ────────────────────────────────────────────────────────
   await tryRun('schedule slots', async () => {
     if ((await count('api::schedule-slot.schedule-slot')) === 0) {
@@ -509,14 +511,28 @@ async function repairPublishedOnly(strapi: Core.Strapi): Promise<void> {
 // Helper: convert any field stored as a JSON array back to a newline string.
 // Needed when a schema changes from json → text but old rows keep array values.
 // ---------------------------------------------------------------------------
+// The seeded home page said "18 Expert Coaches"; the client has 2 coaches.
+// Only touches the old seeded value, so later edits in the admin are never reverted.
+async function patchExpertCoachesStat(strapi: Core.Strapi): Promise<void> {
+  const db = (strapi.db as any);
+  const rows: any[] = await db.query('sections.stat-counters').findMany({ limit: 50 });
+  let changed = 0;
+  for (const row of rows) {
+    const stats = Array.isArray(row.stats) ? row.stats : null;
+    const stat = stats?.find((x: any) => /coach/i.test(x?.label ?? '') && String(x?.number) === '18');
+    if (!stat) continue;
+    stat.number = '2';
+    await db.query('sections.stat-counters').update({ where: { id: row.id }, data: { stats } });
+    changed++;
+  }
+  if (changed > 0) strapi.log.info(`[seed:patch] Expert Coaches stat set to 2 (${changed} rows)`);
+}
+
 async function patchCoachSpecialties(strapi: Core.Strapi): Promise<void> {
   const db = (strapi.db as any);
   const specialtiesMap: Record<string, string> = {
-    'ashan-perera':      'Technical boxing\nSparring preparation\nFootwork and defence\nCombination drilling\nCompetition coaching',
-    'nadun-silva':       'Muay Thai striking\nClinch and knee work\nMMA transitions\nThai pad coaching\nFight camp preparation',
-    'chamara-jayasinghe':'Guard systems\nSubmission finishing\nPositional sparring\nCompetition strategy\nNo-gi grappling',
-    'kasuni-rathnayake': 'Athlete recovery yoga\nHip flexor and hamstring release\nShoulder mobility\nBreath control\nInjury prevention',
-    'tharaka-fernando':  'Periodised strength programming\nExplosive power development\nMetabolic conditioning\nCombat sports S&C\nSwimmer-to-athlete transitions',
+    'dilshan-wickramasinghe': 'Technical boxing\nFight camp preparation\nMMA striking\nSparring management\nCorner coaching',
+    'sachini-perera':         'Periodised strength training\nConditioning for combat sports\nMobility and recovery\nInjury prevention\nBeginner-friendly programming',
   };
   const rows: any[] = await db.query('api::coach.coach').findMany({ limit: 50 });
   for (const row of rows) {
@@ -552,7 +568,7 @@ async function patchClassContent(strapi: Core.Strapi): Promise<void> {
         h3('What You\'ll Train'),
         ul('Stance, guard, and footwork patterns', 'Jab–cross–hook–uppercut mechanics', 'Defensive slipping, rolling, and parrying', 'Structured pad work with partner drills', 'Heavy bag rounds with coach feedback', 'Shadow boxing for pattern ingraining'),
         h3('Who This Class Is For'),
-        p('Complete beginners through intermediate fighters wanting to sharpen the basics. No prior boxing or martial arts experience is required. Coach Ashan structures each session to challenge every level in the room.'),
+        p('Complete beginners through intermediate fighters wanting to sharpen the basics. No prior boxing or martial arts experience is required. Coach Dilshan structures each session to challenge every level in the room.'),
         h3('What To Bring'),
         ul('16oz boxing gloves (available to purchase at reception)', 'Hand wraps — 180cm cotton (essential)', 'Mouth guard recommended from session 2 onward', 'Training shoes with lateral support', 'Water bottle'),
       ],
@@ -565,7 +581,7 @@ async function patchClassContent(strapi: Core.Strapi): Promise<void> {
         h3('What You\'ll Train'),
         ul('Teep (push kick) and round kick mechanics', 'Elbow and knee striking — entries and exits', 'Clinch work, sweeps, and break sequences', 'Thai-style pad holding technique', 'Controlled sparring rounds (gear required)', 'Timing drills and counter-attack patterns'),
         h3('Who This Class Is For'),
-        p('Members with 3+ months of any striking base — boxing, kickboxing, or prior Muay Thai. Basic conditioning is recommended; classes run at authentic Thai tempo with timed rounds. Coach Nadun will assess your level before your first session.'),
+        p('Members with 3+ months of any striking base — boxing, kickboxing, or prior Muay Thai. Basic conditioning is recommended; classes run at authentic Thai tempo with timed rounds. Coach Dilshan will assess your level before your first session.'),
         h3('What To Bring'),
         ul('16oz boxing gloves or Muay Thai gloves', 'Shin guards (mandatory)', 'Hand wraps', 'Mouth guard', 'Optional: ankle supports'),
       ],
@@ -598,9 +614,9 @@ async function patchClassContent(strapi: Core.Strapi): Promise<void> {
     },
     'strength-conditioning': {
       level: 'beginner',
-      tagline: 'Build the athletic base that makes everything else better.',
+      tagline: 'Build the athletic base that powers every fight.',
       description: [
-        p('Combat athletes don\'t just need fitness — they need explosive power, injury resilience, and the capacity to sustain high output. Coach Tharaka programmes across rolling 8-week blocks with progressive overload built in from day one.'),
+        p('Combat athletes don\'t just need fitness — they need explosive power, injury resilience, and the capacity to sustain high output. Coach Sachini programmes across rolling 8-week blocks with progressive overload built in from day one.'),
         h3('What You\'ll Train'),
         ul('Barbell squat and deadlift progressions', 'Upper body push and pull — bench, row, overhead', 'Explosive variations: hang cleans, jump squats', 'Metabolic conditioning and energy system work', 'Core stability and anti-rotation strength', 'Injury prevention and mobility accessory work'),
         h3('Who This Class Is For'),
@@ -613,7 +629,7 @@ async function patchClassContent(strapi: Core.Strapi): Promise<void> {
       level: 'advanced',
       tagline: 'Control the mat. Dominate the fight.',
       description: [
-        p('The most physically demanding 75 minutes at The Wolverine Hub. Wrestling is the skill that decides where the fight happens — and the athlete who controls position controls the outcome. Coach Chamara\'s wrestling programme is built on competition-proven technique.'),
+        p('The most physically demanding 75 minutes at The Wolverine Hub. Wrestling is the skill that decides where the fight happens — and the athlete who controls position controls the outcome. Coach Dilshan\'s wrestling programme is built on competition-proven technique.'),
         h3('What You\'ll Train'),
         ul('Penetration step and level change mechanics', 'Double leg and single leg takedowns', 'Sprawl defence and hip blocking', 'Mat return and ride control', 'Cage and wall wrestling entries', 'Tie-up positions and grip fighting'),
         h3('Who This Class Is For'),
@@ -630,7 +646,7 @@ async function patchClassContent(strapi: Core.Strapi): Promise<void> {
         h3('What You\'ll Train'),
         ul('Striking-to-takedown chain attacks', 'Clinch transitions and dirty boxing', 'Takedown defence and cage control', 'Ground-and-pound positioning and mechanics', 'Stand-up grappling and trip combinations', 'Sparring: technical light and controlled hard contact'),
         h3('Who This Class Is For'),
-        p('Athletes with 6+ months of active, consistent training in both a striking discipline and a grappling discipline. Prerequisite screening applies — book an assessment session before attending. Coach Nadun personally assesses all new MMA students.'),
+        p('Athletes with 6+ months of active, consistent training in both a striking discipline and a grappling discipline. Prerequisite screening applies — book an assessment session before attending. Coach Dilshan personally assesses all new MMA students.'),
         h3('What To Bring'),
         ul('MMA gloves (4oz)', 'Boxing or Muay Thai gloves (for sparring rounds)', 'Shin guards', 'Rash guard and shorts or spats', 'Headgear (mandatory for sparring)', 'Mouth guard'),
       ],
@@ -639,7 +655,7 @@ async function patchClassContent(strapi: Core.Strapi): Promise<void> {
       level: 'beginner',
       tagline: 'Recover smarter. Move better. Last longer.',
       description: [
-        p('The single best investment a combat athlete can make in the longevity of their training. Coach Kasuni\'s sessions target the specific restrictions and imbalances that accumulate from striking, grappling, and heavy lifting — the work that prevents you from becoming unavailable to train.'),
+        p('The single best investment a combat athlete can make in the longevity of their training. Coach Sachini\'s sessions target the specific restrictions and imbalances that accumulate from striking, grappling, and heavy lifting — the work that prevents you from becoming unavailable to train.'),
         h3('What You\'ll Train'),
         ul('Hip flexor and groin complex release', 'Thoracic spine rotation and extension', 'Hamstring and posterior chain lengthening', 'Shoulder complex — internal/external rotation', 'Active flexibility for guard and kick mechanics', 'Nervous system regulation and breath work'),
         h3('Who This Class Is For'),
@@ -655,6 +671,8 @@ async function patchClassContent(strapi: Core.Strapi): Promise<void> {
   for (const row of rows) {
     const patch = contentMap[row.slug];
     if (!patch) continue;
+    // Only fill classes that have no description yet — never overwrite edits made in the admin.
+    if (Array.isArray(row.description) && row.description.length > 0) continue;
     try {
       await docs('api::class.class').update({
         documentId: row.documentId,
@@ -747,7 +765,7 @@ async function seedClasses(
       name: 'BJJ Open Mat', slug: 'bjj-open-mat',
       tagline: 'Live drilling and rolling. Every session.',
       description: [
-        { type: 'paragraph', children: [{ type: 'text', text: 'Brazilian Jiu-Jitsu structured drilling followed by open rolling. Coach Chamara runs position-specific rounds — guard, mount, back control — then opens the mat for timed sparring.' }] },
+        { type: 'paragraph', children: [{ type: 'text', text: 'Brazilian Jiu-Jitsu structured drilling followed by open rolling. Coach Dilshan runs position-specific rounds — guard, mount, back control — then opens the mat for timed sparring.' }] },
         { type: 'paragraph', children: [{ type: 'text', text: 'Gi and no-gi options available. Beginners are paired with patient upper belts to accelerate learning without injury risk.' }] },
       ],
       durationMinutes: 90, intensity: 'medium', level: 'all', disciplineSlug: 'bjj', isFree: false, sortOrder: 3,
@@ -762,11 +780,11 @@ async function seedClasses(
       durationMinutes: 60, intensity: 'high', level: 'all', disciplineSlug: 'kickboxing', isFree: false, sortOrder: 4,
     },
     {
-      name: 'Strength & Conditioning', slug: 'strength-conditioning',
-      tagline: 'Build the athletic base that makes everything else better.',
+      name: 'Strength Training', slug: 'strength-conditioning',
+      tagline: 'Build the athletic base that powers every fight.',
       description: [
         { type: 'paragraph', children: [{ type: 'text', text: 'Periodised strength and conditioning designed specifically for combat athletes. Squat, hinge, push, pull — loaded progressively across a rolling 8-week block.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'Coach Tharaka programmes for power output, injury resilience, and metabolic conditioning. Available as a standalone class or as a complement to your combat training.' }] },
+        { type: 'paragraph', children: [{ type: 'text', text: 'Coach Sachini programmes for power output, injury resilience, and metabolic conditioning. Available as a standalone class or as a complement to your combat training.' }] },
       ],
       durationMinutes: 60, intensity: 'medium', level: 'all', disciplineSlug: 'strength-conditioning', isFree: false, sortOrder: 5,
     },
@@ -792,7 +810,7 @@ async function seedClasses(
       name: 'Yoga & Mobility', slug: 'yoga-mobility',
       tagline: 'Recover smarter. Move better.',
       description: [
-        { type: 'paragraph', children: [{ type: 'text', text: 'Recovery-focused yoga designed for athletes. Coach Kasuni targets the common tightness patterns in fighters — hip flexors, thoracic spine, hamstrings, and shoulders.' }] },
+        { type: 'paragraph', children: [{ type: 'text', text: 'Recovery-focused yoga designed for athletes. Coach Sachini targets the common tightness patterns in fighters — hip flexors, thoracic spine, hamstrings, and shoulders.' }] },
         { type: 'paragraph', children: [{ type: 'text', text: 'Open to all levels. No yoga experience needed. An essential complement to your combat training schedule.' }] },
       ],
       durationMinutes: 60, intensity: 'low', level: 'all', disciplineSlug: 'yoga', isFree: true, sortOrder: 8,
@@ -823,67 +841,31 @@ async function seedCoaches(
   const docs = strapi.documents as (uid: string) => any;
   const list = [
     {
-      name: 'Ashan Perera', slug: 'ashan-perera', role: 'Head Boxing Coach',
-      shortBio: 'National champion. 12 years ringside. 500+ amateur fights coached.',
+      name: 'Dilshan Wickramasinghe', slug: 'dilshan-wickramasinghe', role: 'Head Coach — Boxing & MMA',
+      shortBio: 'Former national boxing champion turned head coach. 15 years of fight-camp experience.',
       bio: [
-        { type: 'paragraph', children: [{ type: 'text', text: "Ashan Perera is Sri Lanka's most decorated boxing coach, having trained national-level champions for over a decade. He began his career as an amateur fighter, reaching the national finals three times before transitioning to coaching full-time." }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'His coaching philosophy is built on technical precision and mental toughness. Every class under Ashan is structured, demanding, and purposeful — no filler, no fluff. He has developed fighters who have competed internationally across Asia.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'At The Wolverine Hub, Ashan leads all boxing programmes from fundamentals through to competition preparation.' }] },
+        { type: 'paragraph', children: [{ type: 'text', text: 'Dilshan Wickramasinghe is a former national boxing champion with fifteen years of competition and coaching experience. After retiring from the ring, Dilshan built fight camps across Colombo and has corner-coached amateur and professional fighters at events throughout South Asia.' }] },
+        { type: 'paragraph', children: [{ type: 'text', text: "Dilshan's method is simple: master the fundamentals, then pressure-test them. Every session blends technical drilling with live rounds, so skills hold up when it matters." }] },
+        { type: 'paragraph', children: [{ type: 'text', text: 'At The Wolverine Hub, Dilshan leads the boxing programme and the MMA fight team, and personally assesses every new competitor.' }] },
       ],
-      specialties: 'Technical boxing\nSparring preparation\nFootwork and defence\nCombination drilling\nCompetition coaching',
-      yearsExperience: 12,
+      specialties: 'Technical boxing\nFight camp preparation\nMMA striking\nSparring management\nCorner coaching',
+      yearsExperience: 15,
+      instagram: 'dilshan.fightcamp',
       isHeadCoach: true, sortOrder: 1,
-      disciplineSlugs: ['boxing'],
+      disciplineSlugs: ['boxing', 'mma'],
     },
     {
-      name: 'Nadun Silva', slug: 'nadun-silva', role: 'Muay Thai & MMA Coach',
-      shortBio: 'IFMA certified. Fights out of Bangkok. Wins across Thailand and Malaysia.',
+      name: 'Sachini Perera', slug: 'sachini-perera', role: 'Strength, Conditioning & Recovery Coach',
+      shortBio: 'Certified strength coach and mobility specialist for combat athletes.',
       bio: [
-        { type: 'paragraph', children: [{ type: 'text', text: 'Nadun Silva trained in Thailand for four years under a Lumpinee-ranked kru before returning to Sri Lanka to bring authentic Muay Thai training to Colombo. He holds an IFMA Level 2 coaching certification.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'His classes are known for their intensity and authenticity — structured like a Thai camp, with timed rounds, Thai pad work, and a discipline that develops both fighters and fitness athletes.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'Nadun also heads the MMA programme, bringing a complete striking-to-grappling game shaped by years of cross-training.' }] },
+        { type: 'paragraph', children: [{ type: 'text', text: 'Sachini Perera is a certified strength and conditioning specialist with a background in competitive grappling. Sachini designs programmes that build explosive power, endurance and durability for athletes who train hard and often.' }] },
+        { type: 'paragraph', children: [{ type: 'text', text: 'Sessions are structured in progressive blocks, combining heavy lifting, conditioning circuits and targeted mobility work, so members get stronger without losing the ability to train every week.' }] },
       ],
-      specialties: 'Muay Thai striking\nClinch and knee work\nMMA transitions\nThai pad coaching\nFight camp preparation',
+      specialties: 'Periodised strength training\nConditioning for combat sports\nMobility and recovery\nInjury prevention\nBeginner-friendly programming',
       yearsExperience: 9,
+      instagram: 'sachini.strong',
       isHeadCoach: false, sortOrder: 2,
-      disciplineSlugs: ['muay-thai', 'kickboxing', 'mma'],
-    },
-    {
-      name: 'Chamara Jayasinghe', slug: 'chamara-jayasinghe', role: 'BJJ Black Belt',
-      shortBio: 'IBJJF competitor since 2015. Pan Asian Bronze. 4× Sri Lanka champion.',
-      bio: [
-        { type: 'paragraph', children: [{ type: 'text', text: 'Chamara Jayasinghe received his black belt from a Gracie Barra lineage instructor after competing extensively across Asia. He has medalled at the Pan Asian Championships and won four consecutive Sri Lanka Open titles.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'His teaching style breaks the complexity of BJJ into logical, connectable positions — ideal for beginners building their framework and for experienced grapplers refining their competition game.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'Coach Chamara personally oversees all belt promotions at The Wolverine Hub BJJ programme.' }] },
-      ],
-      specialties: 'Guard systems\nSubmission finishing\nPositional sparring\nCompetition strategy\nNo-gi grappling',
-      yearsExperience: 11,
-      isHeadCoach: false, sortOrder: 3,
-      disciplineSlugs: ['bjj', 'wrestling'],
-    },
-    {
-      name: 'Kasuni Rathnayake', slug: 'kasuni-rathnayake', role: 'Yoga & Recovery Coach',
-      shortBio: 'RYT-500 certified. Mobility specialist for competitive athletes.',
-      bio: [
-        { type: 'paragraph', children: [{ type: 'text', text: 'Kasuni Rathnayake holds a 500-hour Yoga Teacher Training certification specialising in athletic recovery and injury prevention. She has worked with national-level athletes across multiple disciplines.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'Her approach is evidence-based and athlete-focused — no incense, no philosophy. Every session targets the movement restrictions most common in fighters and builds the flexibility and joint stability that prevents injury and improves performance.' }] },
-      ],
-      specialties: 'Athlete recovery yoga\nHip flexor and hamstring release\nShoulder mobility\nBreath control\nInjury prevention',
-      yearsExperience: 7,
-      isHeadCoach: false, sortOrder: 4,
-      disciplineSlugs: ['yoga'],
-    },
-    {
-      name: 'Tharaka Fernando', slug: 'tharaka-fernando', role: 'Strength & Conditioning Coach',
-      shortBio: 'NSCA certified. Former national swimmer. Athletic performance specialist.',
-      bio: [
-        { type: 'paragraph', children: [{ type: 'text', text: 'Tharaka Fernando is an NSCA-certified Strength and Conditioning Specialist with a background as a competitive national-level swimmer. He brings a sports science approach to every programme he designs.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: "His S&C classes are periodised across 8-week blocks, targeting the specific physical demands of combat sports — explosive power, lactate threshold, and structural resilience. If you've ever wondered why your conditioning breaks down in the third round, Tharaka will tell you why — and fix it." }] },
-      ],
-      specialties: 'Periodised strength programming\nExplosive power development\nMetabolic conditioning\nCombat sports S&C\nSwimmer-to-athlete transitions',
-      yearsExperience: 8,
-      isHeadCoach: false, sortOrder: 5,
-      disciplineSlugs: ['strength-conditioning'],
+      disciplineSlugs: ['strength-conditioning', 'yoga'],
     },
   ];
 
@@ -918,57 +900,57 @@ async function seedSchedule(strapi: Core.Strapi): Promise<void> {
 
   const slots: SlotDef[] = [
     // ── Monday ──────────────────────────────────────────────────────────────
-    { weekday: 'monday', startTime: '06:00', endTime: '07:00', classSlug: 'strength-conditioning', coachSlug: 'tharaka-fernando', room: 'Weights Floor', capacity: 16 },
-    { weekday: 'monday', startTime: '07:00', endTime: '08:00', classSlug: 'boxing-fundamentals',   coachSlug: 'ashan-perera',      room: 'Boxing Ring',   capacity: 20 },
-    { weekday: 'monday', startTime: '12:00', endTime: '13:00', classSlug: 'kickboxing',            coachSlug: 'nadun-silva',       room: 'Main Floor',    capacity: 18 },
-    { weekday: 'monday', startTime: '17:30', endTime: '18:30', classSlug: 'yoga-mobility',         coachSlug: 'kasuni-rathnayake', room: 'Studio',        capacity: 15 },
-    { weekday: 'monday', startTime: '18:30', endTime: '20:00', classSlug: 'muay-thai',             coachSlug: 'nadun-silva',       room: 'Main Floor',    capacity: 18 },
-    { weekday: 'monday', startTime: '19:00', endTime: '20:30', classSlug: 'bjj-open-mat',          coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat', capacity: 20 },
+    { weekday: 'monday', startTime: '06:00', endTime: '07:00', classSlug: 'strength-conditioning', coachSlug: 'sachini-perera', room: 'Weights Floor', capacity: 16 },
+    { weekday: 'monday', startTime: '07:00', endTime: '08:00', classSlug: 'boxing-fundamentals',   coachSlug: 'dilshan-wickramasinghe',      room: 'Boxing Ring',   capacity: 20 },
+    { weekday: 'monday', startTime: '12:00', endTime: '13:00', classSlug: 'kickboxing',            coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',    capacity: 18 },
+    { weekday: 'monday', startTime: '17:30', endTime: '18:30', classSlug: 'yoga-mobility',         coachSlug: 'sachini-perera', room: 'Studio',        capacity: 15 },
+    { weekday: 'monday', startTime: '18:30', endTime: '20:00', classSlug: 'muay-thai',             coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',    capacity: 18 },
+    { weekday: 'monday', startTime: '19:00', endTime: '20:30', classSlug: 'bjj-open-mat',          coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat', capacity: 20 },
 
     // ── Tuesday ──────────────────────────────────────────────────────────────
-    { weekday: 'tuesday', startTime: '06:00', endTime: '07:00', classSlug: 'boxing-fundamentals',  coachSlug: 'ashan-perera',      room: 'Boxing Ring',    capacity: 20 },
-    { weekday: 'tuesday', startTime: '07:00', endTime: '08:00', classSlug: 'strength-conditioning', coachSlug: 'tharaka-fernando', room: 'Weights Floor',  capacity: 16 },
-    { weekday: 'tuesday', startTime: '12:00', endTime: '13:00', classSlug: 'bjj-open-mat',          coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat', capacity: 18 },
-    { weekday: 'tuesday', startTime: '18:00', endTime: '19:30', classSlug: 'muay-thai',             coachSlug: 'nadun-silva',       room: 'Main Floor',    capacity: 18 },
-    { weekday: 'tuesday', startTime: '19:30', endTime: '21:00', classSlug: 'wrestling',             coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat', capacity: 14 },
+    { weekday: 'tuesday', startTime: '06:00', endTime: '07:00', classSlug: 'boxing-fundamentals',  coachSlug: 'dilshan-wickramasinghe',      room: 'Boxing Ring',    capacity: 20 },
+    { weekday: 'tuesday', startTime: '07:00', endTime: '08:00', classSlug: 'strength-conditioning', coachSlug: 'sachini-perera', room: 'Weights Floor',  capacity: 16 },
+    { weekday: 'tuesday', startTime: '12:00', endTime: '13:00', classSlug: 'bjj-open-mat',          coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat', capacity: 18 },
+    { weekday: 'tuesday', startTime: '18:00', endTime: '19:30', classSlug: 'muay-thai',             coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',    capacity: 18 },
+    { weekday: 'tuesday', startTime: '19:30', endTime: '21:00', classSlug: 'wrestling',             coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat', capacity: 14 },
 
     // ── Wednesday ────────────────────────────────────────────────────────────
-    { weekday: 'wednesday', startTime: '06:00', endTime: '07:00', classSlug: 'strength-conditioning', coachSlug: 'tharaka-fernando', room: 'Weights Floor', capacity: 16 },
-    { weekday: 'wednesday', startTime: '07:00', endTime: '08:00', classSlug: 'boxing-fundamentals',    coachSlug: 'ashan-perera',     room: 'Boxing Ring',   capacity: 20 },
-    { weekday: 'wednesday', startTime: '12:00', endTime: '13:00', classSlug: 'kickboxing',             coachSlug: 'nadun-silva',      room: 'Main Floor',    capacity: 18 },
-    { weekday: 'wednesday', startTime: '17:30', endTime: '18:30', classSlug: 'yoga-mobility',          coachSlug: 'kasuni-rathnayake', room: 'Studio',       capacity: 15 },
-    { weekday: 'wednesday', startTime: '18:30', endTime: '20:00', classSlug: 'bjj-open-mat',           coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat', capacity: 20 },
-    { weekday: 'wednesday', startTime: '19:00', endTime: '20:30', classSlug: 'mma',                    coachSlug: 'nadun-silva',       room: 'Main Floor',   capacity: 14 },
+    { weekday: 'wednesday', startTime: '06:00', endTime: '07:00', classSlug: 'strength-conditioning', coachSlug: 'sachini-perera', room: 'Weights Floor', capacity: 16 },
+    { weekday: 'wednesday', startTime: '07:00', endTime: '08:00', classSlug: 'boxing-fundamentals',    coachSlug: 'dilshan-wickramasinghe',     room: 'Boxing Ring',   capacity: 20 },
+    { weekday: 'wednesday', startTime: '12:00', endTime: '13:00', classSlug: 'kickboxing',             coachSlug: 'dilshan-wickramasinghe',      room: 'Main Floor',    capacity: 18 },
+    { weekday: 'wednesday', startTime: '17:30', endTime: '18:30', classSlug: 'yoga-mobility',          coachSlug: 'sachini-perera', room: 'Studio',       capacity: 15 },
+    { weekday: 'wednesday', startTime: '18:30', endTime: '20:00', classSlug: 'bjj-open-mat',           coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat', capacity: 20 },
+    { weekday: 'wednesday', startTime: '19:00', endTime: '20:30', classSlug: 'mma',                    coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',   capacity: 14 },
 
     // ── Thursday ─────────────────────────────────────────────────────────────
-    { weekday: 'thursday', startTime: '06:00', endTime: '07:00', classSlug: 'boxing-fundamentals',   coachSlug: 'ashan-perera',      room: 'Boxing Ring',   capacity: 20 },
-    { weekday: 'thursday', startTime: '07:00', endTime: '08:00', classSlug: 'strength-conditioning', coachSlug: 'tharaka-fernando',  room: 'Weights Floor', capacity: 16 },
-    { weekday: 'thursday', startTime: '12:00', endTime: '13:30', classSlug: 'muay-thai',             coachSlug: 'nadun-silva',       room: 'Main Floor',    capacity: 18 },
-    { weekday: 'thursday', startTime: '18:00', endTime: '19:00', classSlug: 'kickboxing',            coachSlug: 'nadun-silva',       room: 'Main Floor',    capacity: 18 },
-    { weekday: 'thursday', startTime: '19:00', endTime: '20:30', classSlug: 'bjj-open-mat',          coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat', capacity: 20 },
+    { weekday: 'thursday', startTime: '06:00', endTime: '07:00', classSlug: 'boxing-fundamentals',   coachSlug: 'dilshan-wickramasinghe',      room: 'Boxing Ring',   capacity: 20 },
+    { weekday: 'thursday', startTime: '07:00', endTime: '08:00', classSlug: 'strength-conditioning', coachSlug: 'sachini-perera',  room: 'Weights Floor', capacity: 16 },
+    { weekday: 'thursday', startTime: '12:00', endTime: '13:30', classSlug: 'muay-thai',             coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',    capacity: 18 },
+    { weekday: 'thursday', startTime: '18:00', endTime: '19:00', classSlug: 'kickboxing',            coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',    capacity: 18 },
+    { weekday: 'thursday', startTime: '19:00', endTime: '20:30', classSlug: 'bjj-open-mat',          coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat', capacity: 20 },
 
     // ── Friday ───────────────────────────────────────────────────────────────
-    { weekday: 'friday', startTime: '06:00', endTime: '07:00', classSlug: 'strength-conditioning', coachSlug: 'tharaka-fernando',  room: 'Weights Floor',  capacity: 16 },
-    { weekday: 'friday', startTime: '07:00', endTime: '08:00', classSlug: 'boxing-fundamentals',   coachSlug: 'ashan-perera',      room: 'Boxing Ring',    capacity: 20 },
-    { weekday: 'friday', startTime: '12:00', endTime: '13:00', classSlug: 'yoga-mobility',         coachSlug: 'kasuni-rathnayake', room: 'Studio',         capacity: 15 },
-    { weekday: 'friday', startTime: '17:30', endTime: '19:00', classSlug: 'muay-thai',             coachSlug: 'nadun-silva',       room: 'Main Floor',     capacity: 18 },
-    { weekday: 'friday', startTime: '18:30', endTime: '20:00', classSlug: 'mma',                   coachSlug: 'nadun-silva',       room: 'Main Floor',     capacity: 14 },
-    { weekday: 'friday', startTime: '19:30', endTime: '21:00', classSlug: 'wrestling',             coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat', capacity: 14 },
+    { weekday: 'friday', startTime: '06:00', endTime: '07:00', classSlug: 'strength-conditioning', coachSlug: 'sachini-perera',  room: 'Weights Floor',  capacity: 16 },
+    { weekday: 'friday', startTime: '07:00', endTime: '08:00', classSlug: 'boxing-fundamentals',   coachSlug: 'dilshan-wickramasinghe',      room: 'Boxing Ring',    capacity: 20 },
+    { weekday: 'friday', startTime: '12:00', endTime: '13:00', classSlug: 'yoga-mobility',         coachSlug: 'sachini-perera', room: 'Studio',         capacity: 15 },
+    { weekday: 'friday', startTime: '17:30', endTime: '19:00', classSlug: 'muay-thai',             coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',     capacity: 18 },
+    { weekday: 'friday', startTime: '18:30', endTime: '20:00', classSlug: 'mma',                   coachSlug: 'dilshan-wickramasinghe',       room: 'Main Floor',     capacity: 14 },
+    { weekday: 'friday', startTime: '19:30', endTime: '21:00', classSlug: 'wrestling',             coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat', capacity: 14 },
 
     // ── Saturday ─────────────────────────────────────────────────────────────
-    { weekday: 'saturday', startTime: '07:00', endTime: '08:30', classSlug: 'boxing-fundamentals',   coachSlug: 'ashan-perera',       room: 'Boxing Ring',    capacity: 24 },
-    { weekday: 'saturday', startTime: '08:30', endTime: '10:00', classSlug: 'muay-thai',             coachSlug: 'nadun-silva',        room: 'Main Floor',     capacity: 20 },
-    { weekday: 'saturday', startTime: '09:00', endTime: '10:00', classSlug: 'yoga-mobility',         coachSlug: 'kasuni-rathnayake',  room: 'Studio',         capacity: 15 },
-    { weekday: 'saturday', startTime: '10:00', endTime: '11:30', classSlug: 'bjj-open-mat',          coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat',  capacity: 22 },
-    { weekday: 'saturday', startTime: '11:30', endTime: '12:30', classSlug: 'kickboxing',            coachSlug: 'nadun-silva',        room: 'Main Floor',     capacity: 20 },
-    { weekday: 'saturday', startTime: '14:00', endTime: '15:15', classSlug: 'wrestling',             coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat',  capacity: 14 },
-    { weekday: 'saturday', startTime: '15:30', endTime: '17:00', classSlug: 'strength-conditioning', coachSlug: 'tharaka-fernando',   room: 'Weights Floor',  capacity: 16 },
+    { weekday: 'saturday', startTime: '07:00', endTime: '08:30', classSlug: 'boxing-fundamentals',   coachSlug: 'dilshan-wickramasinghe',       room: 'Boxing Ring',    capacity: 24 },
+    { weekday: 'saturday', startTime: '08:30', endTime: '10:00', classSlug: 'muay-thai',             coachSlug: 'dilshan-wickramasinghe',        room: 'Main Floor',     capacity: 20 },
+    { weekday: 'saturday', startTime: '09:00', endTime: '10:00', classSlug: 'yoga-mobility',         coachSlug: 'sachini-perera',  room: 'Studio',         capacity: 15 },
+    { weekday: 'saturday', startTime: '10:00', endTime: '11:30', classSlug: 'bjj-open-mat',          coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat',  capacity: 22 },
+    { weekday: 'saturday', startTime: '11:30', endTime: '12:30', classSlug: 'kickboxing',            coachSlug: 'dilshan-wickramasinghe',        room: 'Main Floor',     capacity: 20 },
+    { weekday: 'saturday', startTime: '14:00', endTime: '15:15', classSlug: 'wrestling',             coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat',  capacity: 14 },
+    { weekday: 'saturday', startTime: '15:30', endTime: '17:00', classSlug: 'strength-conditioning', coachSlug: 'sachini-perera',   room: 'Weights Floor',  capacity: 16 },
 
     // ── Sunday ───────────────────────────────────────────────────────────────
-    { weekday: 'sunday', startTime: '08:00', endTime: '09:00', classSlug: 'yoga-mobility',         coachSlug: 'kasuni-rathnayake',  room: 'Studio',        capacity: 15 },
-    { weekday: 'sunday', startTime: '09:00', endTime: '10:30', classSlug: 'bjj-open-mat',          coachSlug: 'chamara-jayasinghe', room: 'Grappling Mat', capacity: 20 },
-    { weekday: 'sunday', startTime: '10:30', endTime: '12:00', classSlug: 'boxing-fundamentals',   coachSlug: 'ashan-perera',       room: 'Boxing Ring',   capacity: 20 },
-    { weekday: 'sunday', startTime: '10:30', endTime: '12:00', classSlug: 'mma',                   coachSlug: 'nadun-silva',        room: 'Main Floor',    capacity: 14 },
+    { weekday: 'sunday', startTime: '08:00', endTime: '09:00', classSlug: 'yoga-mobility',         coachSlug: 'sachini-perera',  room: 'Studio',        capacity: 15 },
+    { weekday: 'sunday', startTime: '09:00', endTime: '10:30', classSlug: 'bjj-open-mat',          coachSlug: 'dilshan-wickramasinghe', room: 'Grappling Mat', capacity: 20 },
+    { weekday: 'sunday', startTime: '10:30', endTime: '12:00', classSlug: 'boxing-fundamentals',   coachSlug: 'dilshan-wickramasinghe',       room: 'Boxing Ring',   capacity: 20 },
+    { weekday: 'sunday', startTime: '10:30', endTime: '12:00', classSlug: 'mma',                   coachSlug: 'dilshan-wickramasinghe',        room: 'Main Floor',    capacity: 14 },
   ];
 
   // db.query time fields expect HH:mm:ss.SSS format
@@ -1060,10 +1042,10 @@ async function seedTestimonials(strapi: Core.Strapi): Promise<void> {
     { quote: 'The Wolverine Hub changed how I think about training. Not just a gym — it\'s a system.', authorName: 'Kasun M.', authorTitle: 'Member since 2022', rating: 5, isFeatured: true },
     { quote: 'I\'ve trained in Bangkok and KL. This place competes. The boxing programme here is elite.', authorName: 'Rashmi P.', authorTitle: 'Competitive Fighter', rating: 5, isFeatured: true },
     { quote: 'Six months in, 12kg down, genuinely unstoppable. The coaches never let you settle.', authorName: 'Dilnoza A.', authorTitle: 'Transformation Member', rating: 5, isFeatured: true },
-    { quote: 'The BJJ programme is world-class. Coach Chamara has competed at the highest level and it shows.', authorName: 'Amila R.', authorTitle: 'BJJ Blue Belt', rating: 5, isFeatured: true },
+    { quote: 'The BJJ programme is world-class. Coach Dilshan has competed at the highest level and it shows.', authorName: 'Amila R.', authorTitle: 'BJJ Blue Belt', rating: 5, isFeatured: true },
     { quote: 'Best decision I made in 2024. The community here pushes you in ways no regular gym can.', authorName: 'Sahan W.', authorTitle: 'Signature Member', rating: 5, isFeatured: false },
     { quote: 'The yoga and mobility classes are underrated. My recovery time halved after joining.', authorName: 'Priya N.', authorTitle: 'Yoga & Signature Member', rating: 5, isFeatured: false },
-    { quote: 'Coach Tharaka rewired my entire approach to conditioning. The S&C programme is proper sports science.', authorName: 'Danush K.', authorTitle: 'Signature Member', rating: 5, isFeatured: false },
+    { quote: 'Coach Sachini rewired my entire approach to conditioning. The S&C programme is proper sports science.', authorName: 'Danush K.', authorTitle: 'Signature Member', rating: 5, isFeatured: false },
     { quote: 'Tried three gyms in Colombo. Nothing comes close. The coaching quality here is different class.', authorName: 'Naomi S.', authorTitle: 'Kickboxing Member', rating: 5, isFeatured: false },
   ];
   for (const t of list) {
@@ -1191,8 +1173,8 @@ async function seedAuthors(strapi: Core.Strapi): Promise<Record<string, string>>
   const docs = strapi.documents as (uid: string) => any;
   const list = [
     {
-      name: 'Ashan Perera', slug: 'ashan-perera',
-      bio: 'Head Boxing Coach at The Wolverine Hub. National champion. 12 years coaching elite amateur fighters.',
+      name: 'Dilshan Wickramasinghe', slug: 'dilshan-wickramasinghe',
+      bio: 'Head Coach at The Wolverine Hub. Former national boxing champion with 15 years of fight-camp and coaching experience.',
     },
     {
       name: 'The Wolverine Hub', slug: 'the-wolverine-hub',
@@ -1241,7 +1223,7 @@ async function seedPosts(
       title: 'Why Boxing Fundamentals Is the Best First Class You Can Take',
       slug: 'why-boxing-fundamentals-best-first-class',
       summary: 'Most people walk into a gym and head straight for the heavy bag. Here\'s why starting with technique will accelerate your progress across every discipline.',
-      authorSlug: 'ashan-perera',
+      authorSlug: 'dilshan-wickramasinghe',
       catSlug: 'training-tips',
       tags: 'boxing\nbeginners\ntechnique\nfundamentals',
       readingTimeMinutes: 5,
@@ -1266,7 +1248,7 @@ async function seedPosts(
     {
       title: 'The Athlete\'s Guide to Recovery: What Happens the Day After Training',
       slug: 'athletes-guide-recovery-day-after-training',
-      summary: 'You trained hard yesterday. Your muscles ache, your hands are wrapped, and your brain wants to go again. Should you? Coach Kasuni breaks down the science of recovery.',
+      summary: 'You trained hard yesterday. Your muscles ache, your hands are wrapped, and your brain wants to go again. Should you? Coach Sachini breaks down the science of recovery.',
       authorSlug: 'the-wolverine-hub',
       catSlug: 'training-tips',
       tags: 'recovery\nyoga\nmobility\nsports science\ninjury prevention',
@@ -1323,7 +1305,7 @@ async function seedPosts(
       isFeatured: false,
       content: [
         { type: 'heading', level: 2, children: [{ type: 'text', text: 'A Warehouse and Two Bags' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: "The Wolverine Hub started in 2019 in a 1,200 sq ft rented warehouse space on Baseline Road. There were two heavy bags, a set of kettle bells, and one coach — Ashan. Twelve people trained in that first month. Ten of them are still members today." }] },
+        { type: 'paragraph', children: [{ type: 'text', text: "The Wolverine Hub started in 2019 in a 1,200 sq ft rented warehouse space on Baseline Road. There were two heavy bags, a set of kettle bells, and one coach — Dilshan. Twelve people trained in that first month. Ten of them are still members today." }] },
         { type: 'paragraph', children: [{ type: 'text', text: "What we had wasn't space or equipment. It was a standard. A way of coaching that refused to water anything down. A belief that Sri Lankan athletes deserved access to the same quality of training that professional fighters in Bangkok, London, and New York were getting." }] },
         { type: 'heading', level: 2, children: [{ type: 'text', text: 'The Non-Negotiable: Coaching Quality First' }] },
         { type: 'paragraph', children: [{ type: 'text', text: "Every coach at The Wolverine Hub holds a legitimate international certification in their discipline. Every coach has either competed or spent significant time training in their field's home environment — Thailand for Muay Thai, Brazil for BJJ." }] },
@@ -1496,7 +1478,7 @@ async function seedHomePage(strapi: Core.Strapi): Promise<void> {
         stats: [
           { number: '24+',    label: 'Disciplines' },
           { number: '1,200+', label: 'Active Members' },
-          { number: '18',     label: 'Expert Coaches' },
+          { number: '2',      label: 'Expert Coaches' },
           { number: '5',      label: 'Years Strong' },
         ],
         visible: true, anchorId: 'stats',

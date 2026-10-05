@@ -11,11 +11,8 @@ try {
 const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
 const fallback: StrapiCoach[] = [
-  { documentId: '1', name: 'Ashan Perera',       slug: 'ashan-perera',       role: 'Head Boxing Coach',          shortBio: 'National champion. 12 years ringside.',             isHeadCoach: true,  sortOrder: 1 },
-  { documentId: '2', name: 'Nadun Silva',         slug: 'nadun-silva',        role: 'Muay Thai & MMA',            shortBio: 'IFMA certified. Fights out of Bangkok.',            isHeadCoach: false, sortOrder: 2 },
-  { documentId: '3', name: 'Chamara Jayasinghe', slug: 'chamara-jayasinghe', role: 'BJJ Black Belt',             shortBio: 'IBJJF competitor since 2015.',                       isHeadCoach: false, sortOrder: 3 },
-  { documentId: '4', name: 'Kasuni Rathnayake',  slug: 'kasuni-rathnayake',  role: 'Yoga & Recovery',            shortBio: 'RYT-500. Mobility specialist.',                      isHeadCoach: false, sortOrder: 4 },
-  { documentId: '5', name: 'Tharaka Fernando',   slug: 'tharaka-fernando',   role: 'Strength & Conditioning',    shortBio: 'NSCA certified. Former national swimmer.',           isHeadCoach: false, sortOrder: 5 },
+  { documentId: '1', name: 'Dilshan Wickramasinghe', slug: 'dilshan-wickramasinghe', role: 'Head Coach — Boxing & MMA', shortBio: 'Former national boxing champion. 15 years of fight-camp experience.', isHeadCoach: true, sortOrder: 1 },
+  { documentId: '2', name: 'Sachini Perera', slug: 'sachini-perera', role: 'Strength, Conditioning & Recovery', shortBio: 'Certified strength coach and mobility specialist.', isHeadCoach: false, sortOrder: 2 },
 ];
 
 const display   = coaches.length > 0 ? coaches : fallback;

@@ -151,22 +151,23 @@
   .twh-btn--secondary:hover { box-shadow: 0 10px 30px rgba(255, 255, 255, 0.18); }
 }
 
-/* Ghost: grey outline → red slash → yellow fill, black text */
+/* Ghost: grey outline → yellow slash → blue fill, white text
+   (blue keeps it distinct from the yellow primary it usually sits next to) */
 .twh-btn--ghost {
-  --btn-fill: var(--color-twh-yellow);
-  --btn-lead: var(--color-twh-red);
-  --btn-ink-hover: var(--color-twh-black);
+  --btn-fill: var(--color-twh-blue);
+  --btn-lead: var(--color-twh-yellow);
+  --btn-ink-hover: var(--color-twh-white);
   background: transparent;
   color: var(--color-twh-grey-300);
   border: 2px solid var(--color-twh-grey-600);
 }
 @media (hover: hover) {
   .twh-btn--ghost:hover {
-    border-color: var(--color-twh-yellow);
-    box-shadow: 0 10px 30px rgba(255, 194, 14, 0.25);
+    border-color: #4a73d6;
+    box-shadow: 0 10px 30px rgba(27, 63, 148, 0.55);
   }
 }
-.twh-btn--ghost:focus-visible { border-color: var(--color-twh-yellow); }
+.twh-btn--ghost:focus-visible { border-color: #4a73d6; }
 
 /* Danger: red → black slash → deep-red fill, white text */
 .twh-btn--danger {
