@@ -2,6 +2,13 @@
 import PageLayout from '../layouts/PageLayout.astro';
 import { getScheduleSlots, getGlobal, getPageBySlug } from '../lib/strapi/queries';
 import type { StrapiScheduleSlot, StrapiPageHeroSection } from '../lib/strapi/types';
+import {
+  DAYS, type Day, getColomboNow, weekDates, dateLabel, toMinutes, fmtMinutes, fmtDuration,
+  colomboClock, colomboDateLong,
+} from '../lib/utils/colombo';
+import {
+  slotState, findNext, nextLabel, STATE_LABEL, type SlotLite,
+} from '../lib/utils/schedule';
 
 let global, slots: StrapiScheduleSlot[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
@@ -10,31 +17,83 @@ try {
 
 const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
-const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as const;
-type Day = typeof DAYS[number];
+// ── Sri Lanka "now" — drives today / dates / live status (never the server or device zone) ──
+const now = getColomboNow();
+const dates = weekDates(now.dateISO, now.day);
+const defaultDay: Day = now.day;
 
-const byDay: Record<Day, StrapiScheduleSlot[]> = {
-  monday: [], tuesday: [], wednesday: [], thursday: [],
-  friday: [], saturday: [], sunday: [],
+// ── Normalise slots ────────────────────────────────────────────
+const intensityAccent: Record<string, { bg: string; ink: string }> = {
+  low:     { bg: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
+  medium:  { bg: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
+  high:    { bg: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
+  extreme: { bg: 'var(--color-twh-red-deep)', ink: 'var(--color-twh-white)' },
 };
+const neutralAccent = { bg: 'var(--color-twh-grey-600)', ink: 'var(--color-twh-white)' };
 
-for (const slot of slots) {
-  if (slot.weekday in byDay) byDay[slot.weekday as Day].push(slot);
+const initials = (name: string) =>
+  name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+interface Item extends SlotLite {
+  intensity: string;
+  level: string;
+  coach: string;
+  capacity: number;
+  duration: string;
+  start: string;
+  end: string;
+  accent: { bg: string; ink: string };
 }
 
-function fmt(t: string) {
-  const [h, m] = t.split(':').map(Number);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12  = h % 12 || 12;
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
-}
+const items: Item[] = slots
+  .filter(s => (DAYS as readonly string[]).includes(s.weekday))
+  .map(s => {
+    const startMin = toMinutes(s.startTime);
+    const endMin = toMinutes(s.endTime);
+    const intensity = s.class?.intensity ?? '';
+    return {
+      id: s.documentId,
+      day: s.weekday as Day,
+      startMin,
+      endMin,
+      name: s.class?.name ?? 'Class session',
+      room: s.room ?? '',
+      slug: s.class?.slug ?? '',
+      intensity,
+      level: s.class?.level ?? '',
+      coach: s.coach?.name ?? '',
+      capacity: s.capacity ?? 0,
+      duration: fmtDuration(startMin, endMin),
+      start: fmtMinutes(startMin),
+      end: fmtMinutes(endMin),
+      accent: intensityAccent[intensity] ?? neutralAccent,
+    };
+  })
+  .sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
 
-const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as Day;
-const defaultDay: Day = DAYS.includes(today) ? today : 'monday';
+const byDay = Object.fromEntries(DAYS.map(d => [d, items.filter(i => i.day === d)])) as Record<Day, Item[]>;
+
+// Class filter chips (only classes that actually have a slot)
+const classOptions = Array.from(
+  new Map(items.filter(i => i.slug).map(i => [i.slug, i.name])).entries()
+).map(([slug, name]) => ({ slug, name })).sort((a, b) => a.name.localeCompare(b.name));
+
+// Week-overview bands (Colombo local time)
+const BANDS = [
+  { key: 'morning',   label: 'Morning',   range: 'Before 12 PM', test: (m: number) => m < 12 * 60 },
+  { key: 'afternoon', label: 'Afternoon', range: '12 – 5 PM',    test: (m: number) => m >= 12 * 60 && m < 17 * 60 },
+  { key: 'evening',   label: 'Evening',   range: 'After 5 PM',   test: (m: number) => m >= 17 * 60 },
+];
+
+// ── Initial "next up" (client keeps it live) ───────────────────
+const next = findNext(items, now);
+const nextText = nextLabel(next, now);
+
+const dayName = (d: Day) => d.charAt(0).toUpperCase() + d.slice(1);
 
 const seo = {
   metaTitle: 'Class Schedule — The Wolverine Hub',
-  metaDescription: 'Browse the weekly class timetable. Find the right time for Boxing, Muay Thai, BJJ, Strength & more.',
+  metaDescription: 'Browse the weekly class timetable in Sri Lanka time. Find the right time for Boxing, Muay Thai, BJJ, Strength & more.',
 };
 ---
 
@@ -47,120 +106,503 @@ const seo = {
     </div>
   </div>
 
-  <section class="twh-schedule" aria-label="Class schedule">
+  <section
+    class="twh-schedule"
+    id="schedule"
+    aria-label="Class schedule"
+    data-today={now.day}
+    data-default-day={defaultDay}
+  >
     <div class="twh-schedule__inner">
 
-      <!-- Day tabs -->
-      <div class="twh-schedule__tabs" role="tablist" aria-label="Select a day">
-        {DAYS.map(day => (
-          <button
-            class="twh-schedule__tab"
-            role="tab"
-            data-day={day}
-            aria-selected={day === defaultDay ? 'true' : 'false'}
-            aria-controls={`panel-${day}`}
-            id={`tab-${day}`}
-          >
-            {day.charAt(0).toUpperCase() + day.slice(1, 3)}
-            <span class="sr-only">{day.slice(2)}</span>
-            {byDay[day].length > 0 && (
-              <span aria-hidden="true" style="margin-left:0.25rem;font-size:0.6em;opacity:0.5">
-                {byDay[day].length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      <!-- Day panels -->
-      {DAYS.map(day => (
-        <div
-          class="twh-schedule__panel"
-          role="tabpanel"
-          id={`panel-${day}`}
-          aria-labelledby={`tab-${day}`}
-          data-active={day === defaultDay ? 'true' : 'false'}
-        >
-          {byDay[day].length === 0 ? (
-            <p class="twh-schedule__empty-day">No classes scheduled on {day.charAt(0).toUpperCase() + day.slice(1)}.</p>
-          ) : (
-            <ul class="twh-schedule__slots" role="list">
-              {byDay[day].map(slot => (
-                <li class="twh-schedule__slot">
-                  <div class="twh-schedule__time">
-                    {fmt(slot.startTime)}
-                    <span class="twh-schedule__time-to">{fmt(slot.endTime)}</span>
-                  </div>
-                  <div>
-                    <h3 class="twh-schedule__class-name">
-                      {slot.class?.name ?? 'Class'}
-                    </h3>
-                    <div class="twh-schedule__slot-meta">
-                      {slot.coach && (
-                        <span class="twh-schedule__coach">{slot.coach.name}</span>
-                      )}
-                      {slot.room && <span>{slot.room}</span>}
-                      {slot.capacity > 0 && <span>{slot.capacity} spots</span>}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-
-      {slots.length === 0 && (
-        <p style="text-align:center; padding:4rem 0; color:var(--color-twh-grey-600); font-size:1.125rem;">
-          Schedule coming soon — <a href="/contact" style="color:var(--color-twh-yellow);">contact us</a> for class times.
+      {items.length === 0 ? (
+        <p class="twh-schedule__none">
+          Schedule coming soon — <a href="/contact">contact us</a> for class times.
         </p>
+      ) : (
+        <>
+          <!-- Live Sri Lanka clock + next class -->
+          <div class="twh-schedule__bar">
+            <div class="twh-schedule__clock">
+              <p class="twh-schedule__clock-label">
+                <span class="twh-schedule__pulse" aria-hidden="true"></span>
+                Sri Lanka Time <span class="twh-schedule__clock-gmt">· GMT+5:30</span>
+              </p>
+              <p class="twh-schedule__clock-time" id="sch-clock">{colomboClock()}</p>
+              <p class="twh-schedule__clock-date" id="sch-date">{colomboDateLong()}</p>
+            </div>
+
+            <div class={`twh-schedule__next${nextText.live ? ' is-live' : ''}`} id="sch-next" aria-live="polite">
+              <p class="twh-schedule__next-kicker" id="sch-next-kicker">{nextText.kicker}</p>
+              <p class="twh-schedule__next-title" id="sch-next-title">{nextText.title}</p>
+              <p class="twh-schedule__next-detail" id="sch-next-detail">{nextText.detail}</p>
+              {next && (
+                <button
+                  type="button"
+                  class="twh-btn twh-btn--secondary twh-btn--sm twh-schedule__next-go"
+                  id="sch-next-go"
+                  data-goto-day={next.slot.day}
+                >
+                  View in timetable
+                </button>
+              )}
+            </div>
+          </div>
+
+          <!-- Controls: class filter + view toggle -->
+          <div class="twh-schedule__controls">
+            <div class="twh-schedule__chips" role="group" aria-label="Filter by class">
+              <button type="button" class="twh-schedule__chip" data-class="all" aria-pressed="true">All classes</button>
+              {classOptions.map(c => (
+                <button type="button" class="twh-schedule__chip" data-class={c.slug} aria-pressed="false">{c.name}</button>
+              ))}
+            </div>
+
+            <div class="twh-schedule__views" role="group" aria-label="Timetable view">
+              <button type="button" class="twh-schedule__view" data-view="day" aria-pressed="true">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Day
+              </button>
+              <button type="button" class="twh-schedule__view" data-view="week" aria-pressed="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+                Week
+              </button>
+            </div>
+          </div>
+
+          <!-- ═════════════ DAY VIEW ═════════════ -->
+          <div class="twh-schedule__dayview" id="sch-dayview">
+
+            <div class="twh-schedule__tabs" role="tablist" aria-label="Select a day">
+              {DAYS.map(day => {
+                const d = dateLabel(dates[day]);
+                return (
+                  <button
+                    type="button"
+                    class={`twh-schedule__tab${day === now.day ? ' is-today' : ''}`}
+                    role="tab"
+                    data-day={day}
+                    data-date={dates[day]}
+                    aria-selected={day === defaultDay ? 'true' : 'false'}
+                    tabindex={day === defaultDay ? 0 : -1}
+                    aria-controls={`panel-${day}`}
+                    id={`tab-${day}`}
+                  >
+                    <span class="twh-schedule__tab-dow" aria-hidden="true">{day.slice(0, 3)}</span>
+                    <span class="sr-only">{dayName(day)}, {d.long}</span>
+                    <span class="twh-schedule__tab-num" aria-hidden="true">{d.num}</span>
+                    <span class="twh-schedule__tab-month" aria-hidden="true">{d.month}</span>
+                    <span class="twh-schedule__tab-count" data-count aria-hidden="true">{byDay[day].length}</span>
+                    {day === now.day && <span class="twh-schedule__tab-today" aria-hidden="true">Today</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {DAYS.map(day => {
+              const d = dateLabel(dates[day]);
+              const isToday = day === now.day;
+              return (
+                <div
+                  class="twh-schedule__panel"
+                  role="tabpanel"
+                  id={`panel-${day}`}
+                  aria-labelledby={`tab-${day}`}
+                  data-day={day}
+                  hidden={day !== defaultDay}
+                >
+                  <div class="twh-schedule__panel-head">
+                    <h2 class="twh-schedule__panel-title">
+                      {dayName(day)}
+                      {isToday && <span class="twh-schedule__panel-today">Today</span>}
+                    </h2>
+                    <p class="twh-schedule__panel-date">{d.long} <span>· Sri Lanka time</span></p>
+                  </div>
+
+                  {byDay[day].length === 0 ? (
+                    <p class="twh-schedule__empty-day">No classes scheduled on {dayName(day)}.</p>
+                  ) : (
+                    <ul class="twh-schedule__slots" role="list">
+                      {byDay[day].map(slot => {
+                        const state = isToday ? slotState(slot, now.minutes) : 'upcoming';
+                        return (
+                          <li
+                            class="twh-schedule__slot"
+                            style={`--accent: ${slot.accent.bg}; --accent-ink: ${slot.accent.ink};`}
+                            data-state={state}
+                            data-id={slot.id}
+                            data-day={slot.day}
+                            data-start={slot.startMin}
+                            data-end={slot.endMin}
+                            data-name={slot.name}
+                            data-room={slot.room}
+                            data-class={slot.slug}
+                          >
+                            <div class="twh-schedule__time">
+                              <span class="twh-schedule__time-start">{slot.start}</span>
+                              <span class="twh-schedule__time-end">to {slot.end}</span>
+                              <span class="twh-schedule__duration">{slot.duration}</span>
+                            </div>
+
+                            <div class="twh-schedule__main">
+                              <div class="twh-schedule__tags">
+                                {slot.intensity && <span class="twh-schedule__intensity">{slot.intensity}</span>}
+                                {slot.level && <span class="twh-schedule__level">{slot.level === 'all' ? 'All levels' : slot.level}</span>}
+                                <span class="twh-schedule__status" data-status>{isToday ? STATE_LABEL[state] : ''}</span>
+                              </div>
+                              <h3 class="twh-schedule__class-name">
+                                {slot.slug ? <a href={`/classes/${slot.slug}`}>{slot.name}</a> : slot.name}
+                              </h3>
+                              <ul class="twh-schedule__meta" role="list">
+                                {slot.coach && (
+                                  <li class="twh-schedule__coach">
+                                    <span class="twh-schedule__avatar" aria-hidden="true">{initials(slot.coach)}</span>
+                                    {slot.coach}
+                                  </li>
+                                )}
+                                {slot.room && (
+                                  <li>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 14s5-4.2 5-8A5 5 0 0 0 3 6c0 3.8 5 8 5 8Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.8" stroke="currentColor" stroke-width="1.5"/></svg>
+                                    {slot.room}
+                                  </li>
+                                )}
+                                {slot.capacity > 0 && (
+                                  <li>
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 14c.4-2.6 2.2-4 4.5-4s4.1 1.4 4.5 4M11 3.2a2.5 2.5 0 0 1 0 4.6M14.5 14c-.2-1.6-1-2.8-2.3-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                    {slot.capacity} spots
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+
+                            <div class="twh-schedule__action">
+                              <a href="/contact" class="twh-btn twh-btn--ghost twh-btn--sm" aria-label={`Book ${slot.name} on ${dayName(day)} at ${slot.start}`}>Book</a>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+
+                  <p class="twh-schedule__filter-empty" hidden>
+                    <span>No matching sessions on {dayName(day)}.</span>
+                    <button type="button" class="twh-btn twh-btn--ghost twh-btn--sm" data-clear-filter>Show all classes</button>
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <!-- ═════════════ WEEK VIEW ═════════════ -->
+          <div class="twh-schedule__weekview" id="sch-weekview" hidden>
+            <p class="twh-schedule__week-hint">Week at a glance — darker cells are busier. Tap any session to open its day.</p>
+            <div class="twh-week">
+              {DAYS.map((day, di) => {
+                const d = dateLabel(dates[day]);
+                return (
+                  <div class={`twh-week__head${day === now.day ? ' is-today' : ''}`} style={`--day:${di}; --band:0;`} data-day={day}>
+                    <span class="twh-week__dow">{day.slice(0, 3)}</span>
+                    <span class="twh-week__date">{d.num} {d.month}</span>
+                  </div>
+                );
+              })}
+
+              {BANDS.map((band, bi) => (
+                <>
+                  <p class="twh-week__band-label" style={`--band-row:${bi}`}>
+                    <span>{band.label}</span> {band.range}
+                  </p>
+                  {DAYS.map((day, di) => {
+                    const list = byDay[day].filter(s => band.test(s.startMin));
+                    return (
+                      <div
+                        class={`twh-week__cell${day === now.day ? ' is-today' : ''}`}
+                        style={`--day:${di}; --band:${bi + 1}; --heat:${Math.min(list.length / 3, 1)};`}
+                        data-day={day}
+                        data-band={band.key}
+                      >
+                        <span class="twh-week__cell-label">{band.label}</span>
+                        {list.length === 0 ? (
+                          <span class="twh-week__none" aria-hidden="true">—</span>
+                        ) : (
+                          <ul role="list">
+                            {list.map(s => (
+                              <li>
+                                <button
+                                  type="button"
+                                  class="twh-week__item"
+                                  style={`--accent: ${s.accent.bg};`}
+                                  data-goto-day={day}
+                                  data-class={s.slug}
+                                  data-start={s.startMin}
+                                  data-end={s.endMin}
+                                  aria-label={`${s.name}, ${dayName(day)} ${s.start}. Open day view`}
+                                >
+                                  <span class="twh-week__item-time">{s.start}</span>
+                                  <span class="twh-week__item-name">{s.name}</span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              ))}
+            </div>
+          </div>
+        </>
       )}
     </div>
   </section>
 </PageLayout>
 
-<style>@import '../styles/pages/twh-schedule.css';</style>
+<style is:global>@import '../styles/pages/twh-schedule.css';</style>
 
 <script>
   import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  gsap.registerPlugin(ScrollTrigger);
+  import { DAYS, type Day, getColomboNow, weekDates, dateLabel, colomboClock, colomboDateLong } from '../lib/utils/colombo';
+  import { slotState, findNext, nextLabel, STATE_LABEL, type SlotLite } from '../lib/utils/schedule';
 
-  // ── Tab switching ──────────────────────────────────────────────
-  const tabs   = document.querySelectorAll<HTMLButtonElement>('.twh-schedule__tab');
-  const panels = document.querySelectorAll<HTMLElement>('.twh-schedule__panel');
+  const root = document.querySelector<HTMLElement>('#schedule');
 
-  function switchDay(day: string) {
-    tabs.forEach(t   => t.setAttribute('aria-selected', t.dataset.day === day ? 'true' : 'false'));
-    panels.forEach(p => {
-      const active = p.id === `panel-${day}`;
-      p.dataset.active = active ? 'true' : 'false';
-      if (active) animateSlots(p);
+  if (root && root.querySelector('.twh-schedule__tabs')) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const tabs   = Array.from(root.querySelectorAll<HTMLButtonElement>('.twh-schedule__tab'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('.twh-schedule__panel'));
+    const chips  = Array.from(root.querySelectorAll<HTMLButtonElement>('.twh-schedule__chip'));
+    const viewBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('.twh-schedule__view'));
+    const dayView  = root.querySelector<HTMLElement>('#sch-dayview')!;
+    const weekView = root.querySelector<HTMLElement>('#sch-weekview')!;
+    const slotEls  = Array.from(root.querySelectorAll<HTMLElement>('.twh-schedule__slot'));
+
+    const state = {
+      day: (root.dataset.defaultDay as Day) ?? 'monday',
+      cls: 'all',
+      view: 'day' as 'day' | 'week',
+    };
+
+    // ── URL state (?day=&class=&view=) ───────────────────────────
+    const params = new URLSearchParams(location.search);
+    const pDay = params.get('day') as Day | null;
+    if (pDay && (DAYS as readonly string[]).includes(pDay)) state.day = pDay;
+    const pClass = params.get('class');
+    if (pClass && chips.some(c => c.dataset.class === pClass)) state.cls = pClass;
+    if (params.get('view') === 'week') state.view = 'week';
+
+    function syncUrl() {
+      const p = new URLSearchParams();
+      if (state.day !== getColomboNow().day) p.set('day', state.day);
+      if (state.cls !== 'all') p.set('class', state.cls);
+      if (state.view !== 'day') p.set('view', state.view);
+      const qs = p.toString();
+      history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+    }
+
+    // ── Live Sri Lanka clock, today marker, slot status, next-up ──
+    const slotsLite = (): SlotLite[] =>
+      slotEls.map(el => ({
+        id: el.dataset.id ?? '',
+        day: el.dataset.day as Day,
+        startMin: Number(el.dataset.start),
+        endMin: Number(el.dataset.end),
+        name: el.dataset.name ?? '',
+        room: el.dataset.room ?? '',
+        slug: el.dataset.class ?? '',
+      }));
+
+    let lastToday = root.dataset.today;
+
+    function refreshLive() {
+      const nowDate = new Date();
+      const now = getColomboNow(nowDate);
+
+      const clock = root!.querySelector('#sch-clock');
+      const date  = root!.querySelector('#sch-date');
+      if (clock) clock.textContent = colomboClock(nowDate);
+      if (date)  date.textContent  = colomboDateLong(nowDate);
+
+      // New Colombo day since page load → re-date the week and move "Today"
+      if (now.day !== lastToday) {
+        lastToday = now.day;
+        const dates = weekDates(now.dateISO, now.day);
+        tabs.forEach(t => {
+          const day = t.dataset.day as Day;
+          t.dataset.date = dates[day];
+          const d = dateLabel(dates[day]);
+          t.querySelector('.twh-schedule__tab-num')!.textContent = d.num;
+          t.querySelector('.twh-schedule__tab-month')!.textContent = d.month;
+          t.classList.toggle('is-today', day === now.day);
+          t.querySelector('.twh-schedule__tab-today')?.remove();
+          if (day === now.day) {
+            const tag = document.createElement('span');
+            tag.className = 'twh-schedule__tab-today';
+            tag.setAttribute('aria-hidden', 'true');
+            tag.textContent = 'Today';
+            t.append(tag);
+          }
+        });
+        root!.querySelectorAll('.twh-week__head, .twh-week__cell').forEach(el => {
+          el.classList.toggle('is-today', (el as HTMLElement).dataset.day === now.day);
+        });
+      }
+
+      slotEls.forEach(el => {
+        const isToday = el.dataset.day === now.day;
+        const st = isToday ? slotState({ startMin: Number(el.dataset.start), endMin: Number(el.dataset.end) }, now.minutes) : 'upcoming';
+        el.dataset.state = st;
+        const label = el.querySelector('[data-status]');
+        if (label) label.textContent = isToday ? STATE_LABEL[st] : '';
+      });
+
+      // Week grid: which band is "now"
+      root!.querySelectorAll<HTMLElement>('.twh-week__cell').forEach(c => {
+        const band = c.dataset.band;
+        const m = now.minutes;
+        const inBand = band === 'morning' ? m < 720 : band === 'afternoon' ? m >= 720 && m < 1020 : m >= 1020;
+        c.classList.toggle('is-now', c.dataset.day === now.day && inBand);
+      });
+
+      // Next-up banner
+      const next = findNext(slotsLite(), now);
+      const t = nextLabel(next, now);
+      const box = root!.querySelector<HTMLElement>('#sch-next');
+      if (box) {
+        box.classList.toggle('is-live', t.live);
+        root!.querySelector('#sch-next-kicker')!.textContent = t.kicker;
+        root!.querySelector('#sch-next-title')!.textContent = t.title;
+        root!.querySelector('#sch-next-detail')!.textContent = t.detail;
+        const go = root!.querySelector<HTMLElement>('#sch-next-go');
+        if (go && next) go.dataset.gotoDay = next.slot.day;
+      }
+    }
+
+    // ── Rendering state → DOM ────────────────────────────────────
+    function applyFilter() {
+      const q = state.cls;
+      slotEls.forEach(el => { el.hidden = q !== 'all' && el.dataset.class !== q; });
+
+      panels.forEach(p => {
+        const visible = p.querySelectorAll('.twh-schedule__slot:not([hidden])').length;
+        const total = p.querySelectorAll('.twh-schedule__slot').length;
+        const empty = p.querySelector<HTMLElement>('.twh-schedule__filter-empty');
+        if (empty) empty.hidden = !(total > 0 && visible === 0);
+        const tab = tabs.find(t => t.dataset.day === p.dataset.day);
+        const count = tab?.querySelector('[data-count]');
+        if (count) count.textContent = String(visible);
+        tab?.classList.toggle('is-empty', visible === 0);
+      });
+
+      root!.querySelectorAll<HTMLElement>('.twh-week__item').forEach(b => {
+        const li = b.closest('li');
+        if (li) li.hidden = q !== 'all' && b.dataset.class !== q;
+      });
+      root!.querySelectorAll<HTMLElement>('.twh-week__cell').forEach(c => {
+        const n = c.querySelectorAll('li:not([hidden])').length;
+        c.style.setProperty('--heat', String(Math.min(n / 3, 1)));
+        const none = c.querySelector<HTMLElement>('.twh-week__none');
+        if (none) none.hidden = false;
+        c.classList.toggle('is-blank', n === 0);
+      });
+
+      chips.forEach(c => c.setAttribute('aria-pressed', c.dataset.class === q ? 'true' : 'false'));
+    }
+
+    function animateSlots(panel: HTMLElement) {
+      const els = panel.querySelectorAll<HTMLElement>('.twh-schedule__slot:not([hidden])');
+      if (reduced || els.length === 0) return;
+      gsap.fromTo(els, { y: 18, opacity: 0 }, {
+        y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'power3.out', clearProps: 'transform,opacity',
+      });
+    }
+
+    function showDay(day: Day, { focus = false, animate = true } = {}) {
+      state.day = day;
+      tabs.forEach(t => {
+        const on = t.dataset.day === day;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      panels.forEach(p => {
+        const on = p.dataset.day === day;
+        p.hidden = !on;
+        if (on && animate) animateSlots(p);
+      });
+      syncUrl();
+    }
+
+    function showView(view: 'day' | 'week') {
+      state.view = view;
+      dayView.hidden = view !== 'day';
+      weekView.hidden = view !== 'week';
+      viewBtns.forEach(b => b.setAttribute('aria-pressed', b.dataset.view === view ? 'true' : 'false'));
+      if (view === 'day') {
+        const p = panels.find(x => x.dataset.day === state.day);
+        if (p) animateSlots(p);
+      } else if (!reduced) {
+        gsap.fromTo(weekView.querySelectorAll('.twh-week__cell'), { opacity: 0, y: 10 }, {
+          opacity: 1, y: 0, duration: 0.4, stagger: 0.015, ease: 'power2.out', clearProps: 'transform,opacity',
+        });
+      }
+      syncUrl();
+    }
+
+    // ── Events ───────────────────────────────────────────────────
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => showDay(tab.dataset.day as Day));
+      tab.addEventListener('keydown', e => {
+        let to = -1;
+        if (e.key === 'ArrowRight') to = (i + 1) % tabs.length;
+        else if (e.key === 'ArrowLeft') to = (i - 1 + tabs.length) % tabs.length;
+        else if (e.key === 'Home') to = 0;
+        else if (e.key === 'End') to = tabs.length - 1;
+        if (to >= 0) { e.preventDefault(); showDay(tabs[to].dataset.day as Day, { focus: true }); }
+      });
     });
+
+    chips.forEach(chip => chip.addEventListener('click', () => {
+      state.cls = chip.dataset.class ?? 'all';
+      applyFilter();
+      const p = panels.find(x => x.dataset.day === state.day);
+      if (p && state.view === 'day') animateSlots(p);
+      syncUrl();
+    }));
+
+    viewBtns.forEach(b => b.addEventListener('click', () => showView(b.dataset.view as 'day' | 'week')));
+
+    root.addEventListener('click', e => {
+      const t = e.target as HTMLElement;
+      const go = t.closest<HTMLElement>('[data-goto-day]');
+      if (go) {
+        const day = go.dataset.gotoDay as Day;
+        if (state.view !== 'day') showView('day');
+        showDay(day);
+        dayView.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+        return;
+      }
+      if (t.closest('[data-clear-filter]')) {
+        state.cls = 'all';
+        applyFilter();
+        syncUrl();
+      }
+    });
+
+    // ── Init ─────────────────────────────────────────────────────
+    refreshLive();
+    applyFilter();
+    showDay(state.day, { animate: false });
+    showView(state.view);
+    const first = panels.find(p => p.dataset.day === state.day);
+    if (first && state.view === 'day') animateSlots(first);
+
+    setInterval(refreshLive, 15_000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshLive(); });
   }
 
-  function animateSlots(panel: HTMLElement) {
-    const slots = panel.querySelectorAll<HTMLElement>('.twh-schedule__slot');
-    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.fromTo(slots,
-        { x: -12, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' }
-      );
-    });
-    gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
-      slots.forEach(s => { s.style.opacity = '1'; });
-    });
-  }
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => switchDay(tab.dataset.day ?? ''));
-  });
-
-  // Animate initial panel
-  const activePanel = document.querySelector<HTMLElement>('.twh-schedule__panel[data-active="true"]');
-  if (activePanel) animateSlots(activePanel);
-
-  // Page hero entrance
+  // ── Page hero entrance ─────────────────────────────────────────
   const hero = document.querySelector('.twh-page-hero__inner');
   if (hero) {
     gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {

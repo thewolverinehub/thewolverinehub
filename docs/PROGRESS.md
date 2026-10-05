@@ -128,3 +128,9 @@
 - `.twh-btn` now uses a "slash sweep" hover (two -35° panels: lead colour then fill) driven by --btn-fill / --btn-lead / --btn-ink-hover per variant. Primary: yellow → red; Secondary: outline → white; Ghost: outline → yellow; Danger: red → deep red. Same engine on FAQ/gallery filter pills. Hover-capable devices only; reduced-motion = instant colour swap.
 - Removed stale `components/twh-classes-page.css` (conflicting duplicate)
 - **Note for page reviews:** other `components/twh-*-page.css` files duplicate `pages/twh-*.css` (coaches, pricing, schedule, blog, contact) and may conflict like classes did; FAQ page shows duplicated entries in the data.
+
+### /schedule (section below hero)
+- Rebuilt: live Sri Lanka clock (Asia/Colombo, GMT+5:30), next-up / live-now banner, dated day tabs (Today marker, arrow-key nav), richer class cards (time+duration, intensity stripe, coach avatar, room, spots, Live/Starting soon/Finished status), class filter chips, Day/Week toggle with heat-grid week overview, URL state (?day=&class=&view=)
+- All now/today/dates come from `lib/utils/colombo.ts` (never server/device tz); status logic in `lib/utils/schedule.ts`
+- Removed stale `components/twh-schedule-page.css`
+- **Data issue:** the 39 schedule slots in Strapi have no class or coach linked (Phase 6 dedupe / coach swap). Page falls back to "Class session". Needs relink (script ready, awaiting approval to modify live DB)

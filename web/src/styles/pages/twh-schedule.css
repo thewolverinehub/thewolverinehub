@@ -1,154 +1,833 @@
 /* ============================================================
-   SCHEDULE PAGE  — /schedule
-   Prefix: twh-schedule
+   SCHEDULE — /schedule  (section below the page hero)
+   Prefix: twh-schedule  (+ twh-week for the week overview)
+
+   Table of contents
+   1.  Section shell
+   2.  Live bar  (Sri Lanka clock + next class)
+   3.  Controls  (class chips + Day/Week toggle)
+   4.  Day tabs
+   5.  Day panel + class cards
+   6.  Week overview (heat grid)
+   7.  Empty states
+   8.  Responsive
+   9.  Reduced motion
    ============================================================ */
 
+/* ── 1. Section shell ─────────────────────────────────────── */
+
 .twh-schedule {
-  padding: 3rem 0 6rem;
+  position: relative;
+  padding: 3rem 0 7rem;
+  background:
+    radial-gradient(900px 420px at 8% 0%, rgba(215, 20, 26, 0.13), transparent 62%),
+    radial-gradient(800px 380px at 100% 12%, rgba(27, 63, 148, 0.18), transparent 60%),
+    var(--color-twh-black);
 }
 
 .twh-schedule__inner {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
 }
 
-/* ── Day tabs ─────────────────────────────────────────────── */
+.twh-schedule [hidden] { display: none !important; }
 
-.twh-schedule__tabs {
-  display: flex;
-  gap: 2px;
-  margin-bottom: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
+/* ── 2. Live bar ──────────────────────────────────────────── */
 
-.twh-schedule__tabs::-webkit-scrollbar { display: none; }
-
-.twh-schedule__tab {
-  flex: 1;
-  min-width: 64px;
-  padding: 0.875rem 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--color-twh-ink);
-  border: 1px solid var(--color-twh-grey-900);
-  border-bottom: none;
-  color: var(--color-twh-grey-500);
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.twh-schedule__tab:hover { color: var(--color-twh-white); background: var(--color-twh-grey-900); }
-
-.twh-schedule__tab[aria-selected="true"] {
-  background: var(--color-twh-black);
-  color: var(--color-twh-white);
-  border-color: var(--color-twh-grey-700);
-  border-bottom-color: var(--color-twh-black);
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Day panels ───────────────────────────────────────────── */
-
-.twh-schedule__panel {
-  display: none;
-  background: var(--color-twh-black);
-  border: 1px solid var(--color-twh-grey-700);
-  padding: 0;
-}
-
-.twh-schedule__panel[data-active="true"] { display: block; }
-
-/* ── Slot list ────────────────────────────────────────────── */
-
-.twh-schedule__slots {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.twh-schedule__slot {
+.twh-schedule__bar {
   display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 2rem;
-  align-items: center;
-  padding: 1.25rem 2rem;
-  border-bottom: 1px solid var(--color-twh-grey-900);
-  transition: background 0.15s;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 1px;
+  margin-bottom: 1.75rem;
+  background: var(--color-twh-grey-800);
+  border: 1px solid var(--color-twh-grey-800);
+  overflow: hidden;
 }
 
-.twh-schedule__slot:last-child { border-bottom: none; }
-.twh-schedule__slot:hover { background: var(--color-twh-ink); }
-
-@media (max-width: 640px) {
-  .twh-schedule__slot { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.125rem 1.25rem; }
+.twh-schedule__clock,
+.twh-schedule__next {
+  position: relative;
+  padding: 1.5rem 1.75rem;
+  background: var(--color-twh-ink);
 }
 
-/* Time column */
-.twh-schedule__time {
+.twh-schedule__clock {
+  background:
+    linear-gradient(135deg, rgba(27, 63, 148, 0.45) 0%, rgba(20, 20, 24, 0) 70%),
+    var(--color-twh-ink);
+}
+
+.twh-schedule__clock-label {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.twh-schedule__time {
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  color: var(--color-twh-white);
-  letter-spacing: 0.03em;
-  line-height: 1.1;
-}
-
-.twh-schedule__time-to {
-  display: block;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
   font-size: 0.75rem;
-  color: var(--color-twh-grey-600);
-  letter-spacing: 0.06em;
-  font-family: var(--font-body);
-  font-weight: 400;
-}
-
-/* Class name */
-.twh-schedule__class-name {
-  font-family: var(--font-display);
-  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-twh-white);
-  margin: 0 0 0.25rem;
-  line-height: 1.2;
-}
-
-.twh-schedule__slot-meta {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  font-size: 0.8125rem;
-  color: var(--color-twh-grey-500);
-  flex-wrap: wrap;
-}
-
-.twh-schedule__coach {
   color: var(--color-twh-grey-300);
 }
 
-/* Empty day */
-.twh-schedule__empty-day {
-  padding: 3rem 2rem;
-  color: var(--color-twh-grey-600);
-  font-size: 0.9375rem;
-  text-align: center;
+.twh-schedule__clock-gmt { color: var(--color-twh-grey-400); font-weight: 700; }
+
+.twh-schedule__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-twh-yellow);
+  box-shadow: 0 0 0 0 rgba(255, 194, 14, 0.7);
+  animation: twh-schedule-pulse 2s infinite;
 }
 
-/* ── Responsive ──────────────────────────────────────────── */
+.twh-schedule__clock-time {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 5vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--color-twh-yellow);
+  font-variant-numeric: tabular-nums;
+}
+
+.twh-schedule__clock-date {
+  margin: 0.375rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--color-twh-grey-200);
+}
+
+/* Next-up card */
+.twh-schedule__next {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'kicker kicker'
+    'title  go'
+    'detail go';
+  column-gap: 1.5rem;
+  align-items: center;
+  border-left: 4px solid var(--color-twh-yellow);
+}
+
+.twh-schedule__next.is-live { border-left-color: var(--color-twh-red); }
+
+.twh-schedule__next::after {
+  /* brand slash accents */
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 190px;
+  width: 46px;
+  background: repeating-linear-gradient(
+    -35deg,
+    transparent 0 8px,
+    rgba(255, 255, 255, 0.045) 8px 14px
+  );
+  pointer-events: none;
+}
+
+.twh-schedule__next-kicker {
+  grid-area: kicker;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-twh-yellow);
+}
+
+.twh-schedule__next.is-live .twh-schedule__next-kicker { color: #ff5a5f; }
+
+.twh-schedule__next.is-live .twh-schedule__next-kicker::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-twh-red);
+  box-shadow: 0 0 0 0 rgba(215, 20, 26, 0.7);
+  animation: twh-schedule-pulse-red 1.6s infinite;
+}
+
+.twh-schedule__next-title {
+  grid-area: title;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-twh-white);
+}
+
+.twh-schedule__next-detail {
+  grid-area: detail;
+  margin: 0.375rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--color-twh-grey-200);
+}
+
+.twh-schedule__next-go { grid-area: go; position: relative; z-index: 1; }
+
+@keyframes twh-schedule-pulse {
+  70%  { box-shadow: 0 0 0 9px rgba(255, 194, 14, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 194, 14, 0); }
+}
+@keyframes twh-schedule-pulse-red {
+  70%  { box-shadow: 0 0 0 9px rgba(215, 20, 26, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(215, 20, 26, 0); }
+}
+
+/* ── 3. Controls ──────────────────────────────────────────── */
+
+.twh-schedule__controls {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.twh-schedule__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.twh-schedule__chip {
+  min-height: 40px;
+  padding: 0.4rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-200);
+  background: transparent;
+  border: 1px solid var(--color-twh-grey-500);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 0.18s, background 0.18s, border-color 0.18s;
+}
+
+.twh-schedule__chip:hover {
+  color: var(--color-twh-white);
+  border-color: var(--color-twh-yellow);
+  background: rgba(255, 194, 14, 0.14);
+}
+
+.twh-schedule__chip[aria-pressed='true'] {
+  color: var(--color-twh-black);
+  background: var(--color-twh-yellow);
+  border-color: var(--color-twh-yellow);
+}
+
+.twh-schedule__views {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid var(--color-twh-grey-500);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.twh-schedule__view {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0.4rem 1.125rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-200);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.18s, background 0.18s;
+}
+
+.twh-schedule__view + .twh-schedule__view { border-left: 1px solid var(--color-twh-grey-500); }
+.twh-schedule__view:hover { color: var(--color-twh-white); background: rgba(255, 255, 255, 0.08); }
+
+.twh-schedule__view[aria-pressed='true'] {
+  color: var(--color-twh-white);
+  background: var(--color-twh-red);
+}
+
+/* ── 4. Day tabs ──────────────────────────────────────────── */
+
+.twh-schedule__tabs {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.twh-schedule__tab {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.125rem;
+  padding: 0.875rem 0.375rem 0.75rem;
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  border-top: 3px solid var(--color-twh-grey-800);
+  color: var(--color-twh-grey-300);
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.twh-schedule__tab-dow {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.twh-schedule__tab-num {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  line-height: 1;
+  color: var(--color-twh-white);
+  font-variant-numeric: tabular-nums;
+}
+
+.twh-schedule__tab-month {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-400);
+}
+
+.twh-schedule__tab-count {
+  margin-top: 0.375rem;
+  min-width: 1.5rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 999px;
+  background: var(--color-twh-grey-800);
+  color: var(--color-twh-grey-200);
+}
+
+.twh-schedule__tab-today {
+  position: absolute;
+  top: -3px;
+  right: -1px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-twh-white);
+  background: var(--color-twh-red);
+}
+
+.twh-schedule__tab:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-twh-grey-500);
+  border-top-color: var(--color-twh-yellow);
+  background: #1b1b21;
+}
+
+.twh-schedule__tab[aria-selected='true'] {
+  background: linear-gradient(180deg, rgba(255, 194, 14, 0.14), rgba(255, 194, 14, 0.02)), var(--color-twh-ink);
+  border-color: var(--color-twh-yellow);
+  border-top-color: var(--color-twh-yellow);
+  color: var(--color-twh-yellow);
+}
+
+.twh-schedule__tab[aria-selected='true'] .twh-schedule__tab-num { color: var(--color-twh-yellow); }
+
+.twh-schedule__tab[aria-selected='true'] .twh-schedule__tab-count {
+  background: var(--color-twh-yellow);
+  color: var(--color-twh-black);
+}
+
+.twh-schedule__tab.is-empty:not([aria-selected='true']) { opacity: 0.55; }
+
+/* ── 5. Day panel + class cards ───────────────────────────── */
+
+.twh-schedule__panel-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-twh-grey-800);
+}
+
+.twh-schedule__panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-twh-white);
+}
+
+.twh-schedule__panel-today {
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: var(--color-twh-white);
+  background: var(--color-twh-red);
+}
+
+.twh-schedule__panel-date {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-twh-grey-200);
+}
+
+.twh-schedule__panel-date span { color: var(--color-twh-grey-400); }
+
+.twh-schedule__slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.twh-schedule__slot {
+  position: relative;
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem 1.25rem 1.75rem;
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s, opacity 0.3s;
+}
+
+/* Intensity stripe */
+.twh-schedule__slot::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--accent, var(--color-twh-grey-600));
+}
+
+.twh-schedule__slot:hover {
+  transform: translateX(6px);
+  border-color: var(--accent, var(--color-twh-grey-500));
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.twh-schedule__slot[data-state='done'] { opacity: 0.5; }
+.twh-schedule__slot[data-state='done']:hover { opacity: 0.9; }
+
+.twh-schedule__slot[data-state='live'] {
+  border-color: var(--color-twh-red);
+  box-shadow: 0 0 0 1px var(--color-twh-red), 0 12px 40px rgba(215, 20, 26, 0.28);
+}
+
+.twh-schedule__slot[data-state='soon'] { border-color: var(--color-twh-yellow); }
+
+/* Time block */
+.twh-schedule__time {
+  display: grid;
+  gap: 0.125rem;
+  justify-items: start;
+}
+
+.twh-schedule__time-start {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--color-twh-white);
+  font-variant-numeric: tabular-nums;
+}
+
+.twh-schedule__time-end {
+  font-size: 0.875rem;
+  color: var(--color-twh-grey-300);
+}
+
+.twh-schedule__duration {
+  margin-top: 0.375rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-200);
+  border: 1px solid var(--color-twh-grey-600);
+  border-radius: 999px;
+}
+
+/* Main block */
+.twh-schedule__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.twh-schedule__intensity,
+.twh-schedule__level,
+.twh-schedule__status {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+.twh-schedule__intensity { background: var(--accent, var(--color-twh-grey-600)); color: var(--accent-ink, #fff); }
+
+.twh-schedule__level {
+  color: var(--color-twh-grey-200);
+  border: 1px solid var(--color-twh-grey-600);
+}
+
+.twh-schedule__status:empty { display: none; }
+
+.twh-schedule__slot[data-state='live'] .twh-schedule__status {
+  color: var(--color-twh-white);
+  background: var(--color-twh-red);
+  animation: twh-schedule-blink 1.6s ease-in-out infinite;
+}
+
+.twh-schedule__slot[data-state='soon'] .twh-schedule__status {
+  color: var(--color-twh-black);
+  background: var(--color-twh-yellow);
+}
+
+.twh-schedule__slot[data-state='done'] .twh-schedule__status {
+  color: var(--color-twh-grey-300);
+  background: var(--color-twh-grey-800);
+}
+
+@keyframes twh-schedule-blink { 50% { opacity: 0.6; } }
+
+.twh-schedule__class-name {
+  margin: 0 0 0.625rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-twh-white);
+}
+
+.twh-schedule__class-name a {
+  color: inherit;
+  text-decoration: none;
+  background: linear-gradient(var(--accent, var(--color-twh-yellow)), var(--accent, var(--color-twh-yellow))) 0 100% / 0 3px no-repeat;
+  transition: background-size 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+}
+
+.twh-schedule__class-name a:hover,
+.twh-schedule__slot:hover .twh-schedule__class-name a { background-size: 100% 3px; }
+
+.twh-schedule__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+  color: var(--color-twh-grey-200);
+}
+
+.twh-schedule__meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.twh-schedule__meta svg { color: var(--color-twh-grey-400); flex-shrink: 0; }
+
+.twh-schedule__coach { color: var(--color-twh-white); font-weight: 600; }
+
+.twh-schedule__avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--accent-ink, #fff);
+  background: var(--accent, var(--color-twh-grey-600));
+  border-radius: 50%;
+}
+
+/* ── 6. Week overview (heat grid) ─────────────────────────── */
+
+.twh-schedule__week-hint {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  color: var(--color-twh-grey-300);
+}
+
+.twh-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.twh-week__head {
+  display: grid;
+  justify-items: center;
+  gap: 0.125rem;
+  padding: 0.75rem 0.25rem;
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  border-top: 3px solid var(--color-twh-grey-700);
+}
+
+.twh-week__head.is-today { border-top-color: var(--color-twh-red); background: rgba(215, 20, 26, 0.12); }
+
+.twh-week__dow {
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-twh-white);
+}
+
+.twh-week__date { font-size: 0.8125rem; color: var(--color-twh-grey-300); }
+
+.twh-week__band-label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--color-twh-grey-400);
+}
+
+.twh-week__band-label span {
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-twh-yellow);
+}
+
+.twh-week__cell {
+  min-height: 112px;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--color-twh-red) calc(var(--heat, 0) * 38%), var(--color-twh-ink));
+  border: 1px solid var(--color-twh-grey-800);
+  transition: border-color 0.2s;
+}
+
+.twh-week__cell.is-today { border-color: rgba(215, 20, 26, 0.7); }
+.twh-week__cell.is-now { box-shadow: inset 0 0 0 2px var(--color-twh-yellow); }
+
+.twh-week__cell-label { display: none; }
+
+.twh-week__cell ul {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.twh-week__none {
+  display: block;
+  padding-top: 0.5rem;
+  text-align: center;
+  color: var(--color-twh-grey-600);
+}
+
+.twh-week__item {
+  display: grid;
+  gap: 0.0625rem;
+  width: 100%;
+  padding: 0.375rem 0.5rem 0.375rem 0.625rem;
+  text-align: left;
+  color: var(--color-twh-white);
+  background: rgba(10, 10, 11, 0.55);
+  border: 0;
+  border-left: 3px solid var(--accent, var(--color-twh-grey-500));
+  cursor: pointer;
+  transition: background 0.18s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.twh-week__item:hover {
+  background: var(--accent, var(--color-twh-yellow));
+  transform: translateX(3px);
+}
+
+.twh-week__item:hover .twh-week__item-time,
+.twh-week__item:hover .twh-week__item-name { color: var(--color-twh-white); }
+
+.twh-week__item-time {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--color-twh-grey-200);
+  font-variant-numeric: tabular-nums;
+}
+
+.twh-week__item-name {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 7. Empty states ──────────────────────────────────────── */
+
+.twh-schedule__empty-day,
+.twh-schedule__filter-empty,
+.twh-schedule__none {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  font-size: 1.0625rem;
+  color: var(--color-twh-grey-300);
+  background: var(--color-twh-ink);
+  border: 1px dashed var(--color-twh-grey-700);
+}
+
+.twh-schedule__none a { color: var(--color-twh-yellow); }
+
+/* ── 8. Responsive ────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .twh-schedule__inner { padding: 0 1.5rem; }
+
+  .twh-schedule__bar { grid-template-columns: 1fr; }
+  .twh-schedule__next::after { display: none; }
+
+  .twh-schedule__controls { flex-direction: column; align-items: stretch; }
+  .twh-schedule__views { align-self: flex-start; }
+
+  .twh-schedule__slot {
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 1rem 1.25rem;
+  }
+  .twh-schedule__action { grid-column: 1 / -1; }
+  .twh-schedule__action .twh-btn { width: 100%; justify-content: center; }
+
+  /* Week overview: day-by-day stack instead of 7 cramped columns */
+  .twh-week { grid-template-columns: 1fr; gap: 0.5rem; }
+  .twh-week__band-label { display: none; }
+  .twh-week__head,
+  .twh-week__cell { order: calc(var(--day) * 4 + var(--band)); }
+  .twh-week__head {
+    grid-auto-flow: column;
+    justify-content: start;
+    justify-items: start;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.625rem 0.875rem;
+  }
+  .twh-week__cell { min-height: 0; }
+  .twh-week__cell.is-blank { display: none; }
+  .twh-week__cell-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-twh-yellow);
+  }
+  .twh-week__none { display: none; }
+}
 
 @media (max-width: 767px) {
-  .twh-schedule__inner { padding: 0 1.25rem; }
-  .twh-schedule { padding: 2rem 0 4rem; }
+  .twh-schedule { padding: 2rem 0 4.5rem; }
+  .twh-schedule__inner { padding: 0 1rem; }
+
+  .twh-schedule__clock,
+  .twh-schedule__next { padding: 1.25rem; }
+  .twh-schedule__next {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'kicker' 'title' 'detail' 'go';
+  }
+  .twh-schedule__next-go { justify-self: stretch; margin-top: 0.875rem; width: 100%; }
+
+  /* chips scroll-free: they wrap */
+  .twh-schedule__chip { flex: 1 1 auto; text-align: center; }
+  .twh-schedule__views { width: 100%; }
+  .twh-schedule__view { flex: 1; justify-content: center; }
+
+  /* 7 compact day cards */
+  .twh-schedule__tabs { gap: 0.25rem; }
+  .twh-schedule__tab { padding: 0.625rem 0.125rem 0.5rem; }
+  .twh-schedule__tab-dow { font-size: 0.625rem; letter-spacing: 0.08em; }
+  .twh-schedule__tab-num { font-size: 1.5rem; }
+  .twh-schedule__tab-month { display: none; }
+  .twh-schedule__tab-count { margin-top: 0.25rem; min-width: 1.25rem; padding: 0.0625rem 0.375rem; font-size: 0.6875rem; }
+  .twh-schedule__tab-today {
+    top: auto;
+    right: auto;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.05rem 0.375rem;
+    font-size: 0.5rem;
+  }
+  .twh-schedule__tab:hover { transform: none; }
+  .twh-schedule__tab.is-today { padding-bottom: 1.125rem; }
+
+  .twh-schedule__slot {
+    grid-template-columns: 1fr;
+    padding: 1.125rem 1.125rem 1.125rem 1.5rem;
+  }
+  .twh-schedule__slot:hover { transform: none; }
+  .twh-schedule__time {
+    grid-auto-flow: column;
+    justify-content: start;
+    align-items: baseline;
+    gap: 0.625rem;
+  }
+  .twh-schedule__duration { margin: 0 0 0 auto; }
+}
+
+/* ── 9. Reduced motion ────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-schedule__pulse,
+  .twh-schedule__next.is-live .twh-schedule__next-kicker::before,
+  .twh-schedule__slot[data-state='live'] .twh-schedule__status { animation: none; }
+
+  .twh-schedule__tab,
+  .twh-schedule__slot,
+  .twh-schedule__class-name a,
+  .twh-week__item { transition: none; }
+
+  .twh-schedule__tab:hover,
+  .twh-schedule__slot:hover,
+  .twh-week__item:hover { transform: none; }
 }
