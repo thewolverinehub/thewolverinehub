@@ -33,7 +33,13 @@ for (const cat of displayCategories) {
   if (items.length > 0) grouped.set(cat.slug, { label: cat.name, items });
 }
 
+// "Most asked" quick answers are shown once at the top; the accordion below lists the rest,
+// so no question appears twice.
 const featured = displayFaqs.filter(f => f.isFeatured).slice(0, 3);
+const featuredIds = new Set(featured.map(f => f.documentId));
+const listFaqs = displayFaqs.filter(f => !featuredIds.has(f.documentId));
+// only offer category filters that actually have questions in the accordion
+const listCategories = displayCategories.filter(c => listFaqs.some(f => f.category?.documentId === c.documentId));
 
 const seo = {
   metaTitle: 'FAQ — The Wolverine Hub',
@@ -55,6 +61,9 @@ const seo = {
 
       <!-- Featured quick answers -->
       {featured.length > 0 && (
+        <div class="twh-faq__section-head">
+          <h2 class="twh-faq__section-title">Most asked</h2>
+        </div>
         <div class="twh-faq__featured">
           {featured.map(faq => {
             const html = blocksToHtml(faq.answer as any);
@@ -71,12 +80,17 @@ const seo = {
         </div>
       )}
 
-      <!-- Full accordion list -->
+      <!-- Full accordion list (everything not already shown above) -->
       <div class="twh-faq__main">
-        {displayCategories.length > 1 && (
+        {listFaqs.length > 0 && (
+          <div class="twh-faq__section-head">
+            <h2 class="twh-faq__section-title">{featured.length > 0 ? 'More questions' : 'All questions'}</h2>
+          </div>
+        )}
+        {listCategories.length > 1 && (
           <div class="twh-faq__filters" role="tablist" aria-label="Filter by category">
             <button class="twh-faq__filter twh-faq__filter--active" data-filter="all" role="tab" aria-selected="true">All</button>
-            {displayCategories.map(cat => (
+            {listCategories.map(cat => (
               <button class="twh-faq__filter" data-filter={cat.slug} role="tab" aria-selected="false">
                 {cat.name}
               </button>
@@ -85,7 +99,7 @@ const seo = {
         )}
 
         <div class="twh-faq__list">
-          {displayFaqs.map(faq => {
+          {listFaqs.map(faq => {
             const html = blocksToHtml(faq.answer as any);
             const catSlug = faq.category?.slug ?? 'general';
             return (

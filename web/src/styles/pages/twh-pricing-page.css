@@ -1,9 +1,11 @@
 /* ============================================================
-   PRICING PAGE  — /pricing
+   PRICING — /pricing
    Prefix: twh-pricing-page
+   (single source of truth — merged from the former duplicate stylesheets)
    ============================================================ */
 
 .twh-pricing-page {
+  background: var(--color-twh-black);
   padding: 4rem 0 6rem;
 }
 
@@ -13,8 +15,6 @@
   padding: 0 2rem;
 }
 
-/* ── Tier cards ───────────────────────────────────────────── */
-
 .twh-pricing-page__tiers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -22,24 +22,14 @@
   margin-bottom: 4rem;
 }
 
-@media (max-width: 1023px) { .twh-pricing-page__tiers { grid-template-columns: 1fr; gap: 1rem; } }
-
 .twh-pricing-page__tier {
   position: relative;
-  opacity: 0; /* animated */
+  opacity: 0;
 }
 
-.twh-pricing-page__tier--popular {
-  margin: -1.5rem 0;
-  z-index: 1;
-}
-
-@media (max-width: 1023px) {
-  .twh-pricing-page__tier--popular { margin: 0; }
-}
-
-/* Popular banner */
 .twh-pricing-page__popular-banner {
+  text-align: center;
+  border-radius: 4px 4px 0 0;
   position: absolute;
   top: 0;
   left: 50%;
@@ -53,8 +43,9 @@
   white-space: nowrap;
 }
 
-/* Tier body */
 .twh-pricing-page__tier-body {
+  border-radius: 4px;
+  transition: border-color 0.2s;
   background: var(--color-twh-ink);
   border: 2px solid var(--color-twh-grey-800);
   border-top-width: 3px;
@@ -68,11 +59,15 @@
 }
 
 .twh-pricing-page__tier--popular .twh-pricing-page__tier-body {
+  border-radius: 0 0 4px 4px;
   background: var(--color-twh-grey-900);
   padding-top: 4rem;
 }
 
-/* Decorative slash */
+.twh-pricing-page__tier-body:hover {
+  border-color: var(--color-twh-grey-600);
+}
+
 .twh-pricing-page__slash {
   position: absolute;
   top: -1.5rem;
@@ -87,6 +82,8 @@
 }
 
 .twh-pricing-page__tier-name {
+  color: var(--color-twh-white);
+  position: relative;
   font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 2.75rem);
   text-transform: uppercase;
@@ -96,6 +93,7 @@
 }
 
 .twh-pricing-page__tier-tagline {
+  position: relative;
   font-size: 0.9375rem;
   color: var(--color-twh-grey-400);
   margin: 0;
@@ -103,14 +101,17 @@
 }
 
 .twh-pricing-page__tier-desc {
+  position: relative;
   font-size: 0.875rem;
   color: var(--color-twh-grey-500);
   margin: 0;
   line-height: 1.6;
 }
 
-/* Feature list */
 .twh-pricing-page__features {
+  border-top: 1px solid var(--color-twh-grey-800);
+  padding-top: 1.5rem;
+  position: relative;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -136,8 +137,8 @@
   margin-top: 0.15rem;
 }
 
-/* Pass rows */
 .twh-pricing-page__passes {
+  position: relative;
   border-top: 1px solid var(--color-twh-grey-800);
   padding-top: 1.25rem;
   display: flex;
@@ -162,29 +163,32 @@
   border-bottom: 1px solid var(--color-twh-grey-900);
 }
 
-.twh-pricing-page__pass-row:last-child { border-bottom: none; }
+.twh-pricing-page__pass-row:last-child {
+  border-bottom: none;
+}
 
 .twh-pricing-page__pass-duration {
+  font-weight: 600;
   font-size: 0.875rem;
   color: var(--color-twh-grey-300);
 }
 
 .twh-pricing-page__pass-price {
+  letter-spacing: 0.02em;
   font-family: var(--font-display);
   font-size: 1.125rem;
   font-weight: 700;
 }
 
-/* ── CTA strip ────────────────────────────────────────────── */
-
 .twh-pricing-page__cta-strip {
+  margin-bottom: 5rem;
   text-align: center;
   padding: 2rem 0 4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  opacity: 0; /* animated */
+  opacity: 0;
 }
 
 .twh-pricing-page__cta-note {
@@ -194,9 +198,8 @@
   letter-spacing: 0.04em;
 }
 
-/* ── Pricing FAQ ──────────────────────────────────────────── */
-
 .twh-pricing-page__faq-heading {
+  opacity: 0;
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 3vw, 2.25rem);
   text-transform: uppercase;
@@ -206,17 +209,26 @@
 }
 
 .twh-pricing-page__faq-list {
+  gap: 0.5rem;
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--color-twh-grey-900);
 }
 
 .twh-pricing-page__faq-item {
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  border-radius: 4px;
+  overflow: hidden;
   border-bottom: 1px solid var(--color-twh-grey-900);
-  opacity: 0; /* animated */
+  opacity: 0;
 }
 
 .twh-pricing-page__faq-question {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
   list-style: none;
   display: flex;
   justify-content: space-between;
@@ -231,22 +243,28 @@
   user-select: none;
 }
 
-.twh-pricing-page__faq-question::-webkit-details-marker { display: none; }
-.twh-pricing-page__faq-item[open] .twh-pricing-page__faq-question { color: var(--color-twh-red); }
-
-.twh-pricing-page__faq-icon {
-  flex-shrink: 0;
-  font-size: 1.25rem;
-  font-weight: 300;
-  color: var(--color-twh-grey-500);
+.twh-pricing-page__faq-question:hover {
+  color: var(--color-twh-yellow);
 }
 
-.twh-pricing-page__faq-item[open] .twh-pricing-page__faq-icon::before { content: '−'; }
-.twh-pricing-page__faq-icon::before { content: '+'; }
-.twh-pricing-page__faq-icon { font-size: 0; }
-.twh-pricing-page__faq-icon::before { font-size: 1.25rem; }
+.twh-pricing-page__faq-icon {
+  font-family: var(--font-display);
+  line-height: 1;
+  transition: transform 0.2s var(--ease-snappy);
+  user-select: none;
+  flex-shrink: 0;
+  font-weight: 300;
+  color: var(--color-twh-grey-500);
+  font-size: 0;
+}
+
+.twh-pricing-page__faq-item[open] .twh-pricing-page__faq-icon {
+  transform: rotate(45deg);
+  color: var(--color-twh-yellow);
+}
 
 .twh-pricing-page__faq-answer {
+  padding: 0 1.5rem 1.25rem;
   padding-bottom: 1.5rem;
   font-size: 0.9375rem;
   color: var(--color-twh-grey-400);
@@ -254,19 +272,74 @@
   max-width: 68ch;
 }
 
-.twh-pricing-page__faq-answer p { margin: 0 0 0.75rem; }
-.twh-pricing-page__faq-answer p:last-child { margin-bottom: 0; }
+.twh-pricing-page__faq-answer p {
+  margin: 0 0 0.75rem;
+}
 
-/* ── Responsive ──────────────────────────────────────────── */
+.twh-pricing-page__faq-answer p:last-child {
+  margin: 0;
+  margin-bottom: 0;
+}
+
+.twh-pricing-page__tier--popular {
+  margin: -1.5rem 0;
+  z-index: 1;
+}
+
+.twh-pricing-page__faq-question::-webkit-details-marker {
+  display: none;
+}
+
+.twh-pricing-page__faq-item[open] .twh-pricing-page__faq-question {
+  color: var(--color-twh-red);
+}
+
+.twh-pricing-page__faq-item[open] .twh-pricing-page__faq-icon::before {
+  content: '−';
+}
+
+.twh-pricing-page__faq-icon::before {
+  content: '+';
+  font-size: 1.25rem;
+}
+
+@media (max-width: 1023px) {
+  .twh-pricing-page__tiers {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .twh-pricing-page__tier--popular {
+    margin: 0;
+  }
+}
 
 @media (max-width: 767px) {
-  .twh-pricing-page__inner { padding: 0 1.25rem; }
-  .twh-pricing-page { padding: 3rem 0 4rem; }
-  .twh-pricing-page__tier-body { padding: 2rem 1.5rem; }
+  .twh-pricing-page__inner {
+    padding: 0 1.25rem;
+  }
+
+  .twh-pricing-page {
+    padding: 3rem 0 4rem;
+  }
+
+  .twh-pricing-page__tier-body {
+    padding: 2rem 1.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .twh-pricing-page__tier,
-  .twh-pricing-page__cta-strip,
-  .twh-pricing-page__faq-item { opacity: 1 !important; transform: none !important; }
+  .twh-pricing-page__tier, .twh-pricing-page__cta-strip, .twh-pricing-page__faq-heading, .twh-pricing-page__faq-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .twh-pricing-page__faq-icon {
+    transition: none;
+  }
+
+  .twh-pricing-page__tier, .twh-pricing-page__cta-strip, .twh-pricing-page__faq-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

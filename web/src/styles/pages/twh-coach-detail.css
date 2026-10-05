@@ -1,27 +1,20 @@
 /* ============================================================
    COACH DETAIL — /coaches/[slug]
    Prefix: twh-coach-detail
+   (single source of truth — merged from the former duplicate stylesheets)
    ============================================================ */
 
 .twh-coach-detail {
+  background: var(--color-twh-black);
   padding: 0 0 6rem;
 }
 
-/* ── Hero: photo + info split ─────────────────────────────── */
-
 .twh-coach-detail__hero {
+  gap: 0;
   display: grid;
   grid-template-columns: 520px 1fr;
   min-height: 520px;
   border-bottom: 1px solid var(--color-twh-grey-900);
-}
-
-@media (max-width: 1100px) {
-  .twh-coach-detail__hero { grid-template-columns: 420px 1fr; }
-}
-
-@media (max-width: 860px) {
-  .twh-coach-detail__hero { grid-template-columns: 1fr; min-height: auto; }
 }
 
 .twh-coach-detail__photo {
@@ -52,16 +45,13 @@
 }
 
 .twh-coach-detail__hero-body {
+  border-left: 1px solid var(--color-twh-grey-800);
   padding: 4rem;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   gap: 0.75rem;
   background: var(--color-twh-ink);
-}
-
-@media (max-width: 860px) {
-  .twh-coach-detail__hero-body { padding: 2.5rem 1.5rem; }
 }
 
 .twh-coach-detail__role {
@@ -91,7 +81,6 @@
   max-width: 46ch;
 }
 
-/* Specialty tags */
 .twh-coach-detail__tags {
   display: flex;
   flex-wrap: wrap;
@@ -111,8 +100,6 @@
   border-radius: 2px;
 }
 
-/* ── Body section: prose + sidebar ───────────────────────── */
-
 .twh-coach-detail__body-section {
   max-width: 1200px;
   margin: 0 auto;
@@ -123,25 +110,14 @@
   align-items: start;
 }
 
-@media (max-width: 1023px) {
-  .twh-coach-detail__body-section { grid-template-columns: 1fr; gap: 2.5rem; }
-}
-
-@media (max-width: 767px) {
-  .twh-coach-detail__body-section { padding: 2.5rem 1.25rem 0; }
-}
-
-/* Prose */
 .twh-coach-detail__prose {
   color: var(--color-twh-grey-300);
   font-size: 1rem;
   line-height: 1.8;
 }
 
-.twh-coach-detail__prose p  { margin: 0 0 1.25rem; }
-.twh-coach-detail__prose p:last-child { margin-bottom: 0; }
-
 .twh-coach-detail__prose h2, .twh-coach-detail__prose h3 {
+  margin-top: 2rem;
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -149,18 +125,12 @@
   margin: 2rem 0 0.75rem;
 }
 
-.twh-coach-detail__prose h2 { font-size: clamp(1.375rem, 2.5vw, 1.875rem); }
-.twh-coach-detail__prose h3 { font-size: clamp(1.125rem, 2vw, 1.375rem); }
-
-.twh-coach-detail__prose ul, .twh-coach-detail__prose ol {
-  padding-left: 1.5rem;
+.twh-coach-detail__prose p {
   margin: 0 0 1.25rem;
 }
 
-.twh-coach-detail__prose li { margin-bottom: 0.5rem; }
-
-/* Sidebar */
 .twh-coach-detail__side-card {
+  border-radius: 6px;
   background: var(--color-twh-ink);
   border: 1px solid var(--color-twh-grey-900);
   border-top: 3px solid var(--color-twh-red);
@@ -169,11 +139,8 @@
   top: 80px;
 }
 
-@media (max-width: 1023px) {
-  .twh-coach-detail__side-card { position: static; }
-}
-
 .twh-coach-detail__side-heading {
+  font-family: var(--font-display);
   font-size: 0.65rem;
   font-weight: 900;
   letter-spacing: 0.2em;
@@ -203,6 +170,7 @@
 }
 
 .twh-coach-detail__spec-item::before {
+  line-height: 1.4;
   content: '/';
   font-family: var(--font-display);
   font-size: 0.875rem;
@@ -212,4 +180,67 @@
   flex-shrink: 0;
 }
 
-.twh-coach-detail__spec-item:last-child { border-bottom: none; }
+.twh-coach-detail__prose p:last-child {
+  margin-bottom: 0;
+}
+
+.twh-coach-detail__prose h2 {
+  font-size: clamp(1.375rem, 2.5vw, 1.875rem);
+}
+
+.twh-coach-detail__prose h3 {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+}
+
+.twh-coach-detail__prose ul, .twh-coach-detail__prose ol {
+  padding-left: 1.5rem;
+  margin: 0 0 1.25rem;
+}
+
+.twh-coach-detail__prose li {
+  margin-bottom: 0.5rem;
+}
+
+.twh-coach-detail__spec-item:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 1199px) {
+  .twh-coach-detail__photo {
+    aspect-ratio: 16/9;
+  }
+}
+
+@media (max-width: 1023px) {
+  .twh-coach-detail__body-section {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .twh-coach-detail__side-card {
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .twh-coach-detail__body-section {
+    padding: 2.5rem 1.25rem 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .twh-coach-detail__hero {
+    grid-template-columns: 420px 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .twh-coach-detail__hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .twh-coach-detail__hero-body {
+    padding: 2.5rem 1.5rem;
+  }
+}

@@ -1,9 +1,11 @@
 /* ============================================================
    COACHES INDEX — /coaches
    Prefix: twh-coaches-page
+   (single source of truth — merged from the former duplicate stylesheets)
    ============================================================ */
 
 .twh-coaches-page {
+  background: var(--color-twh-black);
   padding: 4rem 0 6rem;
 }
 
@@ -13,14 +15,14 @@
   padding: 0 2rem;
 }
 
-/* ── Head coach feature ───────────────────────────────────── */
-
 .twh-coaches-page__featured {
   margin-bottom: 5rem;
-  opacity: 0; /* animated */
+  opacity: 0;
 }
 
 .twh-coaches-page__featured-card {
+  gap: 0;
+  border-radius: 6px;
   display: grid;
   grid-template-columns: 480px 1fr;
   background: var(--color-twh-ink);
@@ -30,13 +32,6 @@
   transition: border-color 0.2s;
 }
 
-.twh-coaches-page__featured-card:hover { border-left-color: var(--color-twh-red); }
-
-@media (max-width: 1023px) {
-  .twh-coaches-page__featured-card { grid-template-columns: 1fr; }
-}
-
-/* Photo panel */
 .twh-coaches-page__featured-photo {
   aspect-ratio: 4/3;
   overflow: hidden;
@@ -52,10 +47,6 @@
   transition: transform 0.6s ease;
 }
 
-.twh-coaches-page__featured-card:hover .twh-coaches-page__featured-photo img {
-  transform: scale(1.03);
-}
-
 .twh-coaches-page__featured-photo-placeholder {
   width: 100%;
   height: 100%;
@@ -69,8 +60,8 @@
   user-select: none;
 }
 
-/* Body panel */
 .twh-coaches-page__featured-body {
+  position: relative;
   padding: 3rem;
   display: flex;
   flex-direction: column;
@@ -79,12 +70,20 @@
 }
 
 .twh-coaches-page__head-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
   font-size: 0.65rem;
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-twh-yellow);
   margin: 0;
+}
+
+.twh-coaches-page__head-label::before {
+  content: '/';
+  font-family: var(--font-display);
 }
 
 .twh-coaches-page__featured-name {
@@ -117,12 +116,6 @@
   margin-top: 0.25rem;
 }
 
-@media (max-width: 767px) {
-  .twh-coaches-page__featured-body { padding: 2rem 1.5rem; }
-}
-
-/* ── Section heading ──────────────────────────────────────── */
-
 .twh-coaches-page__section-heading {
   font-size: 0.65rem;
   font-weight: 900;
@@ -131,8 +124,6 @@
   color: var(--color-twh-grey-600);
   margin: 0 0 2rem;
 }
-
-/* ── Staff grid ───────────────────────────────────────────── */
 
 .twh-coaches-page__grid {
   display: grid;
@@ -143,12 +134,18 @@
   margin: 0;
 }
 
-@media (max-width: 1280px) { .twh-coaches-page__grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px)  { .twh-coaches-page__grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px)  { .twh-coaches-page__grid { grid-template-columns: 1fr; } }
-
 .twh-coaches-page__card {
-  opacity: 0; /* animated */
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+  opacity: 0;
+}
+
+.twh-coaches-page__card:hover {
+  border-color: var(--color-twh-grey-600);
+  transform: translateY(-3px);
 }
 
 .twh-coaches-page__card-link {
@@ -161,8 +158,6 @@
   height: 100%;
   transition: border-color 0.2s;
 }
-
-.twh-coaches-page__card-link:hover { border-color: var(--color-twh-grey-700); }
 
 .twh-coaches-page__card-photo {
   aspect-ratio: 3/4;
@@ -179,7 +174,7 @@
   transition: transform 0.5s ease;
 }
 
-.twh-coaches-page__card-link:hover .twh-coaches-page__card-photo img {
+.twh-coaches-page__card:hover .twh-coaches-page__card-photo img {
   transform: scale(1.04);
 }
 
@@ -212,8 +207,6 @@
   transition: color 0.15s;
 }
 
-.twh-coaches-page__card-link:hover .twh-coaches-page__card-name { color: var(--color-twh-red); }
-
 .twh-coaches-page__card-role {
   font-size: 0.8125rem;
   color: var(--color-twh-grey-500);
@@ -224,20 +217,89 @@
 }
 
 .twh-coaches-page__card-bio {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-size: 0.875rem;
   color: var(--color-twh-grey-400);
   line-height: 1.6;
   margin: 0;
 }
 
-/* ── Responsive ──────────────────────────────────────────── */
+.twh-coaches-page__featured-card:hover {
+  border-left-color: var(--color-twh-red);
+}
+
+.twh-coaches-page__featured-card:hover .twh-coaches-page__featured-photo img {
+  transform: scale(1.03);
+}
+
+.twh-coaches-page__card-link:hover {
+  border-color: var(--color-twh-grey-700);
+}
+
+.twh-coaches-page__card-link:hover .twh-coaches-page__card-photo img {
+  transform: scale(1.04);
+}
+
+.twh-coaches-page__card-link:hover .twh-coaches-page__card-name {
+  color: var(--color-twh-red);
+}
+
+@media (max-width: 1023px) {
+  .twh-coaches-page__featured-card {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 767px) {
-  .twh-coaches-page__inner { padding: 0 1.25rem; }
-  .twh-coaches-page { padding: 3rem 0 4rem; }
+  .twh-coaches-page__inner {
+    padding: 0 1.25rem;
+  }
+
+  .twh-coaches-page__featured-body {
+    padding: 2rem 1.5rem;
+  }
+
+  .twh-coaches-page {
+    padding: 3rem 0 4rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .twh-coaches-page__featured, .twh-coaches-page__card { opacity: 1 !important; transform: none !important; }
-  .twh-coaches-page__featured-photo img, .twh-coaches-page__card-photo img { transition: none; }
+  .twh-coaches-page__featured, .twh-coaches-page__card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .twh-coaches-page__card:hover {
+    transform: none;
+  }
+
+  .twh-coaches-page__card:hover .twh-coaches-page__card-photo img {
+    transform: none;
+  }
+
+  .twh-coaches-page__featured-photo img, .twh-coaches-page__card-photo img {
+    transition: none;
+  }
+}
+
+@media (max-width: 1280px) {
+  .twh-coaches-page__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .twh-coaches-page__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .twh-coaches-page__grid {
+    grid-template-columns: 1fr;
+  }
 }

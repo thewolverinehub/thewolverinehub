@@ -1,9 +1,11 @@
 /* ============================================================
-   CONTACT PAGE  — /contact
+   CONTACT — /contact
    Prefix: twh-contact
+   (single source of truth — merged from the former duplicate stylesheets)
    ============================================================ */
 
 .twh-contact {
+  background: var(--color-twh-black);
   padding: 4rem 0 6rem;
 }
 
@@ -17,11 +19,9 @@
   align-items: start;
 }
 
-@media (max-width: 1023px) {
-  .twh-contact__inner { grid-template-columns: 1fr; gap: 3rem; }
+.twh-contact__info {
+  opacity: 0;
 }
-
-/* ── Contact info ─────────────────────────────────────────── */
 
 .twh-contact__info-heading {
   font-family: var(--font-display);
@@ -41,7 +41,6 @@
   max-width: 40ch;
 }
 
-/* Detail items */
 .twh-contact__details {
   display: flex;
   flex-direction: column;
@@ -56,8 +55,6 @@
   padding: 1.125rem 0;
   border-bottom: 1px solid var(--color-twh-grey-900);
 }
-
-.twh-contact__detail-item:first-child { border-top: 1px solid var(--color-twh-grey-900); }
 
 .twh-contact__detail-slash {
   font-family: var(--font-display);
@@ -80,6 +77,7 @@
 }
 
 .twh-contact__detail-value {
+  font-weight: 600;
   font-size: 0.9375rem;
   color: var(--color-twh-grey-200);
   margin: 0;
@@ -88,10 +86,13 @@
   line-height: 1.5;
 }
 
-a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
+a.twh-contact__detail-value:hover {
+  color: var(--color-twh-yellow);
+}
 
-/* Hours */
 .twh-contact__hours {
+  margin-top: 2.5rem;
+  border-radius: 6px;
   background: var(--color-twh-ink);
   border: 1px solid var(--color-twh-grey-900);
   padding: 1.75rem;
@@ -113,6 +114,7 @@ a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
 }
 
 .twh-contact__hours-row {
+  font-size: 0.8125rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -121,9 +123,13 @@ a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
   border-bottom: 1px solid var(--color-twh-grey-900);
 }
 
-.twh-contact__hours-row:last-child { border-bottom: none; }
+.twh-contact__hours-row:last-child {
+  border-bottom: none;
+}
 
 .twh-contact__hours-day {
+  font-weight: 600;
+  text-transform: capitalize;
   font-size: 0.875rem;
   color: var(--color-twh-grey-400);
 }
@@ -135,20 +141,19 @@ a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
   text-align: right;
 }
 
-/* ── Contact form ─────────────────────────────────────────── */
-
 .twh-contact__form-wrap {
+  opacity: 0;
   background: var(--color-twh-ink);
   border: 1px solid var(--color-twh-grey-900);
   border-top: 3px solid var(--color-twh-red);
   padding: 3rem;
 }
 
-@media (max-width: 767px) {
-  .twh-contact__form-wrap { padding: 2rem 1.5rem; }
-}
-
 .twh-contact__form {
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  border-radius: 6px;
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -170,7 +175,6 @@ a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
   margin: 0;
 }
 
-/* Fields */
 .twh-contact__field {
   display: flex;
   flex-direction: column;
@@ -190,8 +194,7 @@ a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
   margin-left: 0.125rem;
 }
 
-.twh-contact__input,
-.twh-contact__textarea {
+.twh-contact__input, .twh-contact__textarea {
   background: var(--color-twh-black);
   border: 1px solid var(--color-twh-grey-800);
   color: var(--color-twh-white);
@@ -204,19 +207,22 @@ a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
   outline: none;
 }
 
-.twh-contact__input::placeholder,
-.twh-contact__textarea::placeholder { color: var(--color-twh-grey-700); }
+.twh-contact__input::placeholder, .twh-contact__textarea::placeholder {
+  color: var(--color-twh-grey-700);
+}
 
-.twh-contact__input:focus,
-.twh-contact__textarea:focus { border-color: var(--color-twh-yellow); }
+.twh-contact__input:focus, .twh-contact__textarea:focus {
+  box-shadow: 0 0 0 2px rgba(255, 194, 14, 0.15);
+  border-color: var(--color-twh-yellow);
+}
 
 .twh-contact__textarea {
   resize: vertical;
   min-height: 120px;
 }
 
-/* Honeypot */
 .twh-contact__honeypot {
+  display: none;
   position: absolute;
   left: -9999px;
   width: 1px;
@@ -226,36 +232,79 @@ a.twh-contact__detail-value:hover { color: var(--color-twh-yellow); }
   pointer-events: none;
 }
 
-/* Status */
+.twh-contact__submit {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+}
+
 .twh-contact__status {
+  font-weight: 600;
   font-size: 0.875rem;
   padding: 0.75rem 1rem;
   border-radius: 2px;
   display: none;
 }
 
-.twh-contact__status:not(:empty) { display: block; }
-
 .twh-contact__status[data-state="success"] {
+  display: block;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.15);
   color: var(--color-twh-white);
 }
 
 .twh-contact__status[data-state="error"] {
+  display: block;
   background: rgba(215,20,26,0.1);
   border: 1px solid rgba(215,20,26,0.4);
   color: var(--color-twh-white);
 }
 
-/* Submit */
-.twh-contact__submit { align-self: flex-start; }
-.twh-contact__submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.twh-contact__detail-item:first-child {
+  border-top: 1px solid var(--color-twh-grey-900);
+}
 
-/* ── Responsive ──────────────────────────────────────────── */
+.twh-contact__status:not(:empty) {
+  display: block;
+}
+
+.twh-contact__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1023px) {
+  .twh-contact__inner {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}
 
 @media (max-width: 767px) {
-  .twh-contact__inner { padding: 0 1.25rem; }
-  .twh-contact { padding: 3rem 0 4rem; }
-  .twh-contact__submit { width: 100%; justify-content: center; }
+  .twh-contact__inner {
+    padding: 0 1.25rem;
+  }
+
+  .twh-contact__form {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .twh-contact__form-wrap {
+    padding: 2rem 1.5rem;
+  }
+
+  .twh-contact {
+    padding: 3rem 0 4rem;
+  }
+
+  .twh-contact__submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-contact__info, .twh-contact__form-wrap {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

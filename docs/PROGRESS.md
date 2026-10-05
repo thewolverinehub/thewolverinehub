@@ -142,3 +142,8 @@
 - Page transition fixes: Back-button (bfcache) restore resets the curtain + link lock; Ctrl/Cmd/middle-click no longer hijacked; 8s safety reset.
 - Ghost button hover is now blue (distinct from the yellow primary).
 - **Planned:** login replaces the Free Trial CTA; logged-in users book classes + pay (PayHere) — see Phase 12.
+
+### FAQ + stylesheet cleanup (2026-10-06)
+- **FAQ data:** 17 rows -> 13 unique questions (4 duplicates removed); every FAQ re-linked to its category (links had been lost). **FAQ page:** featured "Most asked" cards no longer repeat in the accordion ("More questions"); category pills only list categories that have questions.
+- **Stylesheets:** each page now has ONE stylesheet in `styles/pages/`. The four stale `components/twh-{coaches,pricing,contact,blog}-page.css` files (globally imported, overlapping the page files) were merged into `pages/twh-coaches-page|coach-detail|pricing-page|contact|blog|article.css` and deleted. Verified lossless: 0 computed-style differences on 9 pages at 1440/820/390 px. Merge tool lived in the scratchpad (PostCSS cascade flatten).
+- Page stylesheets for these pages are `<style is:global>` (unique `twh-` prefixes).
