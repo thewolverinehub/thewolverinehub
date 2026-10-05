@@ -18,7 +18,7 @@
     "backup:local": "node scripts/sync/backup.mjs local"
   },
   "dependencies": {
-    "@strapi/database": "5.55.1",
+    "@strapi/database": "5.56.0",
     "@strapi/plugin-cloud": "5.55.1",
     "@strapi/plugin-users-permissions": "5.55.1",
     "@strapi/provider-upload-aws-s3": "^5.55.1",
