@@ -1,0 +1,53 @@
+---
+/**
+ * One labelled form field with an inline error slot. The auth script (scripts/interactions/auth-form.ts)
+ * puts server-side validation messages into [data-error-for="<name>"].
+ */
+interface Props {
+  name: string;
+  label: string;
+  type?: 'text' | 'email' | 'password' | 'tel' | 'date' | 'textarea' | 'select';
+  autocomplete?: string;
+  placeholder?: string;
+  required?: boolean;
+  hint?: string;
+  value?: string | number | null;
+  options?: { value: string; label: string }[];
+  rows?: number;
+  maxlength?: number;
+  /** password fields: selector of the strength meter element to drive */
+  strength?: string;
+  class?: string;
+}
+
+const {
+  name, label, type = 'text', autocomplete, placeholder, required = false, hint, value, options = [], rows = 3, maxlength, strength, class: className = '',
+} = Astro.props;
+const id = `f-${name}`;
+const v = value == null ? '' : String(value);
+---
+
+<div class={`twh-field ${className}`}>
+  <label class="twh-field__label" for={id}>
+    {label}{required && <span class="twh-field__req" aria-hidden="true"> *</span>}
+  </label>
+
+  {type === 'textarea' ? (
+    <textarea class="twh-field__input" id={id} name={name} rows={rows} placeholder={placeholder} maxlength={maxlength} required={required} aria-describedby={`${id}-err`}>{v}</textarea>
+  ) : type === 'select' ? (
+    <select class="twh-field__input" id={id} name={name} required={required} aria-describedby={`${id}-err`}>
+      <option value="">Select…</option>
+      {options.map((o) => <option value={o.value} selected={o.value === v}>{o.label}</option>)}
+    </select>
+  ) : type === 'password' ? (
+    <div class="twh-field__pw">
+      <input class="twh-field__input" id={id} name={name} type="password" autocomplete={autocomplete} placeholder={placeholder} required={required} minlength={8} maxlength={100} data-strength={strength} aria-describedby={`${id}-err`} />
+      <button type="button" class="twh-field__toggle" data-toggle-password aria-label="Show password" aria-pressed="false">Show</button>
+    </div>
+  ) : (
+    <input class="twh-field__input" id={id} name={name} type={type} value={v} autocomplete={autocomplete} placeholder={placeholder} required={required} maxlength={maxlength} aria-describedby={`${id}-err`} />
+  )}
+
+  {hint && <p class="twh-field__hint">{hint}</p>}
+  <p class="twh-field__error" id={`${id}-err`} data-error-for={name} role="alert"></p>
+</div>

@@ -56,7 +56,6 @@ ${url('/', '1.0', 'daily')}
 ${url('/classes', '0.9', 'weekly')}
 ${url('/schedule', '0.9', 'daily')}
 ${url('/coaches', '0.8', 'weekly')}
-${url('/programs', '0.8', 'weekly')}
 ${url('/pricing', '0.8', 'weekly')}
 ${url('/gallery', '0.7', 'weekly')}
 ${url('/journal', '0.7', 'weekly')}

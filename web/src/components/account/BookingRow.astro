@@ -1,0 +1,41 @@
+---
+import type { BookingView } from '../../lib/booking/member';
+import { fmtMinutes, formatLKR } from '../../lib/utils/colombo';
+
+interface Props {
+  booking: BookingView;
+  /** show cancel / pay actions (upcoming lists) */
+  actions?: boolean;
+}
+
+const { booking: b, actions = true } = Astro.props;
+const [dow, num, month] = b.short.split(' ');
+---
+
+<li class={`twh-bk twh-bk--${b.bucket}`} data-booking-row>
+  <div class="twh-bk__date">
+    <span class="twh-bk__dow">{dow}</span>
+    <span class="twh-bk__num">{num}</span>
+    <span class="twh-bk__month">{month}</span>
+  </div>
+
+  <div class="twh-bk__body">
+    <div class="twh-bk__top">
+      <h3 class="twh-bk__name">{b.classSlug ? <a href={`/classes/${b.classSlug}`}>{b.classNameSnapshot}</a> : b.classNameSnapshot}</h3>
+      <span class={`twh-pill twh-pill--${b.tone}`}>{b.label}</span>
+    </div>
+    <p class="twh-bk__time">{fmtMinutes(b.startMin)} – {fmtMinutes(b.endMin)} <span>· Sri Lanka time</span></p>
+    <p class="twh-bk__meta">
+      <span>Ref <b>{b.reference}</b></span>
+      <span>{b.amount > 0 ? formatLKR(b.amount) : 'Free'}</span>
+    </p>
+    <p class="twh-bk__error" data-row-error hidden></p>
+  </div>
+
+  {actions && (b.canCancel || (b.awaitingPayment && b.orderId)) && (
+    <div class="twh-bk__actions">
+      {b.awaitingPayment && b.orderId && <a href={`/checkout/${b.orderId}`} class="twh-btn twh-btn--primary twh-btn--sm">Pay now</a>}
+      {b.canCancel && <button type="button" class="twh-btn twh-btn--ghost twh-btn--sm" data-cancel-booking={b.documentId}>Cancel</button>}
+    </div>
+  )}
+</li>

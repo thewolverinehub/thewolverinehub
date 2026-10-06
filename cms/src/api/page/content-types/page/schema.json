@@ -57,7 +57,8 @@
         "sections.cta-banner",
         "sections.newsletter-block",
         "sections.rich-text",
-        "sections.video-feature"
+        "sections.video-feature",
+        "sections.our-story"
       ],
       "pluginOptions": {
         "content-manager": {

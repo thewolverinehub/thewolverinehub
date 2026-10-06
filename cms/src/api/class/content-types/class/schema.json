@@ -17,7 +17,7 @@
       "required": true,
       "pluginOptions": {
         "content-manager": {
-          "label": "Name",
+          "label": "Class Name",
           "description": "Class name shown on cards and pages. Max 20 characters."
         }
       },
@@ -38,8 +38,8 @@
       "type": "string",
       "pluginOptions": {
         "content-manager": {
-          "label": "Tagline",
-          "description": "One short line shown on the class card. Max 50 characters."
+          "label": "Class Type (short label)",
+          "description": "Short line under the name, e.g. \"Strength Training\". Max 50 characters."
         }
       },
       "maxLength": 50
@@ -53,13 +53,63 @@
         }
       }
     },
+    "price": {
+      "type": "integer",
+      "required": true,
+      "default": 0,
+      "min": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Price per Session (LKR)",
+          "description": "What one person pays to book ONE session of this class. Use 0 for a free class."
+        }
+      }
+    },
+    "frequency": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Frequency",
+          "description": "Shown on the class page, e.g. \"3 days per week\"."
+        }
+      }
+    },
+    "coaches": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::coach.coach",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Coaches",
+          "description": "Coaches who lead this class (shown in the Program section). Leave empty if not decided yet."
+        }
+      }
+    },
+    "targetAreas": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Target Areas (one per line)",
+          "description": "Body areas / skills this class develops, e.g. \"Legs\", \"Core\", \"Cardio endurance\". One per line."
+        }
+      }
+    },
+    "equipment": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Equipment Used (one per line)",
+          "description": "Equipment used in the class, e.g. \"Barbells\", \"Kettlebells\". One per line."
+        }
+      }
+    },
     "durationMinutes": {
       "type": "integer",
       "required": true,
       "pluginOptions": {
         "content-manager": {
           "label": "Duration (minutes)",
-          "description": "Class length in minutes, e.g. 60 for a one-hour class."
+          "description": "Length of one session."
         }
       }
     },

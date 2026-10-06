@@ -13,12 +13,12 @@ const { header, global, id = 'main-menu' } = Astro.props;
 const accentColors = ['#D7141A', '#1B3F94', '#8E0B10', '#FFC20E', '#0B2359', '#3A3A42'];
 
 const fallbackItems = [
-  { label: 'Classes',   href: '/classes',   indexNumber: '01', description: '24 disciplines. Every level.' },
+  { label: 'Classes',   href: '/classes',   indexNumber: '01', description: '12 classes. Pay per session.' },
   { label: 'Schedule',  href: '/schedule',  indexNumber: '02', description: 'Book your next session.' },
-  { label: 'Programs',  href: '/programs',  indexNumber: '03', description: 'Starter · Signature · Transformation.' },
-  { label: 'Coaches',   href: '/coaches',   indexNumber: '04', description: 'Train with the best.' },
-  { label: 'Pricing',   href: '/pricing',   indexNumber: '05', description: 'Passes · Tokens · Add-ons.' },
-  { label: 'Contact',   href: '/contact',   indexNumber: '06', description: 'Find us. Book a trial.' },
+  { label: 'Coaches',   href: '/coaches',   indexNumber: '03', description: 'Train with the best.' },
+  { label: 'Our Story', href: '/#story',    indexNumber: '04', description: 'Built in the ring.' },
+  { label: 'Pricing',   href: '/pricing',   indexNumber: '05', description: 'Simple per-class rates.' },
+  { label: 'Contact',   href: '/contact',   indexNumber: '06', description: 'Find us. Say hello.' },
 ];
 
 const items = (header?.menuItems?.length ?? 0) > 0

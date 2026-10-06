@@ -1,0 +1,58 @@
+---
+/**
+ * Split-screen layout for sign in / sign up / password pages.
+ * Left: brand panel. Right: the form (default slot). Never indexed.
+ */
+import PageLayout from './PageLayout.astro';
+import WolverineSlash from '../components/ui/WolverineSlash.astro';
+import { getGlobal } from '../lib/strapi/queries';
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  eyebrow?: string;
+  metaTitle?: string;
+  wide?: boolean;
+}
+
+const { title, subtitle, eyebrow = 'Members', metaTitle, wide = false } = Astro.props;
+
+let global;
+try { global = await getGlobal(); } catch { /* CMS offline */ }
+
+const points = [
+  'Book any class in a minute',
+  'Pay only for the sessions you attend',
+  'Confirmation + reminder emails',
+  'Your training history in one place',
+];
+---
+
+<PageLayout seo={{ metaTitle: metaTitle ?? `${title} — The Wolverine Hub`, metaDescription: subtitle }} {global} noindex>
+  <section class={`twh-auth${wide ? ' twh-auth--wide' : ''}`}>
+    <aside class="twh-auth__brand" aria-hidden="true">
+      <WolverineSlash class="twh-auth__slash" />
+      <p class="twh-auth__brand-kicker">The Wolverine Hub</p>
+      <p class="twh-auth__brand-line">Where iron meets instinct.</p>
+      <ul class="twh-auth__points">
+        {points.map((p) => <li>{p}</li>)}
+      </ul>
+    </aside>
+
+    <div class="twh-auth__panel">
+      <div class="twh-auth__card">
+        <p class="twh-auth__eyebrow"><span aria-hidden="true">/</span> {eyebrow}</p>
+        <h1 class="twh-auth__title">{title}</h1>
+        {subtitle && <p class="twh-auth__sub">{subtitle}</p>}
+        <slot />
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style is:global>@import '../styles/pages/twh-auth.css';</style>
+
+<script>
+  import { initAuthForms } from '../scripts/interactions/auth-form';
+  initAuthForms();
+</script>

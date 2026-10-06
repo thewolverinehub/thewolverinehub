@@ -1,0 +1,84 @@
+---
+/**
+ * Member dashboard shell: welcome hero + side navigation + content slot.
+ * Pages pass the signed-in member (already loaded) and which tab is active.
+ */
+import PageLayout from './PageLayout.astro';
+import { getGlobal } from '../lib/strapi/queries';
+import { displayName, type Member } from '../lib/auth/cms';
+
+interface Props {
+  member: Member;
+  active: 'overview' | 'bookings' | 'payments' | 'profile';
+  title: string;
+}
+
+const { member, active, title } = Astro.props;
+let global;
+try { global = await getGlobal(); } catch { /* CMS offline */ }
+
+const name = displayName(member);
+const initial = name.charAt(0).toUpperCase();
+const since = member.createdAt
+  ? new Date(member.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'Asia/Colombo' })
+  : null;
+
+const tabs = [
+  { key: 'overview', label: 'Overview', href: '/account', icon: 'M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10' },
+  { key: 'bookings', label: 'My Bookings', href: '/account/bookings', icon: 'M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z' },
+  { key: 'payments', label: 'Payments', href: '/account/payments', icon: 'M3 7h18v12H3zM3 11h18M7 15h3' },
+  { key: 'profile', label: 'Profile', href: '/account/profile', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21c.6-4 4-6 8-6s7.4 2 8 6' },
+] as const;
+---
+
+<PageLayout seo={{ metaTitle: `${title} — My Account — The Wolverine Hub` }} {global} noindex>
+  <section class="twh-acct">
+    <header class="twh-acct__hero">
+      <div class="twh-acct__hero-inner">
+        <span class="twh-acct__avatar" aria-hidden="true">{initial}</span>
+        <div class="twh-acct__hello">
+          <p class="twh-acct__kicker">Member area</p>
+          <h1 class="twh-acct__name">{name}</h1>
+          <p class="twh-acct__meta">{member.email}{since && ` · Member since ${since}`}</p>
+        </div>
+        <a href="/schedule" class="twh-btn twh-btn--primary twh-btn--md twh-acct__book">Book a class</a>
+      </div>
+    </header>
+
+    <div class="twh-acct__shell">
+      <nav class="twh-acct__nav" aria-label="Account sections">
+        <ul>
+          {tabs.map((t) => (
+            <li>
+              <a href={t.href} class={`twh-acct__tab${active === t.key ? ' is-active' : ''}`} aria-current={active === t.key ? 'page' : undefined}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={t.icon} /></svg>
+                {t.label}
+              </a>
+            </li>
+          ))}
+          <li class="twh-acct__signout">
+            <form method="post" action="/api/auth/logout">
+              <button type="submit" class="twh-acct__tab twh-acct__tab--btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4M16 17l5-5-5-5M21 12H9" /></svg>
+                Sign out
+              </button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="twh-acct__main">
+        <slot />
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style is:global>@import '../styles/pages/twh-account.css';</style>
+
+<script>
+  import { initAuthForms } from '../scripts/interactions/auth-form';
+  import { initAccount } from '../scripts/interactions/account';
+  initAuthForms();
+  initAccount();
+</script>

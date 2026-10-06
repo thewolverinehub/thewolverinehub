@@ -22,8 +22,17 @@ interface ImportMetaEnv {
   readonly TWH_EDGE_SECRET: string;
   readonly SITE_INDEXING: string;
   readonly GO_LIVE_DATE: string;
+  readonly SESSION_SECRET: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
+}
+
+// Per-request values set by src/middleware.ts
+declare namespace App {
+  interface Locals {
+    /** Signed-in member (from the signed session cookie) — null when logged out. */
+    session: { uid: number; name: string } | null;
+  }
 }

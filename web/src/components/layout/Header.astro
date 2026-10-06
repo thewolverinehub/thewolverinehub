@@ -10,6 +10,11 @@ interface Props {
 
 const { header, global, menuId = 'main-menu' } = Astro.props;
 const siteName = global?.siteName ?? 'The Wolverine Hub';
+
+// Signed-in members see "My Account"; everyone else sees the CMS-driven Sign In / Sign Up button.
+const session = Astro.locals.session;
+const memberInitial = (session?.name ?? '').trim().charAt(0).toUpperCase();
+const cta = header?.primaryCta ?? { label: 'Sign In / Sign Up', href: '/login', variant: 'primary', openInNewTab: false };
 ---
 
 <AnnouncementBar {header} />
@@ -56,14 +61,19 @@ const siteName = global?.siteName ?? 'The Wolverine Hub';
 
     <!-- Right side -->
     <div class="twh-header__right">
-      {header?.primaryCta && (
+      {session ? (
+        <a href="/account" class="twh-btn twh-btn--primary twh-btn--sm twh-header__cta twh-header__account" aria-label="My account">
+          <span class="twh-header__avatar" aria-hidden="true">{memberInitial}</span>
+          My Account
+        </a>
+      ) : (
         <a
-          href={header.primaryCta.href}
+          href={cta.href}
           class="twh-btn twh-btn--primary twh-btn--sm twh-header__cta"
-          target={header.primaryCta.openInNewTab ? '_blank' : undefined}
-          rel={header.primaryCta.openInNewTab ? 'noopener noreferrer' : undefined}
+          target={cta.openInNewTab ? '_blank' : undefined}
+          rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
         >
-          {header.primaryCta.label}
+          {cta.label}
         </a>
       )}
 

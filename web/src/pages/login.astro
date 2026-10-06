@@ -1,0 +1,30 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import Field from '../components/ui/Field.astro';
+
+export const prerender = false;
+
+const url = Astro.url;
+const rawNext = url.searchParams.get('next') ?? '';
+const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';
+if (Astro.locals.session) return Astro.redirect(next || '/account', 302);
+
+const justReset = url.searchParams.get('reset') === '1';
+const registerHref = `/register${next ? `?next=${encodeURIComponent(next)}` : ''}`;
+---
+
+<AuthLayout title="Sign in" subtitle="Welcome back. Sign in to book classes and see your training." eyebrow="Members" metaTitle="Sign in — The Wolverine Hub">
+  {justReset && <p class="twh-auth__status" data-kind="success" role="status" style="margin-bottom:1.25rem;">Your password has been updated. Sign in with your new password.</p>}
+
+  <form class="twh-auth__form" data-auth-form data-endpoint="/api/auth/login" novalidate>
+    <input type="hidden" name="next" value={next} />
+    <Field name="identifier" label="Email or username" autocomplete="username" required />
+    <Field name="password" label="Password" type="password" autocomplete="current-password" required />
+    <p class="twh-auth__link-row"><a href="/forgot-password">Forgot your password?</a></p>
+
+    <p class="twh-auth__status" data-form-status hidden></p>
+    <button type="submit" class="twh-btn twh-btn--primary twh-btn--lg twh-auth__submit">Sign in</button>
+  </form>
+
+  <p class="twh-auth__alt">New to The Wolverine Hub? <a href={registerHref}>Create an account</a></p>
+</AuthLayout>

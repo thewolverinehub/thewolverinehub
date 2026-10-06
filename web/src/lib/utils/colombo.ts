@@ -131,3 +131,22 @@ export const colomboDateLong = (date: Date = new Date()) => {
   for (const part of clockDateFmt.formatToParts(date)) p[part.type] = part.value;
   return `${p.weekday}, ${p.day} ${p.month}`;
 };
+
+/** Weekday of a plain calendar date ("YYYY-MM-DD"), no timezone shift. */
+export function weekdayOf(dateISO: string): Day {
+  const idx = new Date(`${dateISO}T12:00:00Z`).getUTCDay(); // 0 = Sunday
+  return DAYS[(idx + 6) % 7];
+}
+
+/** "YYYY-MM-DD" + n days. */
+export function addDays(dateISO: string, days: number): string {
+  const d = new Date(`${dateISO}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** 3000 → "LKR 3,000"; 0 → "Free" */
+export function formatLKR(amount: number | null | undefined): string {
+  const n = Number(amount ?? 0);
+  return n > 0 ? `LKR ${n.toLocaleString('en-US')}` : 'Free';
+}

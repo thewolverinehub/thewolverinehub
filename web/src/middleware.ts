@@ -1,4 +1,9 @@
 import { defineMiddleware } from 'astro:middleware';
+import { SESSION_COOKIE, readSessionValue } from './lib/auth/session';
+
+/** Pages that need a signed-in member. */
+const PROTECTED = ['/account', '/book', '/checkout'];
+const isProtected = (p: string) => PROTECTED.some((x) => p === x || p.startsWith(x + '/'));
 
 const SITE_INDEXING = import.meta.env.SITE_INDEXING === 'true';
 const EDGE_CHECK = import.meta.env.EDGE_CHECK === 'true';
@@ -29,6 +34,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // If redirects fail to load, continue without them
   }
 
+  // ── 2b. Member session (signed cookie — no network call) ──────────────────
+  const session = readSessionValue(context.cookies.get(SESSION_COOKIE)?.value);
+  context.locals.session = session ? { uid: session.uid, name: session.name } : null;
+  if (!session && isProtected(url.pathname)) {
+    const next = encodeURIComponent(url.pathname + url.search);
+    return context.redirect(`/login?next=${next}`, 302);
+  }
+
   // ── 3. Generate response ──────────────────────────────────────────────────
   const response = await next();
 
@@ -38,6 +51,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Noindex on all responses when site indexing is disabled
   if (!SITE_INDEXING) {
     headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  }
+
+  // Anything personal must never be cached by a browser/proxy.
+  if (session || isProtected(url.pathname) || url.pathname.startsWith('/api/')) {
+    headers.set('Cache-Control', 'private, no-store');
   }
 
   headers.set('X-Content-Type-Options', 'nosniff');

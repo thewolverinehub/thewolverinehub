@@ -1,0 +1,71 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import Field from '../components/ui/Field.astro';
+
+export const prerender = false;
+
+const url = Astro.url;
+const rawNext = url.searchParams.get('next') ?? '';
+const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';
+if (Astro.locals.session) return Astro.redirect(next || '/account', 302);
+
+const loginHref = `/login${next ? `?next=${encodeURIComponent(next)}` : ''}`;
+const genders = [
+  { value: 'female', label: 'Female' },
+  { value: 'male', label: 'Male' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer-not-to-say', label: 'Prefer not to say' },
+];
+---
+
+<AuthLayout title="Create account" subtitle="Join in a minute. Book classes, pay per session and keep your training history in one place." eyebrow="Join" metaTitle="Sign up — The Wolverine Hub" wide>
+  <form class="twh-auth__form" data-auth-form data-endpoint="/api/auth/register" novalidate>
+    <input type="hidden" name="next" value={next} />
+
+    <Field name="fullName" label="Full name" autocomplete="name" required maxlength={80} />
+    <div class="twh-auth__row">
+      <Field name="username" label="Username" autocomplete="username" required hint="3–30 characters: letters, numbers, . - _" maxlength={30} />
+      <Field name="phone" label="Phone" type="tel" autocomplete="tel" placeholder="+94 77 123 4567" required />
+    </div>
+    <Field name="email" label="Email" type="email" autocomplete="email" required hint="We send your booking confirmations and reminders here." />
+
+    <div class="twh-auth__row">
+      <div>
+        <Field name="password" label="Password" type="password" autocomplete="new-password" required strength="#pw-strength" hint="At least 8 characters, with a letter and a number." />
+        <p class="twh-strength" id="pw-strength" data-score="0" aria-live="polite"><span></span></p>
+      </div>
+      <Field name="passwordConfirm" label="Confirm password" type="password" autocomplete="new-password" required />
+    </div>
+
+    <details class="twh-auth__more">
+      <summary>More about you (optional)</summary>
+      <div class="twh-auth__more-body">
+        <div class="twh-auth__row">
+          <Field name="dateOfBirth" label="Date of birth" type="date" autocomplete="bday" />
+          <Field name="gender" label="Gender" type="select" options={genders} />
+        </div>
+        <div class="twh-auth__row">
+          <Field name="emergencyContactName" label="Emergency contact name" autocomplete="off" maxlength={80} />
+          <Field name="emergencyContactPhone" label="Emergency contact phone" type="tel" autocomplete="off" />
+        </div>
+        <Field name="fitnessGoals" label="Your goals" type="textarea" placeholder="e.g. build strength, prepare for HYROX, learn to box…" maxlength={500} />
+      </div>
+    </details>
+
+    <label class="twh-auth__check">
+      <input type="checkbox" name="acceptTerms" required />
+      <span>I agree to the <a href="/terms" target="_blank" rel="noopener">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>. *</span>
+    </label>
+    <p class="twh-field__error" data-error-for="acceptTerms" role="alert"></p>
+    <label class="twh-auth__check">
+      <input type="checkbox" name="marketingOptIn" />
+      <span>Send me news and offers (optional).</span>
+    </label>
+
+    <p class="twh-auth__status" data-form-status hidden></p>
+    <button type="submit" class="twh-btn twh-btn--primary twh-btn--lg twh-auth__submit">Create account</button>
+  </form>
+
+  <p class="twh-auth__alt">Already a member? <a href={loginHref}>Sign in</a></p>
+</AuthLayout>
+

@@ -22,6 +22,15 @@
         }
       }
     },
+    "nickname": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Ring Name / Nickname",
+          "description": "Optional, e.g. \"The Wolverine\". Shown next to the name."
+        }
+      }
+    },
     "slug": {
       "type": "uid",
       "targetField": "name",

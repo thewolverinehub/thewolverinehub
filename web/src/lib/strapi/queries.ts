@@ -1,10 +1,10 @@
 import { fetchSingle, fetchList, fetchOne } from './client';
 import type {
   StrapiGlobal, StrapiHeader, StrapiFooter, StrapiUiStrings,
-  StrapiClass, StrapiCoach, StrapiScheduleSlot, StrapiPricingTier,
-  StrapiPass, StrapiTestimonial, StrapiFaq, StrapiFaqCategory,
+  StrapiClass, StrapiCoach, StrapiScheduleSlot,
+  StrapiTestimonial, StrapiFaq, StrapiFaqCategory,
   StrapiPost, StrapiGalleryItem, StrapiRedirect,
-  StrapiPage, StrapiProgram,
+  StrapiPage,
 } from './types';
 import { cache } from '../cache';
 
@@ -59,18 +59,6 @@ export const getScheduleSlots = () =>
     TTL
   );
 
-export const getPricingTiers = () =>
-  cache('pricing-tiers', () =>
-    fetchList<StrapiPricingTier>('pricing-tiers', 'sort=sortOrder:asc&pagination[pageSize]=10'),
-    TTL
-  );
-
-export const getPasses = () =>
-  cache('passes', () =>
-    fetchList<StrapiPass>('passes', 'sort=sortOrder:asc&pagination[pageSize]=100'),
-    TTL
-  );
-
 export const getTestimonials = () =>
   cache('testimonials', () =>
     fetchList<StrapiTestimonial>('testimonials', 'pagination[pageSize]=50'),
@@ -97,12 +85,6 @@ export const getPosts = (page = 1, pageSize = 12) =>
 
 export const getPostBySlug = (slug: string) =>
   cache(`post:${slug}`, () => fetchOne<StrapiPost>('posts', slug), TTL);
-
-export const getPrograms = () =>
-  cache('programs', () =>
-    fetchList<StrapiProgram>('programs', 'sort=sortOrder:asc&pagination[pageSize]=20'),
-    TTL
-  );
 
 export const getGalleryItems = () =>
   cache('gallery-items', () =>

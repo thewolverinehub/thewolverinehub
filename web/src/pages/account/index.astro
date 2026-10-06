@@ -1,0 +1,149 @@
+---
+import AccountLayout from '../../layouts/AccountLayout.astro';
+import BookingRow from '../../components/account/BookingRow.astro';
+import { getMember, myBookings, displayName, type Payment } from '../../lib/auth/cms';
+import { memberStats, profileCompleteness, viewBookings } from '../../lib/booking/member';
+import { dateLabel, formatLKR, fmtMinutes } from '../../lib/utils/colombo';
+
+export const prerender = false;
+
+const session = Astro.locals.session!;
+const member = await getMember(session.uid);
+if (!member) {
+  Astro.cookies.delete('twh_session', { path: '/' });
+  return Astro.redirect('/login', 302);
+}
+
+let bookings: Awaited<ReturnType<typeof myBookings>>['bookings'] = [];
+let payments: Payment[] = [];
+let loadError = false;
+try {
+  ({ bookings, payments } = await myBookings(member.id));
+} catch {
+  loadError = true;
+}
+
+const views = viewBookings(bookings, payments);
+const stats = memberStats(views, payments);
+const completeness = profileCompleteness(member as any);
+const recentPayments = payments.slice(0, 3);
+const first = displayName(member).split(' ')[0];
+
+const kpis = [
+  { label: 'Upcoming sessions', value: String(stats.upcoming.length), hint: stats.next ? `Next: ${stats.next.short}` : 'Nothing booked yet' },
+  { label: 'Sessions completed', value: String(stats.sessionsDone), hint: `${stats.sessionsThisMonth} this month` },
+  { label: 'Total paid', value: formatLKR(stats.totalPaid).replace('Free', 'LKR 0'), hint: `${payments.filter((p) => p.status === 'paid').length} payments` },
+  { label: 'Favourite class', value: stats.favourite?.name ?? '—', hint: stats.favourite ? `${stats.favourite.count} sessions` : 'Train to find out' },
+];
+const statusTone: Record<string, string> = { paid: 'good', pending: 'warn', failed: 'bad', cancelled: 'muted', refunded: 'muted' };
+---
+
+<AccountLayout {member} active="overview" title="Overview">
+  <p class="twh-acct__greet">Hi {first} 👋 — here's your training at a glance.</p>
+
+  {loadError && <p class="twh-banner twh-banner--warn" role="alert">We couldn't load your bookings right now. Please refresh in a moment.</p>}
+
+  <ul class="twh-kpis" role="list">
+    {kpis.map((k) => (
+      <li class="twh-kpi">
+        <p class="twh-kpi__label">{k.label}</p>
+        <p class="twh-kpi__value">{k.value}</p>
+        <p class="twh-kpi__hint">{k.hint}</p>
+      </li>
+    ))}
+  </ul>
+
+  <div class="twh-acct__cols">
+    <section class="twh-card" aria-labelledby="up-h">
+      <div class="twh-card__head">
+        <h2 id="up-h" class="twh-card__title">Upcoming sessions</h2>
+        <a href="/account/bookings" class="twh-card__link">All bookings →</a>
+      </div>
+      {stats.upcoming.length === 0 ? (
+        <div class="twh-empty">
+          <p class="twh-empty__title">No sessions booked</p>
+          <p class="twh-empty__text">Pick a class from the schedule and book your next session.</p>
+          <a href="/schedule" class="twh-btn twh-btn--primary twh-btn--sm">Browse the schedule</a>
+        </div>
+      ) : (
+        <ul class="twh-bk-list" role="list">
+          {stats.upcoming.slice(0, 3).map((b) => <BookingRow booking={b} />)}
+        </ul>
+      )}
+    </section>
+
+    <section class="twh-card" aria-labelledby="rec-h">
+      <div class="twh-card__head">
+        <h2 id="rec-h" class="twh-card__title">Training record</h2>
+        <a href="/account/bookings?tab=past" class="twh-card__link">Full history →</a>
+      </div>
+      {stats.past.length === 0 ? (
+        <div class="twh-empty">
+          <p class="twh-empty__title">Your record starts here</p>
+          <p class="twh-empty__text">Every session you complete will appear in your training history.</p>
+        </div>
+      ) : (
+        <ol class="twh-timeline" role="list">
+          {stats.past.slice(0, 5).map((b) => (
+            <li class="twh-timeline__item">
+              <span class="twh-timeline__dot" aria-hidden="true"></span>
+              <div>
+                <p class="twh-timeline__title">{b.classNameSnapshot}</p>
+                <p class="twh-timeline__sub">{b.long} · {fmtMinutes(b.startMin)}</p>
+              </div>
+              <span class={`twh-pill twh-pill--${b.tone}`}>{b.label}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  </div>
+
+  <div class="twh-acct__cols">
+    <section class="twh-card" aria-labelledby="pay-h">
+      <div class="twh-card__head">
+        <h2 id="pay-h" class="twh-card__title">Recent payments</h2>
+        <a href="/account/payments" class="twh-card__link">All payments →</a>
+      </div>
+      {recentPayments.length === 0 ? (
+        <div class="twh-empty"><p class="twh-empty__text">No payments yet.</p></div>
+      ) : (
+        <ul class="twh-paylist" role="list">
+          {recentPayments.map((p) => (
+            <li class="twh-paylist__row">
+              <div>
+                <p class="twh-paylist__title">{p.booking?.classNameSnapshot ?? 'Class booking'}</p>
+                <p class="twh-paylist__sub">{dateLabel(p.createdAt.slice(0, 10)).long} · {p.orderId}</p>
+              </div>
+              <div class="twh-paylist__right">
+                <p class="twh-paylist__amount">{p.amount > 0 ? formatLKR(p.amount) : 'Free'}</p>
+                <span class={`twh-pill twh-pill--${statusTone[p.status] ?? 'muted'}`}>{p.status}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <section class="twh-card" aria-labelledby="prof-h">
+      <div class="twh-card__head">
+        <h2 id="prof-h" class="twh-card__title">Your profile</h2>
+        <a href="/account/profile" class="twh-card__link">Edit →</a>
+      </div>
+      <div class="twh-meter" role="img" aria-label={`Profile ${completeness.percent}% complete`}>
+        <div class="twh-meter__bar"><span style={`width:${completeness.percent}%`}></span></div>
+        <p class="twh-meter__label">{completeness.percent}% complete</p>
+      </div>
+      {completeness.missing.length > 0 ? (
+        <p class="twh-empty__text" style="margin-top:0.75rem;">Add: {completeness.missing.join(', ')}. Your coaches use this to keep you safe and train you better.</p>
+      ) : (
+        <p class="twh-empty__text" style="margin-top:0.75rem;">All set — thanks for keeping your details up to date.</p>
+      )}
+      <dl class="twh-facts">
+        <div><dt>Username</dt><dd>{member.username}</dd></div>
+        <div><dt>Email</dt><dd>{member.email}</dd></div>
+        <div><dt>Phone</dt><dd>{member.phone ?? '—'}</dd></div>
+      </dl>
+    </section>
+  </div>
+</AccountLayout>

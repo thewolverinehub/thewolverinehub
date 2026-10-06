@@ -7,7 +7,6 @@ import Marquee from '../components/sections/Marquee.astro';
 import ClassRail from '../components/sections/ClassRail.astro';
 import FeatureSplit from '../components/sections/FeatureSplit.astro';
 import CoachCarousel from '../components/sections/CoachCarousel.astro';
-import PricingTeaser from '../components/sections/PricingTeaser.astro';
 import TestimonialSlider from '../components/sections/TestimonialSlider.astro';
 import CTABanner from '../components/sections/CTABanner.astro';
 import { getGlobal, getPageBySlug } from '../lib/strapi/queries';
@@ -20,7 +19,7 @@ try {
 
 const seo: StrapiSeo = homePage?.seo ?? {
   metaTitle: 'Where Iron Meets Instinct',
-  metaDescription: "Sri Lanka's most demanding training ground. Classes, coaching and programs built for those who mean it.",
+  metaDescription: "Sri Lanka's most demanding training ground. Classes, coaching and training built for those who mean it.",
 };
 
 // If Strapi has sections configured, use the dynamic renderer.
@@ -39,7 +38,6 @@ const hasSections = (homePage?.sections?.length ?? 0) > 0;
       <ClassRail />
       <FeatureSplit />
       <CoachCarousel />
-      <PricingTeaser />
       <TestimonialSlider />
       <CTABanner />
     </>

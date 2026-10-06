@@ -8,10 +8,10 @@ interface Props {
 const { section } = Astro.props;
 
 const headline     = section?.headline     ?? 'Where Iron Meets Instinct.';
-const subheadline  = section?.subheadline  ?? "Sri Lanka's most demanding training ground. Classes, coaching and programs built for those who mean it.";
+const subheadline  = section?.subheadline  ?? "Sri Lanka's most demanding training ground. Classes, coaching and training built for those who mean it.";
 const videoUrl     = section?.video?.url;
 const posterUrl    = section?.poster?.url;
-const primaryCta   = section?.primaryCta   ?? { label: 'Start Training', href: '/free-trial',  variant: 'primary', openInNewTab: false };
+const primaryCta   = section?.primaryCta   ?? { label: 'Book a Class', href: '/schedule',  variant: 'primary', openInNewTab: false };
 const secondaryCta = section?.secondaryCta ?? { label: 'Explore Classes', href: '/classes', variant: 'ghost',   openInNewTab: false };
 const anchorId     = section?.anchorId     ?? 'hero';
 

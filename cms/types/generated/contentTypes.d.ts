@@ -630,6 +630,166 @@ export interface ApiAuthorAuthor extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiBookingBooking extends Struct.CollectionTypeSchema {
+  collectionName: 'bookings';
+  info: {
+    description: "One member's booking for one dated session of a class. Created by the website \u2014 you normally only view or cancel these.";
+    displayName: 'Booking';
+    pluralName: 'bookings';
+    singularName: 'booking';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Integer &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Price charged for this booking.';
+          label: 'Amount (LKR)';
+        };
+      }> &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    cancelledAt: Schema.Attribute.DateTime &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Cancelled At';
+        };
+      }>;
+    classDocumentId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'documentId of the booked class.';
+          label: 'Class (id)';
+        };
+      }>;
+    classNameSnapshot: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Copied when booked.';
+          label: 'Class Name (at booking)';
+        };
+      }>;
+    classSlug: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Class (slug)';
+        };
+      }>;
+    confirmationSentAt: Schema.Attribute.DateTime &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Confirmation Email Sent';
+        };
+      }>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'LKR'>;
+    endTime: Schema.Attribute.Time &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Copied from the slot when booked.';
+          label: 'End Time';
+        };
+      }>;
+    holdExpiresAt: Schema.Attribute.DateTime &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'A pending booking holds its seat until this time.';
+          label: 'Seat Held Until';
+        };
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::booking.booking'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Internal notes (not shown to the member).';
+          label: 'Notes';
+        };
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    reference: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short code the member sees, e.g. TWH-7F3K9Q.';
+          label: 'Booking Reference';
+        };
+      }>;
+    reminderSentAt: Schema.Attribute.DateTime &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Reminder Email Sent';
+        };
+      }>;
+    sessionDate: Schema.Attribute.Date &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'The calendar date of the session (Sri Lanka).';
+          label: 'Session Date';
+        };
+      }>;
+    slotDocumentId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'documentId of the weekly timetable slot.';
+          label: 'Weekly Slot (id)';
+        };
+      }>;
+    startTime: Schema.Attribute.Time &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: "Copied from the slot when booked (so later timetable edits don't rewrite history).";
+          label: 'Start Time';
+        };
+      }>;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'confirmed', 'cancelled', 'attended', 'no-show']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'pending = waiting for payment (seat held for a few minutes), confirmed = paid/free and booked.';
+          label: 'Status';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Who booked.';
+          label: 'Member';
+        };
+      }>;
+  };
+}
+
 export interface ApiClassClass extends Struct.CollectionTypeSchema {
   collectionName: 'classes';
   info: {
@@ -642,6 +802,13 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    coaches: Schema.Attribute.Relation<'manyToMany', 'api::coach.coach'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Coaches who lead this class (shown in the Program section). Leave empty if not decided yet.';
+          label: 'Coaches';
+        };
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -666,8 +833,15 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Class length in minutes, e.g. 60 for a one-hour class.';
+          description: 'Length of one session.';
           label: 'Duration (minutes)';
+        };
+      }>;
+    equipment: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Equipment used in the class, e.g. "Barbells", "Kettlebells". One per line.';
+          label: 'Equipment Used (one per line)';
         };
       }>;
     featuredVideo: Schema.Attribute.Media<'videos'> &
@@ -675,6 +849,13 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
         'content-manager': {
           description: 'Full video shown on the class page. Visitors press play themselves (sound on).';
           label: 'Class Video';
+        };
+      }>;
+    frequency: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Shown on the class page, e.g. "3 days per week".';
+          label: 'Frequency';
         };
       }>;
     gallery: Schema.Attribute.Media<'images' | 'videos', true> &
@@ -720,7 +901,7 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
           description: 'Class name shown on cards and pages. Max 20 characters.';
-          label: 'Name';
+          label: 'Class Name';
         };
       }> &
       Schema.Attribute.SetMinMaxLength<{
@@ -733,6 +914,21 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
           label: 'Card Hover Video';
         };
       }>;
+    price: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'What one person pays to book ONE session of this class. Use 0 for a free class.';
+          label: 'Price per Session (LKR)';
+        };
+      }> &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
     seo: Schema.Attribute.Component<'shared.seo', false> &
       Schema.Attribute.SetPluginOptions<{
@@ -760,12 +956,19 @@ export interface ApiClassClass extends Struct.CollectionTypeSchema {
     tagline: Schema.Attribute.String &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'One short line shown on the class card. Max 50 characters.';
-          label: 'Tagline';
+          description: 'Short line under the name, e.g. "Strength Training". Max 50 characters.';
+          label: 'Class Type (short label)';
         };
       }> &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 50;
+      }>;
+    targetAreas: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Body areas / skills this class develops, e.g. "Legs", "Core", "Cardio endurance". One per line.';
+          label: 'Target Areas (one per line)';
+        };
       }>;
     thumbnail: Schema.Attribute.Media<'images'> &
       Schema.Attribute.SetPluginOptions<{
@@ -837,6 +1040,13 @@ export interface ApiCoachCoach extends Struct.CollectionTypeSchema {
         'content-manager': {
           description: 'Full display name.';
           label: 'Name';
+        };
+      }>;
+    nickname: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Optional, e.g. "The Wolverine". Shown next to the name.';
+          label: 'Ring Name / Nickname';
         };
       }>;
     photo: Schema.Attribute.Media<'images'> &
@@ -961,6 +1171,54 @@ export interface ApiDisciplineDiscipline extends Struct.CollectionTypeSchema {
           label: 'URL Slug';
         };
       }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiEmailLogEmailLog extends Struct.CollectionTypeSchema {
+  collectionName: 'email_logs';
+  info: {
+    description: 'Every email the system sends (or would send). While no email provider is connected, emails are recorded here.';
+    displayName: 'Email Log';
+    pluralName: 'email-logs';
+    singularName: 'email-log';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    body: Schema.Attribute.Text;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    error: Schema.Attribute.Text;
+    html: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::email-log.email-log'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    sentAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['logged', 'sent', 'failed']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'logged'>;
+    subject: Schema.Attribute.String & Schema.Attribute.Required;
+    to: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      [
+        'booking-confirmation',
+        'booking-reminder',
+        'booking-cancelled',
+        'welcome',
+        'password-reset',
+        'other',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'other'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1775,6 +2033,7 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
         'sections.newsletter-block',
         'sections.rich-text',
         'sections.video-feature',
+        'sections.our-story',
       ]
     > &
       Schema.Attribute.SetPluginOptions<{
@@ -1948,6 +2207,116 @@ export interface ApiPassPass extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
+  collectionName: 'payments';
+  info: {
+    description: 'A payment attempt for a booking.';
+    displayName: 'Payment';
+    pluralName: 'payments';
+    singularName: 'payment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Amount (LKR)';
+        };
+      }> &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    booking: Schema.Attribute.Relation<'manyToOne', 'api::booking.booking'> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Booking';
+        };
+      }>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'LKR'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment.payment'
+    > &
+      Schema.Attribute.Private;
+    orderId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Unique payment reference sent to the payment provider.';
+          label: 'Order ID';
+        };
+      }>;
+    paidAt: Schema.Attribute.DateTime &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Paid At';
+        };
+      }>;
+    provider: Schema.Attribute.Enumeration<['preview', 'payhere', 'free']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'preview = built-in test checkout; payhere = real gateway; free = no charge.';
+          label: 'Provider';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<'preview'>;
+    providerReference: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Gateway transaction id (when available).';
+          label: 'Provider Reference';
+        };
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    rawPayload: Schema.Attribute.JSON &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'For debugging.';
+          label: 'Raw Provider Data';
+        };
+      }>;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'failed', 'cancelled', 'refunded']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Status';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: '';
+          label: 'Member';
+        };
+      }>;
   };
 }
 
@@ -3307,22 +3676,34 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    dateOfBirth: Schema.Attribute.Date;
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    emergencyContactName: Schema.Attribute.String;
+    emergencyContactPhone: Schema.Attribute.String;
+    fitnessGoals: Schema.Attribute.Text;
+    fullName: Schema.Attribute.String;
+    gender: Schema.Attribute.Enumeration<
+      ['female', 'male', 'other', 'prefer-not-to-say']
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
+    marketingOptIn: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    medicalNotes: Schema.Attribute.Text;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    phone: Schema.Attribute.String;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
@@ -3356,9 +3737,11 @@ declare module '@strapi/strapi' {
       'api::add-on.add-on': ApiAddOnAddOn;
       'api::amenity.amenity': ApiAmenityAmenity;
       'api::author.author': ApiAuthorAuthor;
+      'api::booking.booking': ApiBookingBooking;
       'api::class.class': ApiClassClass;
       'api::coach.coach': ApiCoachCoach;
       'api::discipline.discipline': ApiDisciplineDiscipline;
+      'api::email-log.email-log': ApiEmailLogEmailLog;
       'api::faq-category.faq-category': ApiFaqCategoryFaqCategory;
       'api::faq.faq': ApiFaqFaq;
       'api::footer.footer': ApiFooterFooter;
@@ -3372,6 +3755,7 @@ declare module '@strapi/strapi' {
       'api::page.page': ApiPagePage;
       'api::partner.partner': ApiPartnerPartner;
       'api::pass.pass': ApiPassPass;
+      'api::payment.payment': ApiPaymentPayment;
       'api::post-category.post-category': ApiPostCategoryPostCategory;
       'api::post.post': ApiPostPost;
       'api::pricing-tier.pricing-tier': ApiPricingTierPricingTier;

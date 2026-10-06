@@ -1,0 +1,125 @@
+{
+  "kind": "collectionType",
+  "collectionName": "payments",
+  "info": {
+    "singularName": "payment",
+    "pluralName": "payments",
+    "displayName": "Payment",
+    "description": "A payment attempt for a booking."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "orderId": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Order ID",
+          "description": "Unique payment reference sent to the payment provider."
+        }
+      }
+    },
+    "booking": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::booking.booking",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Booking",
+          "description": ""
+        }
+      }
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Member",
+          "description": ""
+        }
+      }
+    },
+    "amount": {
+      "type": "integer",
+      "required": true,
+      "min": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Amount (LKR)",
+          "description": ""
+        }
+      }
+    },
+    "currency": {
+      "type": "string",
+      "default": "LKR"
+    },
+    "provider": {
+      "type": "enumeration",
+      "enum": [
+        "preview",
+        "payhere",
+        "free"
+      ],
+      "default": "preview",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Provider",
+          "description": "preview = built-in test checkout; payhere = real gateway; free = no charge."
+        }
+      }
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "cancelled",
+        "refunded"
+      ],
+      "default": "pending",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Status",
+          "description": ""
+        }
+      }
+    },
+    "providerReference": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Provider Reference",
+          "description": "Gateway transaction id (when available)."
+        }
+      }
+    },
+    "paidAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Paid At",
+          "description": ""
+        }
+      }
+    },
+    "rawPayload": {
+      "type": "json",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Raw Provider Data",
+          "description": "For debugging."
+        }
+      }
+    }
+  }
+}

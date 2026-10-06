@@ -1,19 +1,24 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getScheduleSlots, getGlobal, getPageBySlug } from '../lib/strapi/queries';
-import type { StrapiScheduleSlot, StrapiPageHeroSection } from '../lib/strapi/types';
+import { getScheduleSlots, getClasses, getGlobal, getPageBySlug } from '../lib/strapi/queries';
+import { seatsTaken } from '../lib/auth/cms';
+import { cutoffMinutes, sessionFor, spotsLabel, upcomingDates } from '../lib/booking/sessions';
+import type { StrapiScheduleSlot, StrapiPageHeroSection, StrapiClass } from '../lib/strapi/types';
 import {
-  DAYS, type Day, getColomboNow, weekDates, dateLabel, toMinutes, fmtMinutes, fmtDuration,
+  DAYS, type Day, addDays, formatLKR, getColomboNow, weekDates, dateLabel, toMinutes, fmtMinutes, fmtDuration,
   colomboClockSeconds, colomboDateLong,
 } from '../lib/utils/colombo';
 import {
   slotState, findNext, nextLabel, nowMinutes, STATE_LABEL, type SlotLite,
 } from '../lib/utils/schedule';
 
-let global, slots: StrapiScheduleSlot[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
+let global, slots: StrapiScheduleSlot[] = [], classList: StrapiClass[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, slots, pageData] = await Promise.all([getGlobal(), getScheduleSlots(), getPageBySlug('schedule')]);
+  [global, slots, classList, pageData] = await Promise.all([getGlobal(), getScheduleSlots(), getClasses(), getPageBySlug('schedule')]);
 } catch { /* CMS offline */ }
+
+// coaches per class (a slot's own coach, if set, wins)
+const coachesByClass = new Map(classList.map((c) => [c.slug, (c.coaches ?? []).map((x) => x.name)]));
 
 const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
@@ -21,6 +26,9 @@ const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-
 const now = getColomboNow();
 const dates = weekDates(now.dateISO, now.day);
 const defaultDay: Day = now.day;
+
+// Seats already taken, for this week + next (a past weekday books next week's date)
+const taken = await seatsTaken(dates.monday, addDays(dates.sunday, 7));
 
 // ── Normalise slots ────────────────────────────────────────────
 const intensityAccent: Record<string, { bg: string; ink: string }> = {
@@ -39,6 +47,9 @@ interface Item extends SlotLite {
   level: string;
   coach: string;
   capacity: number;
+  startTime: string;
+  endTime: string;
+  price: number;
   duration: string;
   start: string;
   end: string;
@@ -61,8 +72,11 @@ const items: Item[] = slots
       slug: s.class?.slug ?? '',
       intensity,
       level: s.class?.level ?? '',
-      coach: s.coach?.name ?? '',
+      coach: s.coach ? s.coach.name : (coachesByClass.get(s.class?.slug ?? '') ?? []).join(' & '),
       capacity: s.capacity ?? 0,
+      startTime: s.startTime,
+      endTime: s.endTime,
+      price: s.class?.price ?? 0,
       duration: fmtDuration(startMin, endMin),
       start: fmtMinutes(startMin),
       end: fmtMinutes(endMin),
@@ -225,6 +239,11 @@ const seo = {
                     <ul class="twh-schedule__slots" role="list">
                       {byDay[day].map(slot => {
                         const state = isToday ? slotState(slot, nowMinutes(now)) : 'upcoming';
+                        // The date this card books: this week's date, or the next one for a weekday already gone by
+                        const slotInput = { documentId: slot.id, weekday: slot.day, startTime: slot.startTime, endTime: slot.endTime, capacity: slot.capacity, room: slot.room };
+                        const bookDate = dates[day] >= now.dateISO ? dates[day] : (upcomingDates(slotInput, 1, now)[0] ?? dates[day]);
+                        const sess = sessionFor(slotInput, bookDate, taken, now);
+                        const forNextWeek = bookDate !== dates[day];
                         return (
                           <li
                             class="twh-schedule__slot"
@@ -237,6 +256,8 @@ const seo = {
                             data-name={slot.name}
                             data-room={slot.room}
                             data-class={slot.slug}
+                            data-date={bookDate}
+                            data-cutoff={cutoffMinutes(slot.startMin, slot.endMin)}
                           >
                             <div class="twh-schedule__time">
                               <span class="twh-schedule__time-start">{slot.start}</span>
@@ -267,16 +288,27 @@ const seo = {
                                   </li>
                                 )}
                                 {slot.capacity > 0 && (
-                                  <li>
+                                  <li data-spots>
                                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 14c.4-2.6 2.2-4 4.5-4s4.1 1.4 4.5 4M11 3.2a2.5 2.5 0 0 1 0 4.6M14.5 14c-.2-1.6-1-2.8-2.3-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                                    {slot.capacity} spots
+                                    <span data-spots-text>{spotsLabel(sess)}</span>
                                   </li>
                                 )}
                               </ul>
                             </div>
 
                             <div class="twh-schedule__action">
-                              <a href="/contact" class="twh-btn twh-btn--ghost twh-btn--sm" aria-label={`Book ${slot.name} on ${dayName(day)} at ${slot.start}`}>Book</a>
+                              <p class="twh-schedule__price">{slot.price > 0 ? formatLKR(slot.price) : 'Free'}</p>
+                              {forNextWeek && <p class="twh-schedule__next-date">Next: {sess.short}</p>}
+                              {sess.state === 'open' ? (
+                                <a
+                                  href={`/book/${slot.id}?date=${bookDate}`}
+                                  class="twh-btn twh-btn--primary twh-btn--sm"
+                                  data-book
+                                  aria-label={`Book ${slot.name} on ${sess.long} at ${slot.start}`}
+                                >Book now</a>
+                              ) : (
+                                <span class="twh-btn twh-btn--ghost twh-btn--sm is-disabled" data-book-closed aria-disabled="true">{sess.state === 'full' ? 'Full' : 'Closed'}</span>
+                              )}
                             </div>
                           </li>
                         );
@@ -499,6 +531,22 @@ const seo = {
       }
 
       const nowMin = nowMinutes(now);
+
+      // Booking closes when a session starts (day-time sessions: 1 h before the end)
+      slotEls.forEach(el => {
+        if (el.dataset.date !== now.dateISO) return;
+        const btn = el.querySelector<HTMLAnchorElement>('[data-book]');
+        if (btn && now.minutes >= Number(el.dataset.cutoff)) {
+          const closed = document.createElement('span');
+          closed.className = 'twh-btn twh-btn--ghost twh-btn--sm is-disabled';
+          closed.setAttribute('aria-disabled', 'true');
+          closed.textContent = 'Closed';
+          btn.replaceWith(closed);
+          const spots = el.querySelector('[data-spots-text]');
+          if (spots) spots.textContent = 'Closed';
+        }
+      });
+
       slotEls.forEach(el => {
         const isToday = el.dataset.day === now.day;
         const st = isToday ? slotState({ startMin: Number(el.dataset.start), endMin: Number(el.dataset.end) }, nowMin) : 'upcoming';

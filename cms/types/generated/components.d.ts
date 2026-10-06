@@ -605,6 +605,82 @@ export interface SectionsNewsletterBlock extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsOurStory extends Struct.ComponentSchema {
+  collectionName: 'components_sections_our_stories';
+  info: {
+    displayName: 'Our Story';
+    icon: 'book';
+  };
+  attributes: {
+    anchorId: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Optional HTML anchor, e.g. "story".';
+          label: 'Section Anchor ID';
+        };
+      }>;
+    chapters: Schema.Attribute.JSON &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'JSON list. Each chapter: {"year":"2019","title":"\u2026","text":"\u2026"}. They appear in order as the visitor scrolls.';
+          label: 'Story Chapters';
+        };
+      }>;
+    cta: Schema.Attribute.Component<'shared.cta-button', false> &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Button under the story.';
+          label: 'Call-to-Action Button';
+        };
+      }>;
+    eyebrow: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Tiny label above the heading, e.g. "Our Story".';
+          label: 'Small Label';
+        };
+      }>;
+    heading: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Big heading, e.g. "Built in the ring. Raised by the pack."';
+          label: 'Heading';
+        };
+      }>;
+    intro: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Short paragraph under the heading.';
+          label: 'Intro Paragraph';
+        };
+      }>;
+    quote: Schema.Attribute.Text &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Big quote at the end of the story.';
+          label: 'Closing Quote';
+        };
+      }>;
+    quoteAuthor: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'e.g. "Malshan \u2014 The Wolverine".';
+          label: 'Quote Author';
+        };
+      }>;
+    visible: Schema.Attribute.Boolean &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Untick to hide this section without deleting it.';
+          label: 'Visible on Page?';
+        };
+      }> &
+      Schema.Attribute.DefaultTo<true>;
+  };
+}
+
 export interface SectionsPageHero extends Struct.ComponentSchema {
   collectionName: 'components_sections_page_heroes';
   info: {
@@ -1177,6 +1253,7 @@ declare module '@strapi/strapi' {
       'sections.location-block': SectionsLocationBlock;
       'sections.marquee': SectionsMarquee;
       'sections.newsletter-block': SectionsNewsletterBlock;
+      'sections.our-story': SectionsOurStory;
       'sections.page-hero': SectionsPageHero;
       'sections.partner-strip': SectionsPartnerStrip;
       'sections.pricing-teaser': SectionsPricingTeaser;

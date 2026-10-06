@@ -184,3 +184,17 @@
 @media (max-width: 639px) {
   .twh-header__inner { padding: 1rem 1.25rem; }
 }
+
+/* Signed-in state */
+.twh-header__account { gap: 0.5rem; }
+.twh-header__avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--color-twh-yellow);
+  background: var(--color-twh-black);
+  border-radius: 50%;
+}

@@ -22,7 +22,7 @@ const hours    = global?.hoursJson ?? {
 
 const seo = {
   metaTitle: 'Contact — The Wolverine Hub',
-  metaDescription: 'Get in touch, book a free trial, or ask us anything. We\'re in Colombo, Sri Lanka.',
+  metaDescription: 'Get in touch or ask us anything. We\'re in Colombo, Sri Lanka.',
 };
 ---
 
@@ -32,7 +32,7 @@ const seo = {
     <div class="twh-page-hero__inner">
       <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Get In Touch'}</p>
       <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Start Here.'} />
-      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Questions, free trial bookings, or just want to know if this place is right for you — send us a message.'}</p>
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Questions, or just want to know if this place is right for you — send us a message.'}</p>
     </div>
   </div>
 

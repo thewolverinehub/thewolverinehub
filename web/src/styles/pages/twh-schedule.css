@@ -831,3 +831,37 @@
   .twh-schedule__slot:hover,
   .twh-week__item:hover { transform: none; }
 }
+
+/* ── Booking (pay-per-class) ──────────────────────────────── */
+
+.twh-schedule__action {
+  display: grid;
+  justify-items: end;
+  gap: 0.375rem;
+  text-align: right;
+}
+
+.twh-schedule__price {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--color-twh-yellow);
+}
+
+.twh-schedule__next-date {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-twh-grey-300);
+}
+
+.twh-schedule__action .is-disabled { cursor: not-allowed; pointer-events: none; opacity: 0.6; }
+
+@media (max-width: 1023px) {
+  .twh-schedule__action { grid-auto-flow: column; justify-content: space-between; align-items: center; justify-items: stretch; text-align: left; }
+  .twh-schedule__action .twh-btn { min-width: 9rem; justify-content: center; }
+}

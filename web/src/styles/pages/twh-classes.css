@@ -503,3 +503,17 @@
   .twh-classes__card-stripe { transition: none; transform: scaleY(1); }
   .twh-classes__card-arrow { opacity: 0.6; transform: none; }
 }
+
+/* Price tag on cards (pay-per-class) */
+.twh-classes__card-price {
+  flex-shrink: 0;
+  padding: 0.3rem 0.65rem;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.04em;
+  color: var(--color-twh-black);
+  background: var(--color-twh-yellow);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.twh-classes__card-price.is-free { color: var(--color-twh-white); background: var(--color-twh-blue); }

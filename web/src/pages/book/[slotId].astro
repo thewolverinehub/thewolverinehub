@@ -1,0 +1,134 @@
+---
+/**
+ * Booking review: shows exactly what the member is booking (class, date, time, coach, price, seats)
+ * and starts the reservation. Signed-in members only (middleware redirects to /login with ?next=).
+ */
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getClasses, getGlobal, getScheduleSlots } from '../../lib/strapi/queries';
+import { getMember, seatsTaken } from '../../lib/auth/cms';
+import { BOOKING_WINDOW_DAYS, sessionFor, spotsLabel } from '../../lib/booking/sessions';
+import { HOLD_MINUTES } from '../../lib/booking/rules';
+import { addDays, formatLKR, getColomboNow, weekdayOf } from '../../lib/utils/colombo';
+
+export const prerender = false;
+
+const { slotId } = Astro.params;
+const date = Astro.url.searchParams.get('date') ?? '';
+const session = Astro.locals.session!;
+
+let global, slots, classes;
+try {
+  [global, slots, classes] = await Promise.all([getGlobal(), getScheduleSlots(), getClasses()]);
+} catch { /* CMS offline */ }
+
+const slot = (slots ?? []).find((s) => s.documentId === slotId);
+const cls = slot?.class ? (classes ?? []).find((c) => c.slug === slot.class.slug) ?? slot.class : null;
+const member = await getMember(session.uid);
+
+const now = getColomboNow();
+const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(date) && slot && weekdayOf(date) === slot.weekday && date >= now.dateISO && date <= addDays(now.dateISO, BOOKING_WINDOW_DAYS);
+
+let problem = '';
+if (!slot || !cls) problem = 'We could not find that session. It may have been changed — please pick it again from the schedule.';
+else if (!dateOk) problem = 'That date is not available for this class. Please choose a session from the schedule.';
+
+const taken = dateOk ? await seatsTaken(date, date) : {};
+const s = dateOk && slot ? sessionFor(slot as any, date, taken, now) : null;
+if (!problem && s?.state === 'closed') problem = 'Booking for this session has closed.';
+if (!problem && s?.state === 'full') problem = 'Sorry — this session is full. Please choose another date.';
+
+const price = cls?.price ?? 0;
+const free = price === 0 || cls?.isFree;
+const coaches = (cls?.coaches ?? []).map((c) => c.name).join(' & ');
+const backHref = cls ? `/classes/${cls.slug}#book` : '/schedule';
+---
+
+<PageLayout seo={{ metaTitle: 'Confirm your booking — The Wolverine Hub' }} {global} noindex>
+  <section class="twh-checkout">
+    <div class="twh-checkout__inner">
+      <p class="twh-checkout__crumb"><a href={backHref}>← Back</a></p>
+      <h1 class="twh-checkout__title">Confirm your booking</h1>
+
+      {problem || !s || !cls || !slot ? (
+        <div class="twh-checkout__card">
+          <p class="twh-banner twh-banner--warn" role="alert">{problem}</p>
+          <p style="margin-top:1.25rem;"><a href="/schedule" class="twh-btn twh-btn--primary twh-btn--md">Open the schedule</a></p>
+        </div>
+      ) : (
+        <div class="twh-checkout__grid">
+          <div class="twh-checkout__card">
+            <p class="twh-checkout__label">Session</p>
+            <h2 class="twh-checkout__class">{cls.name}</h2>
+            {cls.tagline && <p class="twh-checkout__tagline">{cls.tagline}</p>}
+
+            <dl class="twh-checkout__facts">
+              <div><dt>Date</dt><dd>{s.long}</dd></div>
+              <div><dt>Time</dt><dd>{s.start} – {s.end} <small>(Sri Lanka time)</small></dd></div>
+              {s.room && <div><dt>Where</dt><dd>{s.room}</dd></div>}
+              {coaches && <div><dt>Coach</dt><dd>{coaches}</dd></div>}
+              <div><dt>Availability</dt><dd>{spotsLabel(s)}</dd></div>
+            </dl>
+
+            <div class="twh-checkout__who">
+              <p class="twh-checkout__label">Booking for</p>
+              <p class="twh-checkout__who-name">{member?.fullName ?? session.name}</p>
+              <p class="twh-checkout__who-mail">{member?.email}</p>
+            </div>
+          </div>
+
+          <aside class="twh-checkout__card twh-checkout__summary">
+            <p class="twh-checkout__label">Order summary</p>
+            <div class="twh-checkout__line"><span>{cls.name} · 1 session</span><span>{free ? 'Free' : formatLKR(price)}</span></div>
+            <div class="twh-checkout__total"><span>Total</span><span>{free ? 'FREE' : formatLKR(price)}</span></div>
+
+            {!free && <p class="twh-checkout__note">Your seat is held for {HOLD_MINUTES} minutes while you complete the payment. Cancel free of charge up to 12 hours before the session.</p>}
+            {free && <p class="twh-checkout__note">This class is free. Your spot is confirmed straight away. You can cancel up to 12 hours before.</p>}
+
+            <p class="twh-auth__status" data-book-status hidden></p>
+            <button type="button" class="twh-btn twh-btn--primary twh-btn--lg twh-checkout__pay" id="book-confirm" data-slot={slot.documentId} data-date={date}>
+              {free ? 'Confirm booking' : `Continue to payment — ${formatLKR(price)}`}
+            </button>
+            <a href={backHref} class="twh-checkout__cancel">Choose a different session</a>
+          </aside>
+        </div>
+      )}
+    </div>
+  </section>
+</PageLayout>
+
+<style is:global>@import '../../styles/pages/twh-checkout.css';@import '../../styles/pages/twh-account.css';@import '../../styles/pages/twh-auth.css';</style>
+
+<script>
+  const btn = document.getElementById('book-confirm') as HTMLButtonElement | null;
+  const status = document.querySelector<HTMLElement>('[data-book-status]');
+  const show = (text: string, kind: 'error' | 'success') => {
+    if (!status) return;
+    status.textContent = text;
+    status.dataset.kind = kind;
+    status.hidden = false;
+  };
+
+  btn?.addEventListener('click', async () => {
+    const label = btn.textContent ?? '';
+    btn.disabled = true;
+    btn.textContent = 'Reserving your seat…';
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotId: btn.dataset.slot, date: btn.dataset.date }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        window.location.assign(data.redirect);
+        return;
+      }
+      if (res.status === 401) { window.location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`); return; }
+      show(data.message || 'We could not reserve that seat. Please try again.', 'error');
+    } catch {
+      show('Network problem. Please check your connection and try again.', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = label;
+  });
+</script>

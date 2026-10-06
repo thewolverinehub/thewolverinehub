@@ -1,10 +1,11 @@
 import type { Core } from '@strapi/strapi';
 import { applyContentManagerLabels } from './bootstrap/cm-labels';
 import { seedDefaultContent } from './bootstrap/seed';
+import { runCatalogV2 } from './bootstrap/catalog-v2';
 
-// Bump this string whenever you change seed data, schemas, or labels.
+// Bump this string whenever you change seed data, schemas, labels or add a migration.
 // Heavy bootstrap ops are skipped when the stored value matches — fast restarts.
-const BOOTSTRAP_VERSION = '2026-10-05-v1';
+const BOOTSTRAP_VERSION = '2026-10-07-v1';
 
 // ---------------------------------------------------------------------------
 // Public read-only content types — Public role gets find + findOne on these.
@@ -83,11 +84,27 @@ export default {
         strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
       }
 
+      // The legacy seeder only ever runs on a brand-new (empty) database. Existing databases are
+      // owned by the CMS content + the one-time catalog migration below — the legacy seeder must
+      // never re-create the old classes / programs / pricing packages.
       try {
-        await seedDefaultContent(strapi);
+        const hasContent = await (strapi.documents as any)('api::global.global').findFirst({});
+        if (!hasContent) await seedDefaultContent(strapi);
       } catch (err) {
         strapi.log.warn('[bootstrap] Seed failed — create content manually in the admin.');
         strapi.log.warn(`[bootstrap] Reason: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      // "Pay per class" catalog (classes from the client's sheet, real coaches, Our Story…).
+      try {
+        const done = await bsStore.get({ key: 'catalog-v2' });
+        if (!done) {
+          const ok = await runCatalogV2(strapi);
+          if (ok) await bsStore.set({ key: 'catalog-v2', value: new Date().toISOString() });
+          else strapi.log.warn('[bootstrap] Catalog v2 had failing steps — it will retry on the next version bump.');
+        }
+      } catch (err) {
+        strapi.log.error(`[bootstrap] Catalog v2 failed: ${err instanceof Error ? err.message : String(err)}`);
       }
 
       try {

@@ -16,7 +16,7 @@ export interface StrapiMedia {
 
 export interface StrapiSeo {
   metaTitle: string;
-  metaDescription: string;
+  metaDescription?: string;
   keywords?: string;
   canonicalURL?: string;
   metaRobots?: string;
@@ -210,19 +210,20 @@ export interface StrapiCoachSpotlightSection {
   anchorId?: string;
 }
 
-export interface StrapiProgramTiersSection {
-  __component: 'sections.program-tiers';
-  heading?: string;
-  subheading?: string;
-  cta?: StrapiCtaButton;
-  visible?: boolean;
-  anchorId?: string;
+export interface StrapiOurStoryChapter {
+  year: string;
+  title: string;
+  text: string;
 }
 
-export interface StrapiPricingTeaserSection {
-  __component: 'sections.pricing-teaser';
-  heading?: string;
-  subheading?: string;
+export interface StrapiOurStorySection {
+  __component: 'sections.our-story';
+  eyebrow?: string;
+  heading: string;
+  intro?: string;
+  chapters: StrapiOurStoryChapter[];
+  quote?: string;
+  quoteAuthor?: string;
   cta?: StrapiCtaButton;
   visible?: boolean;
   anchorId?: string;
@@ -259,6 +260,14 @@ export interface StrapiClass {
   intensity: 'low' | 'medium' | 'high' | 'extreme';
   level: 'beginner' | 'intermediate' | 'advanced' | 'all';
   discipline?: StrapiDiscipline;
+  /** Price of ONE session in LKR (0 = free) */
+  price: number;
+  frequency?: string;
+  coaches?: StrapiCoach[];
+  /** one per line */
+  targetAreas?: string;
+  /** one per line */
+  equipment?: string;
   thumbnail?: StrapiMedia;
   previewVideo?: StrapiMedia;
   featuredVideo?: StrapiMedia;
@@ -279,6 +288,7 @@ export interface StrapiDiscipline {
 export interface StrapiCoach {
   documentId: string;
   name: string;
+  nickname?: string | null;
   slug: string;
   role?: string;
   bio?: unknown; // blocks
@@ -304,29 +314,6 @@ export interface StrapiScheduleSlot {
   room?: string;
   isActive: boolean;
   notes?: string;
-}
-
-export interface StrapiPricingTier {
-  documentId: string;
-  name: string;
-  slug: string;
-  tagline?: string;
-  description?: string;
-  features?: string;
-  isMostPopular: boolean;
-  colour: 'yellow' | 'blue' | 'red' | 'white';
-  sortOrder: number;
-}
-
-export interface StrapiPass {
-  documentId: string;
-  tier: StrapiPricingTier;
-  duration: string;
-  durationDays?: number;
-  priceLKR: number;
-  payHereItemName?: string;
-  isPurchasable: boolean;
-  sortOrder: number;
 }
 
 export interface StrapiTestimonial {
@@ -384,24 +371,6 @@ export interface StrapiPostCategory {
   documentId: string;
   name: string;
   slug: string;
-}
-
-export interface StrapiProgram {
-  documentId: string;
-  name: string;
-  slug: string;
-  tagline?: string;
-  shortDescription?: string;
-  description?: unknown; // blocks
-  thumbnail?: StrapiMedia;
-  heroImage?: StrapiMedia;
-  fromPrice?: number;
-  currency?: string;
-  minimumCommitment?: string;
-  isLimitedAvailability: boolean;
-  isFeatured: boolean;
-  sortOrder: number;
-  seo?: StrapiSeo;
 }
 
 export interface StrapiGalleryItem {

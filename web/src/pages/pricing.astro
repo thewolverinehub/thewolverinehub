@@ -1,220 +1,112 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
-import { getPricingTiers, getPasses, getFaqs, getGlobal, getPageBySlug } from '../lib/strapi/queries';
-import type { StrapiPricingTier, StrapiPass, StrapiFaq, StrapiPageHeroSection } from '../lib/strapi/types';
+import { getClasses, getFaqs, getGlobal, getPageBySlug } from '../lib/strapi/queries';
 import { blocksToHtml } from '../lib/strapi/blocks';
+import { formatLKR } from '../lib/utils/colombo';
+import type { StrapiClass, StrapiFaq, StrapiPageHeroSection } from '../lib/strapi/types';
 
-let global, tiers: StrapiPricingTier[] = [], passes: StrapiPass[] = [], faqs: StrapiFaq[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
+let global, classes: StrapiClass[] = [], faqs: StrapiFaq[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, tiers, passes, faqs, pageData] = await Promise.all([
-    getGlobal(), getPricingTiers(), getPasses(), getFaqs(), getPageBySlug('pricing'),
-  ]);
+  [global, classes, faqs, pageData] = await Promise.all([getGlobal(), getClasses(), getFaqs(), getPageBySlug('pricing')]);
 } catch { /* CMS offline */ }
 
-const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
+const pageHero = pageData?.sections?.find((s) => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
+const logged = Boolean(Astro.locals.session);
 
-const fallbackTiers: StrapiPricingTier[] = [
-  { documentId: '1', name: 'Starter',        slug: 'starter',        tagline: 'Perfect for your first month',  features: '2 classes/week\nAccess to open gym\nBeginner workshops',                                    isMostPopular: false, colour: 'blue',   sortOrder: 1 },
-  { documentId: '2', name: 'Signature',      slug: 'signature',      tagline: 'For the committed athlete',     features: 'Unlimited classes\nPriority booking\nNutrition guide\nMonthly check-in',                     isMostPopular: true,  colour: 'yellow', sortOrder: 2 },
-  { documentId: '3', name: 'Transformation', slug: 'transformation', tagline: 'Elite coaching + full access',  features: 'Everything in Signature\n1-on-1 sessions\nBody composition analysis\nCustom plan',            isMostPopular: false, colour: 'red',    sortOrder: 3 },
+// Group classes by price: free first, then ascending. The group with the most classes is "Most popular".
+const groups = Array.from(
+  classes.reduce((map, c) => {
+    const key = c.isFree || (c.price ?? 0) === 0 ? 0 : c.price;
+    map.set(key, [...(map.get(key) ?? []), c]);
+    return map;
+  }, new Map<number, StrapiClass[]>()),
+).sort((a, b) => a[0] - b[0]);
+const popularPrice = [...groups].sort((a, b) => b[1].length - a[1].length)[0]?.[0];
+
+const bookingFaqs = faqs.filter((f) => f.category?.slug === 'booking-payments').slice(0, 5);
+
+const steps = [
+  { n: '01', title: 'Create your account', text: 'Sign up free with your name, phone and email — it takes a minute.' },
+  { n: '02', title: 'Pick a class & date', text: 'Choose a session from the schedule and see exactly how many spots are left.' },
+  { n: '03', title: 'Pay & train', text: 'Pay for that session online. You get a confirmation, and a reminder the evening before.' },
 ];
 
-const displayTiers = tiers.length > 0 ? tiers : fallbackTiers;
-
-const toLines = (v: unknown): string[] => {
-  if (!v) return [];
-  if (Array.isArray(v)) return (v as string[]).filter(Boolean);
-  if (typeof v === 'string') {
-    const s = v.trim();
-    if (s.startsWith('[')) { try { const p = JSON.parse(s); if (Array.isArray(p)) return p.filter(Boolean); } catch {} }
-    return s.split('\n').filter(Boolean);
-  }
-  return [];
-};
-
-const tierColour: Record<string, { bg: string; text: string }> = {
-  yellow: { bg: 'var(--color-twh-yellow)',    text: 'var(--color-twh-black)' },
-  blue:   { bg: 'var(--color-twh-blue)',      text: 'var(--color-twh-white)' },
-  red:    { bg: 'var(--color-twh-red)',        text: 'var(--color-twh-white)' },
-  white:  { bg: 'var(--color-twh-white)',      text: 'var(--color-twh-black)' },
-};
-
-function tierPasses(tierId: string) {
-  return passes
-    .filter(p => p.tier?.documentId === tierId && p.isPurchasable)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-}
-
-const pricingFaqs = faqs.filter(f =>
-  !f.category || f.category.slug === 'pricing' || f.category.slug === 'membership'
-).slice(0, 8);
-
 const seo = {
-  metaTitle: 'Pricing & Membership — The Wolverine Hub',
-  metaDescription: 'Simple, honest pricing. Pick a membership tier that fits your goals — no lock-ins, cancel anytime.',
+  metaTitle: 'Class Pricing — The Wolverine Hub',
+  metaDescription: 'No memberships, no lock-ins. See the price of every class and pay only for the sessions you book.',
 };
 ---
 
 <PageLayout {seo} {global}>
-  <!-- Page hero -->
   <div class="twh-page-hero">
     <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Membership'}</p>
-      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Simple,<br/>Honest Pricing.'} />
-      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Pick your tier. Book your first class. No hidden fees, no lock-in contracts.'}</p>
+      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Pricing'}</p>
+      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Pay Per<br/>Class.'} />
+      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'No memberships. No lock-ins. Book the sessions you want and pay for each one.'}</p>
     </div>
   </div>
 
-  <section class="twh-pricing-page" aria-label="Pricing">
-    <div class="twh-pricing-page__inner">
+  <section class="twh-rates" aria-labelledby="rates-h">
+    <div class="twh-rates__inner">
+      <h2 id="rates-h" class="twh-rates__title"><span aria-hidden="true">/</span> Rates per session</h2>
 
-      <!-- Tier cards -->
-      <div class="twh-pricing-page__tiers" id="pricing-tiers">
-        {displayTiers.map((tier) => {
-          const colors = tierColour[tier.colour] ?? tierColour.blue;
-          const tp     = tierPasses(tier.documentId);
-          return (
-            <div class={`twh-pricing-page__tier${tier.isMostPopular ? ' twh-pricing-page__tier--popular' : ''}`}>
-              {tier.isMostPopular && (
-                <div class="twh-pricing-page__popular-banner" style={`background:${colors.bg}; color:${colors.text};`}>
-                  Most Popular
-                </div>
-              )}
-              <div class="twh-pricing-page__tier-body" style={`border-color:${tier.isMostPopular ? colors.bg : 'var(--color-twh-grey-800)'};`}>
-                <span class="twh-pricing-page__slash" aria-hidden="true" style={`color:${colors.bg};`}>/</span>
-                <h2 class="twh-pricing-page__tier-name" style={`color:${tier.isMostPopular ? colors.bg : 'var(--color-twh-white)'};`}>
-                  {tier.name}
-                </h2>
-                {tier.tagline && <p class="twh-pricing-page__tier-tagline">{tier.tagline}</p>}
-                {tier.description && <p class="twh-pricing-page__tier-desc">{tier.description}</p>}
-
-                {toLines(tier.features).length > 0 && (
-                  <ul class="twh-pricing-page__features" role="list">
-                    {toLines(tier.features).map(f => (
-                      <li class="twh-pricing-page__feature">
-                        <span class="twh-pricing-page__feature-icon" style={`color:${colors.bg};`}>✓</span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {tp.length > 0 ? (
-                  <div class="twh-pricing-page__passes">
-                    <p class="twh-pricing-page__passes-heading">Plans</p>
-                    {tp.map(pass => (
-                      <div class="twh-pricing-page__pass-row">
-                        <span class="twh-pricing-page__pass-duration">{pass.duration}</span>
-                        <span class="twh-pricing-page__pass-price" style={`color:${colors.bg};`}>
-                          LKR {pass.priceLKR.toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div class="twh-pricing-page__passes" style="border-top:1px solid var(--color-twh-grey-800);padding-top:1.5rem;">
-                    <a href="/contact" style={`color:${colors.bg}; font-weight:700; font-size:0.875rem; text-decoration:none;`}>
-                      Enquire for pricing →
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <!-- CTA strip -->
-      <div class="twh-pricing-page__cta-strip" id="pricing-cta">
-        <a href="/contact" class="twh-btn twh-btn--primary twh-btn--lg">Start Your Free Trial</a>
-        <p class="twh-pricing-page__cta-note">No credit card required. Cancel any time.</p>
-      </div>
-
-      <!-- FAQ -->
-      {pricingFaqs.length > 0 && (
-        <div id="pricing-faq">
-          <h2 class="twh-pricing-page__faq-heading">Common Questions</h2>
-          <div class="twh-pricing-page__faq-list">
-            {pricingFaqs.map((faq) => {
-              const answerHtml = blocksToHtml(faq.answer);
-              return (
-                <details class="twh-pricing-page__faq-item">
-                  <summary class="twh-pricing-page__faq-question">
-                    {faq.question}
-                    <span class="twh-pricing-page__faq-icon" aria-hidden="true">+</span>
-                  </summary>
-                  <div class="twh-pricing-page__faq-answer">
-                    {answerHtml
-                      ? <Fragment set:html={answerHtml} />
-                      : <p style="color:rgba(255,255,255,0.4);">Answer coming soon.</p>
-                    }
-                  </div>
-                </details>
-              );
-            })}
-          </div>
-        </div>
+      {groups.length === 0 ? (
+        <p class="twh-rates__empty">Class rates are coming soon — <a href="/contact">contact us</a> for details.</p>
+      ) : (
+        <ul class="twh-rates__grid" role="list">
+          {groups.map(([price, list]) => (
+            <li class={`twh-rate${price === popularPrice ? ' is-popular' : ''}${price === 0 ? ' is-free' : ''}`}>
+              {price === popularPrice && <span class="twh-rate__flag">Most classes</span>}
+              <p class="twh-rate__amount">{price === 0 ? 'FREE' : formatLKR(price)}</p>
+              <p class="twh-rate__per">{price === 0 ? 'no charge' : 'per session'}</p>
+              <ul class="twh-rate__classes" role="list">
+                {list.map((c) => (
+                  <li><a href={`/classes/${c.slug}`}><b>{c.name}</b><small>{c.tagline}</small></a></li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
       )}
+    </div>
+  </section>
+
+  <section class="twh-rates twh-rates--steps" aria-labelledby="how-h">
+    <div class="twh-rates__inner">
+      <h2 id="how-h" class="twh-rates__title"><span aria-hidden="true">/</span> How it works</h2>
+      <ol class="twh-steps" role="list">
+        {steps.map((s) => (
+          <li class="twh-step"><span class="twh-step__n">{s.n}</span><h3>{s.title}</h3><p>{s.text}</p></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  {bookingFaqs.length > 0 && (
+    <section class="twh-rates" aria-labelledby="faq-h">
+      <div class="twh-rates__inner twh-rates__inner--narrow">
+        <h2 id="faq-h" class="twh-rates__title"><span aria-hidden="true">/</span> Good to know</h2>
+        <div class="twh-rates__faq">
+          {bookingFaqs.map((f) => (
+            <details class="twh-faqlite">
+              <summary>{f.question}</summary>
+              <div set:html={blocksToHtml(f.answer as any)} />
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="twh-rates twh-rates--cta">
+    <div class="twh-rates__inner">
+      <p class="twh-rates__cta-text">Ready to train?</p>
+      <div class="twh-rates__cta-btns">
+        <a href="/schedule" class="twh-btn twh-btn--primary twh-btn--lg">See the schedule</a>
+        {!logged && <a href="/register" class="twh-btn twh-btn--ghost twh-btn--lg">Create an account</a>}
+      </div>
     </div>
   </section>
 </PageLayout>
 
 <style is:global>@import '../styles/pages/twh-pricing-page.css';</style>
-
-<script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  gsap.registerPlugin(ScrollTrigger);
-
-  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-    // Hero
-    const hero = document.querySelector('.twh-page-hero__inner');
-    if (hero) {
-      const tl = gsap.timeline();
-      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
-      const heading = hero.querySelector('.twh-page-hero__heading');
-      const sub     = hero.querySelector('.twh-page-hero__sub');
-      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
-      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
-      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
-    }
-
-    // Tiers
-    const tiers = document.querySelectorAll('.twh-pricing-page__tier');
-    if (tiers.length) {
-      gsap.fromTo(tiers,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, stagger: 0.12, ease: 'power3.out',
-          scrollTrigger: { trigger: '#pricing-tiers', start: 'top 80%' } }
-      );
-    }
-
-    // CTA
-    const cta = document.getElementById('pricing-cta');
-    if (cta) {
-      gsap.fromTo(cta, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out',
-        scrollTrigger: { trigger: cta, start: 'top 85%' } });
-    }
-
-    // FAQ
-    const faqHeading = document.querySelector('.twh-pricing-page__faq-heading');
-    const faqItems   = document.querySelectorAll('.twh-pricing-page__faq-item');
-    if (faqHeading) {
-      gsap.fromTo(faqHeading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out',
-        scrollTrigger: { trigger: faqHeading, start: 'top 85%' } });
-    }
-    if (faqItems.length) {
-      gsap.fromTo(faqItems,
-        { y: 16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.4, stagger: 0.07, ease: 'power2.out',
-          scrollTrigger: { trigger: '#pricing-faq', start: 'top 80%' } }
-      );
-    }
-  });
-
-  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
-    document.querySelectorAll<HTMLElement>(
-      '.twh-pricing-page__tier, .twh-pricing-page__cta-strip, .twh-pricing-page__faq-heading, .twh-pricing-page__faq-item'
-    ).forEach(el => { el.style.opacity = '1'; });
-  });
-</script>

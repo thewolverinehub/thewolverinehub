@@ -1,0 +1,65 @@
+---
+import AccountLayout from '../../layouts/AccountLayout.astro';
+import { getMember, myBookings, type Payment } from '../../lib/auth/cms';
+import { dateLabel, formatLKR } from '../../lib/utils/colombo';
+
+export const prerender = false;
+
+const session = Astro.locals.session!;
+const member = await getMember(session.uid);
+if (!member) return Astro.redirect('/login', 302);
+
+let payments: Payment[] = [];
+let loadError = false;
+try {
+  ({ payments } = await myBookings(member.id));
+} catch {
+  loadError = true;
+}
+
+const paid = payments.filter((p) => p.status === 'paid');
+const total = paid.reduce((s, p) => s + p.amount, 0);
+const tone: Record<string, string> = { paid: 'good', pending: 'warn', failed: 'bad', cancelled: 'muted', refunded: 'muted' };
+const methodLabel: Record<string, string> = { preview: 'Test checkout', payhere: 'Online payment', free: 'Free class' };
+const when = (iso: string) => {
+  const d = new Date(iso);
+  return `${dateLabel(d.toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' })).long} · ${d.toLocaleTimeString('en-US', { timeZone: 'Asia/Colombo', hour: 'numeric', minute: '2-digit' })}`;
+};
+---
+
+<AccountLayout {member} active="payments" title="Payments">
+  {loadError && <p class="twh-banner twh-banner--warn" role="alert">We couldn't load your payments right now. Please refresh in a moment.</p>}
+
+  <ul class="twh-kpis twh-kpis--3" role="list">
+    <li class="twh-kpi"><p class="twh-kpi__label">Total paid</p><p class="twh-kpi__value">{total > 0 ? formatLKR(total) : 'LKR 0'}</p><p class="twh-kpi__hint">All time</p></li>
+    <li class="twh-kpi"><p class="twh-kpi__label">Successful payments</p><p class="twh-kpi__value">{paid.filter((p) => p.amount > 0).length}</p><p class="twh-kpi__hint">Paid sessions</p></li>
+    <li class="twh-kpi"><p class="twh-kpi__label">Free sessions</p><p class="twh-kpi__value">{payments.filter((p) => p.provider === 'free').length}</p><p class="twh-kpi__hint">No charge</p></li>
+  </ul>
+
+  <section class="twh-card" aria-labelledby="pay-all-h">
+    <div class="twh-card__head"><h2 id="pay-all-h" class="twh-card__title">Payment history</h2></div>
+
+    {payments.length === 0 ? (
+      <div class="twh-empty"><p class="twh-empty__title">No payments yet</p><p class="twh-empty__text">When you book a paid class, your receipt appears here.</p></div>
+    ) : (
+      <div class="twh-table-wrap">
+        <table class="twh-table">
+          <thead><tr><th>Date</th><th>Class</th><th>Method</th><th>Order</th><th class="twh-table__num">Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            {payments.map((p) => (
+              <tr>
+                <td data-label="Date">{when(p.createdAt)}</td>
+                <td data-label="Class">{p.booking?.classNameSnapshot ?? '—'}{p.booking?.reference && <small>Ref {p.booking.reference}</small>}</td>
+                <td data-label="Method">{methodLabel[p.provider] ?? p.provider}</td>
+                <td data-label="Order"><code>{p.orderId}</code></td>
+                <td data-label="Amount" class="twh-table__num">{p.amount > 0 ? formatLKR(p.amount) : 'Free'}</td>
+                <td data-label="Status"><span class={`twh-pill twh-pill--${tone[p.status] ?? 'muted'}`}>{p.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+  <p class="twh-acct__note">Questions about a payment or refund? <a href="/contact">Contact us</a> with your order number.</p>
+</AccountLayout>

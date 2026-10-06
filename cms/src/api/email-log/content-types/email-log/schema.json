@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "email_logs",
+  "info": {
+    "singularName": "email-log",
+    "pluralName": "email-logs",
+    "displayName": "Email Log",
+    "description": "Every email the system sends (or would send). While no email provider is connected, emails are recorded here."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "to": {
+      "type": "string",
+      "required": true
+    },
+    "subject": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "booking-confirmation",
+        "booking-reminder",
+        "booking-cancelled",
+        "welcome",
+        "password-reset",
+        "other"
+      ],
+      "default": "other"
+    },
+    "body": {
+      "type": "text"
+    },
+    "html": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "logged",
+        "sent",
+        "failed"
+      ],
+      "default": "logged",
+      "required": true
+    },
+    "error": {
+      "type": "text"
+    },
+    "sentAt": {
+      "type": "datetime"
+    }
+  }
+}

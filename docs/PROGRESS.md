@@ -152,3 +152,15 @@
 - Live Sri Lanka clock now ticks every second (aligned to the real second); date, Today marker, class statuses and next-up refresh automatically with no reload. Countdown switches to a ticking mm:ss in the last 10 minutes; Live/Finished flip exactly at the minute.
 - Midnight rollover: dates re-label, Today moves, and the open tab follows the new day (unless the visitor picked another day).
 - Clock is corrected against the server (/api/health, min-RTT sampling) so a wrong device clock/timezone cannot matter; resyncs on focus / tab visible / back-forward cache restore / online and every 10 min.
+
+### Pay-per-class pivot (2026-10-06)
+- **Model:** no memberships/programs. Each class has its own `price` (LKR, 0 = free); members book one dated session and pay per session. Programs page, content type usage, pricing tiers and passes removed (`/programs` -> `/classes` 301; `/free-trial` -> `/register`). `/pricing` is now "Class Pricing".
+- **Data:** 12 real classes from `TWH Classes.xlsx` (prices, coaches, target areas, equipment, dummy times) and 25 rebuilt schedule slots; coaches replaced by the two real ones (Malshan Jayasekara, Amanda). One-time idempotent migration `cms/src/bootstrap/catalog-v2.ts` (plugin-store flag `catalog-v2`). **It already ran against the shared DB, so the live site has the new data.**
+- **Auth:** register / login / logout / forgot / reset (signed HttpOnly cookie `twh_session`, set `SESSION_SECRET` on Railway web). Header CTA = "Sign In / Sign Up" -> "My Account".
+- **Account area** `/account` (overview, bookings, payments, profile + password).
+- **Booking engine (CMS):** `booking`, `payment`, `email-log` collections; 15-min seat hold, capacity enforced under a DB advisory lock, cancel >= 12h before, 30-day window.
+- **Payments:** preview simulator only (`PAYMENT_MODE=preview`); PayHere to plug into `/checkout/[orderId]`.
+- **Email:** log-only (`email-log` rows). Confirmation on payment, cancellation notice, day-before reminder via cron (`ENABLE_CRON=true` on the CMS; 18:00 Colombo). Real sending needs `EMAIL_ENABLED=true` + a provider.
+- **Home:** Program section replaced by the animated "Our Story" section (`sections.our-story`, GSAP; story text is dummy).
+- **Verified locally:** register -> book -> preview pay -> confirmation email logged -> cancel -> cancellation email logged. astro check / eslint / build clean.
+- **TODO:** remove the unused `program` / `program-tiers` schema; real story copy; Amanda's surname; PayHere + real email provider; mobile pass on the new pages.

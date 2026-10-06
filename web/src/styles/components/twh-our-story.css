@@ -1,0 +1,182 @@
+/* ============================================================
+   OUR STORY — scroll-driven chapters (home)
+   Prefix: twh-story
+   Contents: 1 Section  2 Header  3 Stage  4 Chapters  5 Quote  6 Responsive
+   ============================================================ */
+
+/* ── 1. Section ───────────────────────────────────────────── */
+
+.twh-story {
+  --story-accent: var(--color-twh-red);
+  position: relative;
+  padding: 6rem 0 5rem;
+  overflow: clip;
+  background:
+    radial-gradient(900px 480px at 8% 12%, rgba(27, 63, 148, 0.28), transparent 65%),
+    radial-gradient(800px 420px at 95% 70%, rgba(215, 20, 26, 0.16), transparent 62%),
+    var(--color-twh-black);
+}
+
+.twh-story__bg { position: absolute; inset: 0; pointer-events: none; }
+.twh-story__bg-slash { position: absolute; color: var(--color-twh-ink); opacity: 0.9; }
+.twh-story__bg-slash--a { top: -4%; right: -6%; width: min(46vw, 560px); transform: rotate(8deg); }
+.twh-story__bg-slash--b { bottom: 6%; left: -8%; width: min(38vw, 440px); transform: rotate(-12deg) scaleX(-1); opacity: 0.6; }
+
+.twh-story__inner { position: relative; max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── 2. Header ────────────────────────────────────────────── */
+
+.twh-story__head { max-width: 760px; margin-bottom: 3.5rem; }
+.twh-story__eyebrow { margin: 0 0 1rem; font-size: 0.8125rem; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-twh-yellow); }
+.twh-story__eyebrow span { color: var(--color-twh-red); margin-right: 0.35rem; }
+
+.twh-story__heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  line-height: 0.98;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-twh-white);
+}
+
+.twh-story__mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
+.twh-story__mask-in { display: inline-block; will-change: transform; }
+
+.twh-story__intro { margin: 1.25rem 0 0; max-width: 56ch; font-size: 1.125rem; line-height: 1.65; color: var(--color-twh-grey-200); }
+
+/* ── 3. Stage (sticky year) ───────────────────────────────── */
+
+.twh-story__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+.twh-story__stage {
+  position: sticky;
+  top: 18vh;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: stretch;
+  height: 62vh;
+  min-height: 360px;
+  max-height: 520px;
+  padding: 1.5rem;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--color-twh-ink), rgba(10, 10, 11, 0.6));
+  border: 1px solid var(--color-twh-grey-800);
+  border-left: 4px solid var(--story-accent);
+  transition: border-color 0.5s;
+}
+
+.twh-story__slashes { position: absolute; inset: 0; display: grid; align-content: space-evenly; pointer-events: none; }
+.twh-story__cut {
+  display: block;
+  width: 130%;
+  height: 4px;
+  margin-left: -15%;
+  background: var(--c);
+  opacity: 0.18;
+  transform: rotate(-35deg) scaleX(1);
+  transform-origin: left center;
+}
+
+.twh-story__year-window { position: relative; z-index: 1; align-self: center; height: 1.05em; font-size: clamp(5rem, 11vw, 9.5rem); overflow: hidden; }
+.twh-story__year-stack { display: flex; flex-direction: column; }
+.twh-story__year {
+  display: block;
+  height: 1.05em;
+  font-family: var(--font-display);
+  font-size: 1em;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: var(--color-twh-white);
+  text-shadow: 4px 4px 0 var(--story-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.twh-story__rail { position: relative; z-index: 1; width: 4px; background: var(--color-twh-grey-800); }
+.twh-story__rail-fill { position: absolute; inset: 0; background: var(--story-accent); transform: scaleY(0); transform-origin: top center; }
+
+/* Year navigation — hidden on desktop (the rail + cards do the job), shown on small screens */
+.twh-story__nav { display: none; }
+
+/* ── 4. Chapters ──────────────────────────────────────────── */
+
+.twh-story__chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 28vh; padding-block: 10vh 14vh; }
+
+.twh-story__card {
+  position: relative;
+  padding: 2rem 2rem 2.25rem;
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-800);
+  border-top: 3px solid var(--accent);
+  opacity: 0.4;
+  transform-style: preserve-3d;
+  transition: opacity 0.5s, box-shadow 0.5s, border-color 0.5s;
+}
+
+.twh-story__chapter.is-active .twh-story__card { opacity: 1; border-color: var(--accent); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--accent); }
+
+.twh-story__chapter-no { margin: 0 0 0.5rem; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-twh-grey-400); }
+.twh-story__chapter-year { margin: 0; font-family: var(--font-display); font-size: 1.25rem; letter-spacing: 0.12em; color: var(--accent); }
+.twh-story__chapter-title { margin: 0.35rem 0 0.9rem; font-family: var(--font-display); font-size: clamp(1.75rem, 3vw, 2.5rem); line-height: 1.02; letter-spacing: 0.03em; text-transform: uppercase; color: var(--color-twh-white); }
+.twh-story__chapter-text { margin: 0; font-size: 1.0625rem; line-height: 1.7; color: var(--color-twh-grey-100); }
+
+/* ── 5. Quote ─────────────────────────────────────────────── */
+
+.twh-story__quote { margin: 2rem 0 0; padding: 4rem 0 0; text-align: center; border-top: 1px solid var(--color-twh-grey-800); }
+.twh-story__quote blockquote { margin: 0 auto; max-width: 22ch; }
+.twh-story__quote p { margin: 0; font-family: var(--font-display); font-size: clamp(2.25rem, 5.5vw, 4.25rem); line-height: 1.05; letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-twh-white); }
+.twh-story__word { display: inline-block; margin-right: 0.28em; }
+.twh-story__quote figcaption { margin: 1.5rem 0 1.75rem; font-size: 0.9375rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-twh-yellow); }
+
+/* ── 6. Responsive ────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .twh-story { padding: 4.5rem 0 4rem; }
+  .twh-story__body { grid-template-columns: 1fr; gap: 1.5rem; }
+
+  /* Stage shrinks into a compact sticky year bar */
+  .twh-story__stage {
+    position: sticky;
+    top: 72px;
+    z-index: 3;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 0.5rem 1rem;
+    grid-template-columns: 1fr;
+    border-left-width: 1px;
+    border-bottom: 3px solid var(--story-accent);
+    background: rgba(10, 10, 11, 0.92);
+    backdrop-filter: blur(8px);
+  }
+
+  .twh-story__year-window { font-size: 3.25rem; }
+  .twh-story__year { text-shadow: 2px 2px 0 var(--story-accent); }
+  .twh-story__rail, .twh-story__slashes { display: none; }
+
+  .twh-story__nav { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; scrollbar-width: none; }
+  .twh-story__nav::-webkit-scrollbar { display: none; }
+  .twh-story__nav-btn { flex: 0 0 auto; padding: 0.45rem 0.9rem; font: inherit; font-size: 0.875rem; font-weight: 800; color: var(--color-twh-grey-200); background: var(--color-twh-ink); border: 1px solid var(--color-twh-grey-700); cursor: pointer; }
+  .twh-story__nav-btn.is-active { color: var(--color-twh-black); background: var(--color-twh-yellow); border-color: var(--color-twh-yellow); }
+
+  .twh-story__chapters { gap: 4rem; padding-block: 1rem 3rem; }
+  .twh-story__card { opacity: 1; padding: 1.5rem; }
+}
+
+@media (max-width: 640px) {
+  .twh-story__inner { padding: 0 1rem; }
+  .twh-story__head { margin-bottom: 2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-story__card, .twh-story__stage { transition: none; }
+  .twh-story__card { opacity: 1; }
+  .twh-story__word { opacity: 1 !important; }
+}

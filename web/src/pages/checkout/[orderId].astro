@@ -1,0 +1,130 @@
+---
+/**
+ * Payment step. PAYMENT_MODE "preview" (default) shows a built-in test checkout — nothing is charged.
+ * The real PayHere gateway plugs in here later (redirect + notify endpoints); the booking logic
+ * in the CMS stays exactly the same.
+ */
+import PageLayout from '../../layouts/PageLayout.astro';
+import { getGlobal } from '../../lib/strapi/queries';
+import { getPaymentByOrder, CmsError } from '../../lib/auth/cms';
+import { dateLabel, fmtMinutes, formatLKR, toMinutes } from '../../lib/utils/colombo';
+
+export const prerender = false;
+
+const { orderId } = Astro.params;
+const session = Astro.locals.session!;
+const mode = import.meta.env.PAYMENT_MODE ?? 'preview';
+
+let global;
+try { global = await getGlobal(); } catch { /* CMS offline */ }
+
+let payment: Awaited<ReturnType<typeof getPaymentByOrder>>['payment'] | null = null;
+try {
+  payment = (await getPaymentByOrder(orderId!, session.uid)).payment;
+} catch (err) {
+  if (!(err instanceof CmsError && err.status === 404)) console.error('[checkout]', err);
+}
+
+if (!payment) return Astro.redirect('/account/bookings', 302);
+if (payment.status === 'paid') return Astro.redirect(`/account/bookings?booked=${encodeURIComponent(payment.booking?.reference ?? '')}`, 302);
+
+const b = payment.booking;
+const holdMs = b?.holdExpiresAt ? new Date(b.holdExpiresAt).getTime() - Date.now() : 0;
+const expired = payment.status !== 'pending' || holdMs <= 0 || b?.status === 'cancelled';
+const date = b ? dateLabel(String(b.sessionDate).slice(0, 10)) : null;
+---
+
+<PageLayout seo={{ metaTitle: 'Payment — The Wolverine Hub' }} {global} noindex>
+  <section class="twh-checkout">
+    <div class="twh-checkout__inner">
+      <h1 class="twh-checkout__title">Payment</h1>
+
+      {expired || !b ? (
+        <div class="twh-checkout__card">
+          <p class="twh-banner twh-banner--warn" role="alert">This payment session has expired and your seat was released. No money was taken.</p>
+          <p style="margin-top:1.25rem;"><a href="/schedule" class="twh-btn twh-btn--primary twh-btn--md">Book again</a></p>
+        </div>
+      ) : (
+        <div class="twh-checkout__grid">
+          <div class="twh-checkout__card">
+            {mode !== 'live' && (
+              <p class="twh-checkout__preview"><b>Test checkout</b> — this is a preview payment screen. No real money is charged, and no card details are collected.</p>
+            )}
+
+            <p class="twh-checkout__label">Booking</p>
+            <h2 class="twh-checkout__class">{b.classNameSnapshot}</h2>
+            <dl class="twh-checkout__facts">
+              <div><dt>Date</dt><dd>{date?.long}</dd></div>
+              <div><dt>Time</dt><dd>{fmtMinutes(toMinutes(b.startTime))} – {fmtMinutes(toMinutes(b.endTime))} <small>(Sri Lanka time)</small></dd></div>
+              <div><dt>Reference</dt><dd>{b.reference}</dd></div>
+              <div><dt>Order</dt><dd><code>{payment.orderId}</code></dd></div>
+            </dl>
+
+            <div class="twh-checkout__hold" id="hold" data-expires={b.holdExpiresAt}>
+              Seat held for <b id="hold-time">--:--</b>
+            </div>
+          </div>
+
+          <aside class="twh-checkout__card twh-checkout__summary">
+            <p class="twh-checkout__label">Order summary</p>
+            <div class="twh-checkout__line"><span>{b.classNameSnapshot} · 1 session</span><span>{formatLKR(payment.amount)}</span></div>
+            <div class="twh-checkout__total"><span>Total</span><span>{formatLKR(payment.amount)}</span></div>
+
+            {mode === 'live' ? (
+              <p class="twh-banner twh-banner--warn" role="alert">Online payments are not switched on yet. Please contact us to complete this booking.</p>
+            ) : (
+              <>
+                <p class="twh-auth__status" data-pay-status hidden></p>
+                <button type="button" class="twh-btn twh-btn--primary twh-btn--lg twh-checkout__pay" data-pay="success" data-order={payment.orderId}>Pay {formatLKR(payment.amount)} (test)</button>
+                <button type="button" class="twh-btn twh-btn--ghost twh-btn--md twh-checkout__pay" data-pay="failed" data-order={payment.orderId}>Simulate a failed payment</button>
+                <button type="button" class="twh-checkout__cancel" data-pay="cancelled" data-order={payment.orderId}>Cancel and release my seat</button>
+              </>
+            )}
+          </aside>
+        </div>
+      )}
+    </div>
+  </section>
+</PageLayout>
+
+<style is:global>@import '../../styles/pages/twh-checkout.css';@import '../../styles/pages/twh-account.css';@import '../../styles/pages/twh-auth.css';</style>
+
+<script>
+  // ── seat-hold countdown ────────────────────────────────────
+  const hold = document.getElementById('hold');
+  const out = document.getElementById('hold-time');
+  if (hold && out) {
+    const end = new Date(hold.dataset.expires ?? '').getTime();
+    const tick = () => {
+      const left = Math.max(0, Math.floor((end - Date.now()) / 1000));
+      out.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+      hold.classList.toggle('is-low', left < 120);
+      if (left === 0) {
+        window.clearInterval(timer);
+        window.location.reload();
+      }
+    };
+    const timer = window.setInterval(tick, 1000);
+    tick();
+  }
+
+  // ── test checkout buttons ──────────────────────────────────
+  const status = document.querySelector<HTMLElement>('[data-pay-status]');
+  document.querySelectorAll<HTMLButtonElement>('[data-pay]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll<HTMLButtonElement>('[data-pay]').forEach((b) => (b.disabled = true));
+      const label = btn.textContent;
+      btn.textContent = 'Processing…';
+      try {
+        const res = await fetch(`/api/checkout/${encodeURIComponent(btn.dataset.order!)}/${btn.dataset.pay}`, { method: 'POST' });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) { window.location.assign(data.redirect); return; }
+        if (status) { status.textContent = data.message || 'Something went wrong.'; status.dataset.kind = 'error'; status.hidden = false; }
+      } catch {
+        if (status) { status.textContent = 'Network problem. Please try again.'; status.dataset.kind = 'error'; status.hidden = false; }
+      }
+      document.querySelectorAll<HTMLButtonElement>('[data-pay]').forEach((b) => (b.disabled = false));
+      btn.textContent = label;
+    });
+  });
+</script>

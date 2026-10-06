@@ -1,14 +1,16 @@
 ---
 import PageLayout from '../../layouts/PageLayout.astro';
-import { getClasses, getGlobal, getPageBySlug } from '../../lib/strapi/queries';
-import type { StrapiClass, StrapiPageHeroSection } from '../../lib/strapi/types';
+import { getClasses, getGlobal, getPageBySlug, getScheduleSlots } from '../../lib/strapi/queries';
+import { DAYS, formatLKR, type Day } from '../../lib/utils/colombo';
+import type { StrapiClass, StrapiPageHeroSection, StrapiScheduleSlot } from '../../lib/strapi/types';
 import WolverineSlash from '../../components/ui/WolverineSlash.astro';
 
 let global: Awaited<ReturnType<typeof getGlobal>> | undefined;
 let classes: StrapiClass[] = [];
 let pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
+let slots: StrapiScheduleSlot[] = [];
 try {
-  [global, classes, pageData] = await Promise.all([getGlobal(), getClasses(), getPageBySlug('classes')]);
+  [global, classes, pageData, slots] = await Promise.all([getGlobal(), getClasses(), getPageBySlug('classes'), getScheduleSlots()]);
 } catch { /* CMS offline */ }
 
 const pageHero = pageData?.sections?.find(
@@ -16,18 +18,26 @@ const pageHero = pageData?.sections?.find(
 ) as StrapiPageHeroSection | undefined;
 
 const fallback: StrapiClass[] = [
-  { documentId: '1', name: 'Boxing',                  slug: 'boxing',                tagline: 'The sweet science',    durationMinutes: 60, intensity: 'high',    level: 'beginner',     isFree: false, sortOrder: 1 },
-  { documentId: '2', name: 'Muay Thai',               slug: 'muay-thai',             tagline: 'Eight limbs',          durationMinutes: 90, intensity: 'high',    level: 'intermediate', isFree: false, sortOrder: 2 },
-  { documentId: '3', name: 'BJJ',                     slug: 'bjj',                   tagline: 'Ground game',          durationMinutes: 90, intensity: 'medium',  level: 'beginner',     isFree: false, sortOrder: 3 },
-  { documentId: '4', name: 'Kickboxing',              slug: 'kickboxing',            tagline: 'Power & precision',    durationMinutes: 60, intensity: 'high',    level: 'beginner',     isFree: false, sortOrder: 4 },
-  { documentId: '5', name: 'Strength Training', slug: 'strength-conditioning', tagline: 'Build the base',       durationMinutes: 60, intensity: 'medium',  level: 'beginner',     isFree: false, sortOrder: 5 },
-  { documentId: '6', name: 'Wrestling',               slug: 'wrestling',             tagline: 'Control the mat',      durationMinutes: 75, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 6 },
-  { documentId: '7', name: 'MMA',                     slug: 'mma',                   tagline: 'The complete fighter', durationMinutes: 90, intensity: 'extreme', level: 'advanced',     isFree: false, sortOrder: 7 },
-  { documentId: '8', name: 'Yoga',                    slug: 'yoga',                  tagline: 'Recovery & mobility',  durationMinutes: 60, intensity: 'low',     level: 'beginner',     isFree: false, sortOrder: 8 },
-  { documentId: '9', name: 'HIIT',                    slug: 'hiit',                  tagline: 'Push the limit',       durationMinutes: 45, intensity: 'high',    level: 'intermediate', isFree: false, sortOrder: 9 },
+  { documentId: '1', name: 'Colossus',      slug: 'colossus',       tagline: 'Strength Training', durationMinutes: 75, intensity: 'high',    level: 'all', price: 3000, isFree: false, sortOrder: 1 },
+  { documentId: '2', name: 'Pop Pop Bang',  slug: 'pop-pop-bang',   tagline: 'Boxing',            durationMinutes: 75, intensity: 'high',    level: 'all', price: 3000, isFree: false, sortOrder: 2 },
+  { documentId: '3', name: "Titan's Den",   slug: 'titans-den',     tagline: 'MMA',               durationMinutes: 90, intensity: 'extreme', level: 'all', price: 3000, isFree: false, sortOrder: 3 },
+  { documentId: '4', name: 'Makkari',       slug: 'makkari',        tagline: 'Easy Run',          durationMinutes: 60, intensity: 'low',     level: 'all', price: 0,    isFree: true,  sortOrder: 4 },
 ];
 
 const display = classes.length > 0 ? classes : fallback;
+
+// Which weekdays each class runs (from its weekly slots) — drives the Day filter + the card line
+const daysByClass = new Map<string, Day[]>();
+for (const sl of slots) {
+  const k = sl.class?.slug;
+  if (!k) continue;
+  const list = daysByClass.get(k) ?? [];
+  if (!list.includes(sl.weekday as Day)) list.push(sl.weekday as Day);
+  daysByClass.set(k, list);
+}
+const daysOf = (slug: string) => (daysByClass.get(slug) ?? []).sort((x, y) => DAYS.indexOf(x) - DAYS.indexOf(y));
+const dayShort = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
+const daysLine = (days: Day[]) => (days.length === 5 && days.every((d, i) => d === DAYS[i]) ? 'Mon – Fri' : days.map(dayShort).join(' · '));
 
 // Card text limits (also enforced in the Strapi schema) — clip defensively so long
 // content can never break the card layout.
@@ -50,24 +60,19 @@ const intensityTextColour: Record<string, string> = {
   extreme: 'var(--color-twh-white)',
 };
 
-// Filter groups — "All" is frontend-only. Level and intensity combine (AND).
+// Filter groups — "All" is frontend-only. Day and price combine (AND).
+const DAY_NAMES: Record<Day, string> = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' };
 const FILTER_GROUPS = [
-  { key: 'level', label: 'Level', options: [
-    { label: 'Beginner',     value: 'beginner',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
-    { label: 'Intermediate', value: 'intermediate', accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
-    { label: 'Advanced',     value: 'advanced',     accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
-  ]},
-  { key: 'intensity', label: 'Intensity', options: [
-    { label: 'Low',     value: 'low',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
-    { label: 'Medium',  value: 'medium',  accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
-    { label: 'High',    value: 'high',    accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
-    { label: 'Extreme', value: 'extreme', accent: 'var(--color-twh-red-deep)', ink: 'var(--color-twh-white)' },
+  { key: 'day', label: 'Day', options: DAYS.map((d) => ({ label: DAY_NAMES[d], value: d, accent: 'var(--color-twh-yellow)', ink: 'var(--color-twh-black)' })) },
+  { key: 'price', label: 'Price', options: [
+    { label: 'Free', value: 'free', accent: 'var(--color-twh-blue)', ink: 'var(--color-twh-white)' },
+    { label: 'Paid', value: 'paid', accent: 'var(--color-twh-red)',  ink: 'var(--color-twh-white)' },
   ]},
 ];
 
 const seo = {
   metaTitle: 'Classes — The Wolverine Hub',
-  metaDescription: 'Explore every discipline — Boxing, Muay Thai, BJJ, MMA, Strength & more. Find the class that fits your level.',
+  metaDescription: 'Strength, boxing, MMA, hybrid training, yoga and more — book the classes you want and pay per session.',
 };
 ---
 
@@ -81,10 +86,10 @@ const seo = {
         class="twh-page-hero__heading"
         set:html={pageHero
           ? pageHero.heading.replace(/\n/g, '<br/>')
-          : 'Every Discipline.<br/>Every Level.'}
+          : 'One Class.<br/>One Booking.'}
       />
       <p class="twh-page-hero__sub">
-        {pageHero?.subheading ?? 'From your first session to your hundredth fight — we have a class built for where you are right now.'}
+        {pageHero?.subheading ?? 'No memberships. Pick the class you want, book your slot and pay for that session only.'}
       </p>
     </div>
   </div>
@@ -129,21 +134,21 @@ const seo = {
           const hasVideo = Boolean(cls.previewVideo?.url);
           const accent  = intensityColour[cls.intensity]     ?? 'var(--color-twh-grey-700)';
           const txtClr  = intensityTextColour[cls.intensity] ?? 'var(--color-twh-white)';
-          const lvlLabel = cls.level === 'all' || cls.level === 'beginner'
-            ? cls.level === 'all' ? 'All levels' : 'Beginner'
-            : cls.level.charAt(0).toUpperCase() + cls.level.slice(1);
+          const days = daysOf(cls.slug);
+          const isFree = (cls.price ?? 0) === 0 || cls.isFree;
+          const priceText = isFree ? 'Free' : formatLKR(cls.price);
           return (
             <li
               class="twh-classes__card"
               style={`--card-accent: ${accent};`}
-              data-intensity={cls.intensity}
-              data-level={cls.level}
+              data-days={days.join(',')}
+              data-price={isFree ? 'free' : 'paid'}
               data-has-video={hasVideo}
             >
               <a
                 href={`/classes/${cls.slug}`}
                 class="twh-classes__card-link"
-                aria-label={`${cls.name}${cls.tagline ? ` — ${cls.tagline}` : ''}, ${cls.durationMinutes} minutes, ${lvlLabel}, ${cls.intensity} intensity`}
+                aria-label={`${cls.name}${cls.tagline ? ` — ${cls.tagline}` : ''}, ${priceText}${isFree ? '' : ' per session'}${days.length ? `, ${daysLine(days)}` : ''}`}
               >
 
                 <!-- Left intensity stripe -->
@@ -201,15 +206,11 @@ const seo = {
                   )}
                   <div class="twh-classes__card-foot">
                     <div class="twh-classes__card-meta">
-                      <span>{cls.durationMinutes} min</span>
-                      <span class="twh-classes__card-meta-dot" aria-hidden="true"></span>
-                      <span>{lvlLabel}</span>
+                      <span>{cls.durationMinutes >= 240 ? 'Day pass' : `${cls.durationMinutes} min`}</span>
+                      {days.length > 0 && <span class="twh-classes__card-meta-dot" aria-hidden="true"></span>}
+                      {days.length > 0 && <span>{daysLine(days)}</span>}
                     </div>
-                    <span class="twh-classes__card-arrow" aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </span>
+                    <span class={`twh-classes__card-price${isFree ? ' is-free' : ''}`}>{isFree ? 'FREE' : priceText}</span>
                   </div>
                 </div>
 
@@ -222,7 +223,7 @@ const seo = {
       <div class="twh-classes__empty" id="no-results" style="display:none;" aria-live="polite">
         <WolverineSlash class="twh-classes__empty-icon" aria-hidden="true" />
         <p class="twh-classes__empty-heading">No Classes at the Moment</p>
-        <p class="twh-classes__empty-sub" id="no-results-sub">We don't have any classes in this category right now. Check back soon or <a href="/contact">get in touch</a>.</p>
+        <p class="twh-classes__empty-sub" id="no-results-sub">No classes match those filters. Try another day or <a href="/schedule">see the full schedule</a>.</p>
       </div>
     </div>
   </section>
@@ -237,15 +238,15 @@ const seo = {
   gsap.registerPlugin(ScrollTrigger);
 
   // ── Filter ──────────────────────────────────────────────────
-  // Level and intensity are independent groups, combined with AND.
+  // Day and price are independent groups, combined with AND.
   // Clicking the active option again (or "All") clears that selection.
   const btns  = document.querySelectorAll<HTMLButtonElement>('.twh-classes__filter-btn');
   const cards = document.querySelectorAll<HTMLElement>('.twh-classes__card');
   const noRes = document.getElementById('no-results')!;
-  const state: Record<string, string> = { level: 'all', intensity: 'all' };
+  const state: Record<string, string> = { day: 'all', price: 'all' };
 
   function applyFilter() {
-    const none = state.level === 'all' && state.intensity === 'all';
+    const none = state.day === 'all' && state.price === 'all';
     btns.forEach(b => {
       const group = b.dataset.filterGroup!;
       const on = group === 'all' ? none : state[group] === b.dataset.filter;
@@ -255,8 +256,8 @@ const seo = {
     let visible = 0;
     cards.forEach(card => {
       const show =
-        (state.level === 'all'     || card.dataset.level === state.level) &&
-        (state.intensity === 'all' || card.dataset.intensity === state.intensity);
+        (state.day === 'all'   || (card.dataset.days ?? '').split(',').includes(state.day)) &&
+        (state.price === 'all' || card.dataset.price === state.price);
       card.classList.toggle('is-filtered-out', !show);
       if (show) {
         visible++;
@@ -271,8 +272,8 @@ const seo = {
     btn.addEventListener('click', () => {
       const group = btn.dataset.filterGroup!;
       if (group === 'all') {
-        state.level = 'all';
-        state.intensity = 'all';
+        state.day = 'all';
+        state.price = 'all';
       } else {
         state[group] = state[group] === btn.dataset.filter ? 'all' : btn.dataset.filter!;
       }

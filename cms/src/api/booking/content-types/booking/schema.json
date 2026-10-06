@@ -1,0 +1,182 @@
+{
+  "kind": "collectionType",
+  "collectionName": "bookings",
+  "info": {
+    "singularName": "booking",
+    "pluralName": "bookings",
+    "displayName": "Booking",
+    "description": "One member's booking for one dated session of a class. Created by the website — you normally only view or cancel these."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "reference": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Booking Reference",
+          "description": "Short code the member sees, e.g. TWH-7F3K9Q."
+        }
+      }
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Member",
+          "description": "Who booked."
+        }
+      }
+    },
+    "classDocumentId": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Class (id)",
+          "description": "documentId of the booked class."
+        }
+      }
+    },
+    "classSlug": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Class (slug)",
+          "description": ""
+        }
+      }
+    },
+    "slotDocumentId": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Weekly Slot (id)",
+          "description": "documentId of the weekly timetable slot."
+        }
+      }
+    },
+    "sessionDate": {
+      "type": "date",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Session Date",
+          "description": "The calendar date of the session (Sri Lanka)."
+        }
+      }
+    },
+    "startTime": {
+      "type": "time",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Start Time",
+          "description": "Copied from the slot when booked (so later timetable edits don't rewrite history)."
+        }
+      }
+    },
+    "endTime": {
+      "type": "time",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "End Time",
+          "description": "Copied from the slot when booked."
+        }
+      }
+    },
+    "classNameSnapshot": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Class Name (at booking)",
+          "description": "Copied when booked."
+        }
+      }
+    },
+    "amount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Amount (LKR)",
+          "description": "Price charged for this booking."
+        }
+      }
+    },
+    "currency": {
+      "type": "string",
+      "default": "LKR"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "confirmed",
+        "cancelled",
+        "attended",
+        "no-show"
+      ],
+      "default": "pending",
+      "required": true,
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Status",
+          "description": "pending = waiting for payment (seat held for a few minutes), confirmed = paid/free and booked."
+        }
+      }
+    },
+    "holdExpiresAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Seat Held Until",
+          "description": "A pending booking holds its seat until this time."
+        }
+      }
+    },
+    "confirmationSentAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Confirmation Email Sent",
+          "description": ""
+        }
+      }
+    },
+    "reminderSentAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Reminder Email Sent",
+          "description": ""
+        }
+      }
+    },
+    "cancelledAt": {
+      "type": "datetime",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Cancelled At",
+          "description": ""
+        }
+      }
+    },
+    "notes": {
+      "type": "text",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Notes",
+          "description": "Internal notes (not shown to the member)."
+        }
+      }
+    }
+  }
+}

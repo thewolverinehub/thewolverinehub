@@ -10,7 +10,7 @@ const { section } = Astro.props;
 
 const heading      = section?.heading    ?? 'Ready to Start?';
 const subheading   = section?.subheading ?? 'Your first class is free. No contracts. No excuses.';
-const primaryCta   = section?.primaryCta ?? { label: 'Book a Free Trial', href: '/contact', variant: 'primary', openInNewTab: false };
+const primaryCta   = section?.primaryCta ?? { label: 'Sign Up', href: '/register', variant: 'primary', openInNewTab: false };
 const secondaryCta = section?.secondaryCta;
 const anchorId     = section?.anchorId ?? 'cta';
 ---
@@ -62,13 +62,13 @@ const anchorId     = section?.anchorId ?? 'cta';
       </div>
       <div class="twh-cta-banner__stat-divider">/</div>
       <div class="twh-cta-banner__stat">
-        <span class="twh-cta-banner__stat-number">Day 1</span>
-        <span class="twh-cta-banner__stat-label">Free trial</span>
+        <span class="twh-cta-banner__stat-number">1</span>
+        <span class="twh-cta-banner__stat-label">Class at a time</span>
       </div>
       <div class="twh-cta-banner__stat-divider">/</div>
       <div class="twh-cta-banner__stat">
-        <span class="twh-cta-banner__stat-number">3+</span>
-        <span class="twh-cta-banner__stat-label">Programs</span>
+        <span class="twh-cta-banner__stat-number">12</span>
+        <span class="twh-cta-banner__stat-label">Classes</span>
       </div>
     </div>
 

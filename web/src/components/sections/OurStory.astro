@@ -1,0 +1,209 @@
+---
+/**
+ * "Our Story" — scroll-driven chapters (content from Strapi: sections.our-story).
+ *
+ * Desktop: a sticky stage on the left (giant year that rolls, progress rail, claw slashes) while the
+ * chapter cards scroll on the right and light up one at a time. Mobile: a vertical timeline.
+ * Everything is readable without JS and without motion (reduced-motion users get static content).
+ */
+import type { StrapiOurStorySection } from '../../lib/strapi/types';
+import WolverineSlash from '../ui/WolverineSlash.astro';
+
+interface Props {
+  section?: Partial<StrapiOurStorySection>;
+}
+
+const { section } = Astro.props;
+const chapters = section?.chapters ?? [];
+const eyebrow = section?.eyebrow ?? 'Our Story';
+const heading = section?.heading ?? '';
+const anchorId = section?.anchorId ?? 'story';
+const cta = section?.cta;
+const quoteWords = (section?.quote ?? '').split(/\s+/).filter(Boolean);
+const accents = ['var(--color-twh-red)', 'var(--color-twh-yellow)', 'var(--color-twh-blue)', 'var(--color-twh-red)'];
+---
+
+{chapters.length > 0 && (
+  <section class="twh-story" id={anchorId} aria-labelledby="story-heading" data-chapters={chapters.length}>
+    <div class="twh-story__bg" aria-hidden="true">
+      <WolverineSlash class="twh-story__bg-slash twh-story__bg-slash--a" />
+      <WolverineSlash class="twh-story__bg-slash twh-story__bg-slash--b" />
+    </div>
+
+    <div class="twh-story__inner">
+      <header class="twh-story__head">
+        <p class="twh-story__eyebrow"><span aria-hidden="true">/</span> {eyebrow}</p>
+        <h2 class="twh-story__heading" id="story-heading" data-split>{heading}</h2>
+        {section?.intro && <p class="twh-story__intro">{section.intro}</p>}
+      </header>
+
+      <div class="twh-story__body">
+        <!-- Sticky stage -->
+        <div class="twh-story__stage" aria-hidden="true">
+          <div class="twh-story__slashes">
+            <span class="twh-story__cut" style={`--c:${accents[0]}`}></span>
+            <span class="twh-story__cut" style={`--c:${accents[1]}`}></span>
+            <span class="twh-story__cut" style={`--c:${accents[2]}`}></span>
+          </div>
+          <div class="twh-story__year-window">
+            <div class="twh-story__year-stack">
+              {chapters.map((c) => <span class="twh-story__year">{c.year}</span>)}
+            </div>
+          </div>
+          <div class="twh-story__rail">
+            <span class="twh-story__rail-fill"></span>
+          </div>
+        </div>
+
+        <!-- Year navigation (keyboard / click) -->
+        <nav class="twh-story__nav" aria-label="Story chapters">
+          {chapters.map((c, i) => (
+            <button type="button" class={`twh-story__nav-btn${i === 0 ? ' is-active' : ''}`} data-goto={i} aria-label={`Chapter ${i + 1}: ${c.year} — ${c.title}`}>
+              <span>{c.year}</span>
+            </button>
+          ))}
+        </nav>
+
+        <!-- Chapters -->
+        <ol class="twh-story__chapters" role="list">
+          {chapters.map((c, i) => (
+            <li class={`twh-story__chapter${i === 0 ? ' is-active' : ''}`} data-index={i} style={`--accent:${accents[i % accents.length]}`}>
+              <article class="twh-story__card">
+                <p class="twh-story__chapter-no">Chapter {String(i + 1).padStart(2, '0')}</p>
+                <p class="twh-story__chapter-year">{c.year}</p>
+                <h3 class="twh-story__chapter-title">{c.title}</h3>
+                <p class="twh-story__chapter-text">{c.text}</p>
+              </article>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {section?.quote && (
+        <figure class="twh-story__quote">
+          <blockquote>
+            <p aria-label={section.quote}>
+              {quoteWords.map((w) => <span class="twh-story__word" aria-hidden="true">{w}</span>)}
+            </p>
+          </blockquote>
+          {section.quoteAuthor && <figcaption>— {section.quoteAuthor}</figcaption>}
+          {cta && (
+            <a href={cta.href} class={`twh-btn twh-btn--${cta.variant ?? 'ghost'} twh-btn--md`} target={cta.openInNewTab ? '_blank' : undefined} rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}>
+              {cta.label}
+            </a>
+          )}
+        </figure>
+      )}
+    </div>
+  </section>
+)}
+
+<style is:global>@import '../../styles/components/twh-our-story.css';</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const root = document.querySelector<HTMLElement>('.twh-story');
+  if (root) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const chapters = Array.from(root.querySelectorAll<HTMLElement>('.twh-story__chapter'));
+    const navBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('.twh-story__nav-btn'));
+    const stack = root.querySelector<HTMLElement>('.twh-story__year-stack');
+    const cuts = Array.from(root.querySelectorAll<HTMLElement>('.twh-story__cut'));
+    const railFill = root.querySelector<HTMLElement>('.twh-story__rail-fill');
+    const heading = root.querySelector<HTMLElement>('[data-split]');
+    const n = chapters.length;
+
+    // Nav buttons always work (also without motion): jump to a chapter
+    navBtns.forEach((b) => b.addEventListener('click', () => {
+      chapters[Number(b.dataset.goto)]?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    }));
+
+    const setActive = (i: number, animate = true) => {
+      chapters.forEach((c, k) => c.classList.toggle('is-active', k === i));
+      navBtns.forEach((b, k) => { b.classList.toggle('is-active', k === i); if (k === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+      if (!stack) return;
+      const accent = getComputedStyle(chapters[i]).getPropertyValue('--accent');
+      root.style.setProperty('--story-accent', accent);
+      if (reduced || !animate) { gsap.set(stack, { yPercent: -(100 / n) * i }); return; }
+      gsap.to(stack, { yPercent: -(100 / n) * i, duration: 0.8, ease: 'power4.inOut', overwrite: true });
+      // three claw slashes cut across the stage on every chapter change
+      gsap.fromTo(cuts, { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.55, stagger: 0.09, ease: 'power3.out', transformOrigin: 'left center' });
+      gsap.to(cuts, { opacity: 0.18, duration: 0.8, delay: 0.7, stagger: 0.05 });
+    };
+
+    setActive(0, false);
+
+    if (!reduced) {
+      // ── heading: words rise out of a mask ────────────────────
+      if (heading) {
+        const words = (heading.textContent ?? '').trim().split(/\s+/);
+        heading.setAttribute('aria-label', heading.textContent ?? '');
+        heading.innerHTML = words.map((w) => `<span class="twh-story__mask" aria-hidden="true"><span class="twh-story__mask-in">${w}</span></span>`).join(' ');
+        gsap.from(heading.querySelectorAll('.twh-story__mask-in'), {
+          yPercent: 115, rotate: 4, duration: 0.9, stagger: 0.07, ease: 'power4.out',
+          scrollTrigger: { trigger: heading, start: 'top 85%' },
+        });
+      }
+      gsap.from(root.querySelectorAll('.twh-story__eyebrow, .twh-story__intro'), {
+        y: 24, opacity: 0, duration: 0.8, stagger: 0.15, ease: 'power3.out',
+        scrollTrigger: { trigger: root.querySelector('.twh-story__head'), start: 'top 85%' },
+      });
+
+      // ── chapter cards: reveal + drive the active chapter ─────
+      chapters.forEach((c, i) => {
+        gsap.from(c.querySelector('.twh-story__card'), {
+          y: 70, opacity: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: c, start: 'top 88%' },
+        });
+        ScrollTrigger.create({
+          trigger: c,
+          start: 'top 58%',
+          end: 'bottom 58%',
+          onEnter: () => setActive(i),
+          onEnterBack: () => setActive(i),
+        });
+      });
+
+      // ── progress rail fills with scroll through the chapters ──
+      if (railFill) {
+        gsap.fromTo(railFill, { scaleY: 0 }, {
+          scaleY: 1, ease: 'none', transformOrigin: 'top center',
+          scrollTrigger: { trigger: root.querySelector('.twh-story__chapters'), start: 'top 60%', end: 'bottom 60%', scrub: 0.4 },
+        });
+      }
+
+      // ── gentle tilt on desktop pointers ──────────────────────
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        chapters.forEach((c) => {
+          const card = c.querySelector<HTMLElement>('.twh-story__card')!;
+          const rx = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power3.out' });
+          const ry = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power3.out' });
+          card.addEventListener('pointermove', (e) => {
+            const r = card.getBoundingClientRect();
+            ry(((e.clientX - r.left) / r.width - 0.5) * 6);
+            rx(-((e.clientY - r.top) / r.height - 0.5) * 6);
+          });
+          card.addEventListener('pointerleave', () => { rx(0); ry(0); });
+        });
+      }
+
+      // ── closing quote: words light up as you scroll ──────────
+      const words = root.querySelectorAll('.twh-story__word');
+      if (words.length) {
+        gsap.fromTo(words, { opacity: 0.12 }, {
+          opacity: 1, stagger: 0.1, ease: 'none',
+          scrollTrigger: { trigger: root.querySelector('.twh-story__quote'), start: 'top 80%', end: 'bottom 55%', scrub: 0.5 },
+        });
+        gsap.from(root.querySelectorAll('.twh-story__quote figcaption, .twh-story__quote .twh-btn'), {
+          y: 20, opacity: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out',
+          scrollTrigger: { trigger: root.querySelector('.twh-story__quote'), start: 'bottom 75%' },
+        });
+      }
+    } else {
+      root.querySelectorAll<HTMLElement>('.twh-story__word').forEach((w) => (w.style.opacity = '1'));
+    }
+  }
+</script>

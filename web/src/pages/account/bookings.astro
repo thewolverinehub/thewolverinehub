@@ -1,0 +1,72 @@
+---
+import AccountLayout from '../../layouts/AccountLayout.astro';
+import BookingRow from '../../components/account/BookingRow.astro';
+import { getMember, myBookings, type Payment } from '../../lib/auth/cms';
+import { memberStats, viewBookings } from '../../lib/booking/member';
+
+export const prerender = false;
+
+const session = Astro.locals.session!;
+const member = await getMember(session.uid);
+if (!member) return Astro.redirect('/login', 302);
+
+let bookings: Awaited<ReturnType<typeof myBookings>>['bookings'] = [];
+let payments: Payment[] = [];
+let loadError = false;
+try {
+  ({ bookings, payments } = await myBookings(member.id));
+} catch {
+  loadError = true;
+}
+
+const stats = memberStats(viewBookings(bookings, payments), payments);
+const q = Astro.url.searchParams;
+const tabParam = q.get('tab');
+const tab = tabParam === 'past' || tabParam === 'cancelled' ? tabParam : 'upcoming';
+const booked = q.get('booked');
+const payment = q.get('payment');
+const cancelled = q.get('cancelled') === '1';
+
+const lists = { upcoming: stats.upcoming, past: stats.past, cancelled: stats.cancelled };
+const tabs = [
+  { key: 'upcoming', label: 'Upcoming', count: stats.upcoming.length },
+  { key: 'past', label: 'Past', count: stats.past.length },
+  { key: 'cancelled', label: 'Cancelled / expired', count: stats.cancelled.length },
+] as const;
+const shown = lists[tab];
+---
+
+<AccountLayout {member} active="bookings" title="My Bookings">
+  {booked && (
+    <p class="twh-banner twh-banner--good" role="status">
+      <b>You're booked in!</b> Your booking <b>{booked}</b> is confirmed. We've emailed your confirmation, and we'll remind you the evening before.
+    </p>
+  )}
+  {payment && <p class="twh-banner twh-banner--warn" role="status">{payment === 'cancelled' ? 'Payment cancelled — your seat was released.' : 'The payment did not go through — your seat was released. You can book again any time.'}</p>}
+  {cancelled && <p class="twh-banner twh-banner--good" role="status">Your booking has been cancelled.</p>}
+  {loadError && <p class="twh-banner twh-banner--warn" role="alert">We couldn't load your bookings right now. Please refresh in a moment.</p>}
+
+  <div class="twh-subtabs" role="tablist" aria-label="Booking lists">
+    {tabs.map((t) => (
+      <a href={`/account/bookings${t.key === 'upcoming' ? '' : `?tab=${t.key}`}`} class={`twh-subtab${tab === t.key ? ' is-active' : ''}`} role="tab" aria-selected={tab === t.key ? 'true' : 'false'}>
+        {t.label} <span>{t.count}</span>
+      </a>
+    ))}
+  </div>
+
+  {shown.length === 0 ? (
+    <div class="twh-card">
+      <div class="twh-empty">
+        <p class="twh-empty__title">{tab === 'upcoming' ? 'No upcoming sessions' : tab === 'past' ? 'No past sessions yet' : 'Nothing here'}</p>
+        <p class="twh-empty__text">{tab === 'upcoming' ? 'Find a class that fits your week and book a slot.' : 'Completed sessions will show up here.'}</p>
+        {tab === 'upcoming' && <a href="/schedule" class="twh-btn twh-btn--primary twh-btn--sm">Browse the schedule</a>}
+      </div>
+    </div>
+  ) : (
+    <ul class="twh-bk-list" role="list">
+      {shown.map((b) => <BookingRow booking={b} actions={tab === 'upcoming'} />)}
+    </ul>
+  )}
+
+  <p class="twh-acct__note">Sessions can be cancelled up to 12 hours before they start. Need help? <a href="/contact">Contact us</a>.</p>
+</AccountLayout>

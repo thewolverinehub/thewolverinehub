@@ -2,6 +2,9 @@
 import PageLayout from '../../layouts/PageLayout.astro';
 import { getClassBySlug, getScheduleSlots, getGlobal } from '../../lib/strapi/queries';
 import { blocksToHtml } from '../../lib/strapi/blocks';
+import { seatsTaken } from '../../lib/auth/cms';
+import { DAYS, addDays, fmtMinutes, formatLKR, getColomboNow, toMinutes, type Day } from '../../lib/utils/colombo';
+import { BOOKING_WINDOW_DAYS, sessionFor, spotsLabel, upcomingDates, type SessionOption } from '../../lib/booking/sessions';
 import Lightbox from '../../components/ui/Lightbox.astro';
 import type { StrapiMedia } from '../../lib/strapi/types';
 
@@ -9,33 +12,40 @@ const { slug } = Astro.params;
 
 let global, cls, slots;
 try {
-  [global, cls, slots] = await Promise.all([
-    getGlobal(),
-    getClassBySlug(slug!),
-    getScheduleSlots(),
-  ]);
+  [global, cls, slots] = await Promise.all([getGlobal(), getClassBySlug(slug!), getScheduleSlots()]);
 } catch { /* CMS offline */ }
 
 if (!cls) return Astro.redirect('/classes', 307);
 
-const classSlots = (slots ?? []).filter(s => s.class?.slug === slug);
+// ── Schedule + live availability ─────────────────────────────
+const classSlots = (slots ?? [])
+  .filter((s) => s.class?.slug === slug)
+  .sort((a, b) => DAYS.indexOf(a.weekday as Day) - DAYS.indexOf(b.weekday as Day) || toMinutes(a.startTime) - toMinutes(b.startTime));
 
-const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+const now = getColomboNow();
+const taken = await seatsTaken(now.dateISO, addDays(now.dateISO, BOOKING_WINDOW_DAYS));
 
-function fmt(t: string) {
-  const [h, m] = t.split(':').map(Number);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12  = h % 12 || 12;
-  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
-}
+const sessions: SessionOption[] = classSlots
+  .flatMap((slot) => upcomingDates(slot, 4, now).map((d) => sessionFor(slot as any, d, taken, now)))
+  .sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin)
+  .slice(0, 8);
+const nextOpen = sessions.find((s) => s.state === 'open');
+
+const isFree = (cls.price ?? 0) === 0 || cls.isFree;
+const priceLabel = isFree ? 'Free' : formatLKR(cls.price);
+const logged = Boolean(Astro.locals.session);
+
+// ── Program details ──────────────────────────────────────────
+const lines = (t?: string) => (t ?? '').split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+const targetAreas = lines(cls.targetAreas);
+const equipment = lines(cls.equipment);
+const coaches = cls.coaches ?? [];
+const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 const intensityColour: Record<string, string> = {
-  low:     'var(--color-twh-blue)',
-  medium:  'var(--color-twh-yellow)',
-  high:    'var(--color-twh-red)',
-  extreme: 'var(--color-twh-red-deep)',
+  low: 'var(--color-twh-blue)', medium: 'var(--color-twh-yellow)', high: 'var(--color-twh-red)', extreme: 'var(--color-twh-red-deep)',
 };
-
+const accentColor = intensityColour[cls.intensity] ?? 'var(--color-twh-grey-600)';
 const bodyHtml = blocksToHtml(cls.description);
 
 // ── Media ────────────────────────────────────────────────────
@@ -44,11 +54,12 @@ const gallery: StrapiMedia[] = (cls.gallery ?? []).filter((m) => m?.url);
 const isVideo = (m: StrapiMedia) => m.mime?.startsWith('video/');
 const tileSrc = (m: StrapiMedia) => m.formats?.medium?.url ?? m.formats?.small?.url ?? m.url;
 const posterUrl = cls.thumbnail?.formats?.large?.url ?? cls.thumbnail?.url;
-const accentColor = intensityColour[cls.intensity] ?? 'var(--color-twh-grey-600)';
+
+const dayName = (d: string) => d.charAt(0).toUpperCase() + d.slice(1);
 
 const seo = cls.seo ?? {
   metaTitle: `${cls.name} — The Wolverine Hub`,
-  metaDescription: cls.tagline ?? `${cls.name} classes at The Wolverine Hub. ${cls.durationMinutes} min, ${cls.level} level.`,
+  metaDescription: `${cls.name} (${cls.tagline ?? 'class'}) at The Wolverine Hub — ${priceLabel}${isFree ? '' : ' per session'}. ${cls.frequency ?? ''}`.trim(),
 };
 ---
 
@@ -63,9 +74,9 @@ const seo = cls.seo ?? {
         <span class="twh-badge" style={`background:${accentColor}; color:${cls.intensity === 'medium' ? 'var(--color-twh-black)' : 'var(--color-twh-white)'};`}>
           {cls.intensity}
         </span>
-        <span class="twh-badge twh-badge--grey">{cls.durationMinutes} min</span>
-        <span class="twh-badge twh-badge--grey">{cls.level}</span>
-        {cls.isFree && <span class="twh-badge twh-badge--yellow">Free</span>}
+        <span class="twh-badge twh-badge--grey">{cls.durationMinutes >= 240 ? 'Day pass' : `${cls.durationMinutes} min`}</span>
+        {cls.frequency && <span class="twh-badge twh-badge--grey">{cls.frequency}</span>}
+        <span class="twh-badge twh-badge--yellow">{isFree ? 'Free' : `${priceLabel} / session`}</span>
       </div>
     </div>
   </div>
@@ -74,28 +85,84 @@ const seo = cls.seo ?? {
   <div class="twh-class-detail">
     <div class="twh-class-detail__inner">
 
-      <!-- Body -->
+      <!-- Main column -->
       <div class="twh-class-detail__body">
-        {bodyHtml ? (
-          <Fragment set:html={bodyHtml} />
-        ) : (
-          <p style="color:rgba(255,255,255,0.4);">
-            Full class description coming soon.
-          </p>
+
+        <!-- ═════════ Program ═════════ -->
+        <section class="twh-program" id="program" aria-labelledby="program-h">
+          <h2 id="program-h" class="twh-program__title"><span aria-hidden="true">/</span> Program</h2>
+
+          <div class="twh-program__block twh-program__block--description">
+            <h3 class="twh-program__label">Description</h3>
+            {bodyHtml ? <div class="twh-program__prose"><Fragment set:html={bodyHtml} /></div> : <p class="twh-program__muted">Full description coming soon.</p>}
+          </div>
+
+          <div class="twh-program__grid">
+            <div class="twh-program__block">
+              <h3 class="twh-program__label">{coaches.length > 1 ? 'Coaches' : 'Coach'}</h3>
+              {coaches.length > 0 ? (
+                <ul class="twh-program__coaches" role="list">
+                  {coaches.map((c) => (
+                    <li>
+                      <a href={`/coaches/${c.slug}`} class="twh-program__coach">
+                        <span class="twh-program__avatar" aria-hidden="true">{initials(c.name)}</span>
+                        <span>
+                          <strong>{c.name}</strong>
+                          {(c.nickname || c.role) && <small>{c.nickname ? `“${c.nickname}”` : c.role}</small>}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="twh-program__muted">{classSlots.length > 0 ? 'Coach to be announced.' : '—'}</p>
+              )}
+            </div>
+
+            <div class="twh-program__block">
+              <h3 class="twh-program__label">Duration</h3>
+              <p class="twh-program__big">{cls.durationMinutes >= 240 ? `${Math.round(cls.durationMinutes / 60)} hours` : `${cls.durationMinutes} min`}</p>
+              {cls.frequency && <p class="twh-program__muted">{cls.frequency}</p>}
+            </div>
+
+            <div class="twh-program__block">
+              <h3 class="twh-program__label">Target areas</h3>
+              {targetAreas.length > 0 ? (
+                <ul class="twh-program__chips" role="list">{targetAreas.map((t) => <li>{t}</li>)}</ul>
+              ) : <p class="twh-program__muted">—</p>}
+            </div>
+
+            <div class="twh-program__block">
+              <h3 class="twh-program__label">Equipment used</h3>
+              {equipment.length > 0 ? (
+                <ul class="twh-program__chips twh-program__chips--alt" role="list">{equipment.map((t) => <li>{t}</li>)}</ul>
+              ) : <p class="twh-program__muted">—</p>}
+            </div>
+          </div>
+        </section>
+
+        <!-- ═════════ Weekly schedule ═════════ -->
+        {classSlots.length > 0 && (
+          <section class="twh-class-detail__media twh-weekly" aria-labelledby="weekly-h">
+            <h2 id="weekly-h">Weekly schedule</h2>
+            <ul class="twh-weekly__list" role="list">
+              {classSlots.map((s) => (
+                <li class="twh-weekly__row">
+                  <span class="twh-weekly__day">{dayName(s.weekday)}</span>
+                  <span class="twh-weekly__time">{fmtMinutes(toMinutes(s.startTime))} – {fmtMinutes(toMinutes(s.endTime))}</span>
+                  <span class="twh-weekly__room">{s.room ?? ''}</span>
+                  <span class="twh-weekly__cap">{s.capacity} spots</span>
+                </li>
+              ))}
+            </ul>
+            <p class="twh-program__muted">All times are Sri Lanka time (GMT+5:30).</p>
+          </section>
         )}
 
         {featuredVideo && (
           <section class="twh-class-detail__media" aria-labelledby="cls-video-h">
             <h2 id="cls-video-h">Watch the class</h2>
-            <video
-              class="twh-class-detail__video"
-              src={featuredVideo.url}
-              poster={posterUrl}
-              controls
-              playsinline
-              preload="metadata"
-              aria-label={`${cls.name} class video`}
-            >
+            <video class="twh-class-detail__video" src={featuredVideo.url} poster={posterUrl} controls playsinline preload="metadata" aria-label={`${cls.name} class video`}>
               Your browser does not support embedded video.
               <a href={featuredVideo.url}>Download the video</a>.
             </video>
@@ -111,21 +178,11 @@ const seo = cls.seo ?? {
                 const label = m.caption ?? m.alternativeText ?? `${cls.name} ${video ? 'video' : 'photo'} ${i + 1}`;
                 return (
                   <li class="twh-class-detail__gallery-item">
-                    <a
-                      href={m.url}
-                      class="twh-class-detail__gallery-link"
-                      data-lightbox="class-gallery"
-                      data-type={video ? 'video' : 'image'}
-                      data-caption={m.caption ?? ''}
-                      data-alt={m.alternativeText ?? label}
-                      aria-label={`Open ${label}`}
-                    >
+                    <a href={m.url} class="twh-class-detail__gallery-link" data-lightbox="class-gallery" data-type={video ? 'video' : 'image'} data-caption={m.caption ?? ''} data-alt={m.alternativeText ?? label} aria-label={`Open ${label}`}>
                       {video ? (
                         <>
                           <video src={`${m.url}#t=0.5`} muted playsinline preload="metadata" aria-hidden="true" tabindex="-1" />
-                          <span class="twh-class-detail__gallery-play" aria-hidden="true">
-                            <svg width="22" height="22" viewBox="0 0 14 14" fill="currentColor"><path d="M3 2l9 5-9 5V2z" /></svg>
-                          </span>
+                          <span class="twh-class-detail__gallery-play" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 14 14" fill="currentColor"><path d="M3 2l9 5-9 5V2z" /></svg></span>
                         </>
                       ) : (
                         <img src={tileSrc(m)} alt={m.alternativeText ?? ''} loading="lazy" width={m.width ?? undefined} height={m.height ?? undefined} />
@@ -141,57 +198,69 @@ const seo = cls.seo ?? {
 
       <!-- Sidebar -->
       <aside class="twh-class-detail__sidebar">
-        <!-- Quick info -->
-        <div class="twh-class-detail__info-card">
-          <h3>Class Info</h3>
-          <div class="twh-class-detail__info-row">
-            <span class="twh-class-detail__info-label">Duration</span>
-            <span class="twh-class-detail__info-value">{cls.durationMinutes} min</span>
-          </div>
-          <div class="twh-class-detail__info-row">
-            <span class="twh-class-detail__info-label">Level</span>
-            <span class="twh-class-detail__info-value">{cls.level}</span>
-          </div>
-          <div class="twh-class-detail__info-row">
-            <span class="twh-class-detail__info-label">Intensity</span>
-            <span class="twh-class-detail__info-value" style={`color:${accentColor};`}>{cls.intensity}</span>
-          </div>
-          {cls.discipline && (
-            <div class="twh-class-detail__info-row">
-              <span class="twh-class-detail__info-label">Discipline</span>
-              <span class="twh-class-detail__info-value">{cls.discipline.name}</span>
-            </div>
+        <div class="twh-price-card">
+          <p class="twh-price-card__label">Price per session</p>
+          <p class="twh-price-card__amount">{isFree ? 'FREE' : priceLabel}</p>
+          <p class="twh-price-card__note">No membership. {isFree ? 'Just book your spot.' : 'Pay only for the sessions you book.'}</p>
+          {nextOpen && (
+            <p class="twh-price-card__next">
+              <span>Next session</span>
+              {nextOpen.short} · {nextOpen.start} · <b>{spotsLabel(nextOpen)}</b>
+            </p>
           )}
+          <a href="#book" class="twh-btn twh-btn--primary twh-btn--md twh-price-card__cta">Book a slot</a>
         </div>
 
-        <!-- Schedule for this class -->
-        {classSlots.length > 0 && (
-          <div class="twh-class-detail__info-card">
-            <h3>This Week</h3>
-            {DAYS.map(day => {
-              const daySlots = classSlots.filter(s => s.weekday === day);
-              return daySlots.map(slot => (
-                <div class="twh-class-detail__info-row" style="flex-direction:column;align-items:flex-start;gap:0.25rem;">
-                  <span class="twh-class-detail__info-label" style="text-transform:capitalize;">{day}</span>
-                  <span class="twh-class-detail__info-value">
-                    {fmt(slot.startTime)} – {fmt(slot.endTime)}
-                    {slot.coach && <span style="color:rgba(255,255,255,0.4); font-weight:400;"> · {slot.coach.name}</span>}
-                  </span>
-                </div>
-              ));
-            })}
-          </div>
-        )}
+        <div class="twh-class-detail__info-card">
+          <h3>Class Info</h3>
+          <div class="twh-class-detail__info-row"><span class="twh-class-detail__info-label">Type</span><span class="twh-class-detail__info-value">{cls.tagline ?? '—'}</span></div>
+          <div class="twh-class-detail__info-row"><span class="twh-class-detail__info-label">Duration</span><span class="twh-class-detail__info-value">{cls.durationMinutes >= 240 ? 'Day pass' : `${cls.durationMinutes} min`}</span></div>
+          {cls.frequency && <div class="twh-class-detail__info-row"><span class="twh-class-detail__info-label">Frequency</span><span class="twh-class-detail__info-value">{cls.frequency}</span></div>}
+          <div class="twh-class-detail__info-row"><span class="twh-class-detail__info-label">Intensity</span><span class="twh-class-detail__info-value" style={`color:${accentColor};`}>{cls.intensity}</span></div>
+        </div>
 
-        <!-- CTA -->
-        <a href="/contact" class="twh-btn twh-btn--primary twh-btn--md" style="width:100%;justify-content:center;">
-          Book a Free Trial
-        </a>
-        <a href="/classes" class="twh-btn twh-btn--ghost twh-btn--sm" style="width:100%;justify-content:center;margin-top:0.5rem;">
-          ← All Classes
-        </a>
+        <a href="/classes" class="twh-btn twh-btn--ghost twh-btn--sm" style="width:100%;justify-content:center;">← All Classes</a>
       </aside>
     </div>
+
+    <!-- ═════════ Book a slot ═════════ -->
+    <section class="twh-book" id="book" aria-labelledby="book-h">
+      <div class="twh-book__inner">
+        <div class="twh-book__head">
+          <h2 id="book-h" class="twh-book__title"><span aria-hidden="true">/</span> Book a slot</h2>
+          <p class="twh-book__sub">
+            {isFree ? 'This class is free — reserve your spot.' : `${priceLabel} per session — pay online when you book.`}
+            {!logged && ' You’ll be asked to sign in or create a free account.'}
+          </p>
+        </div>
+
+        {sessions.length === 0 ? (
+          <p class="twh-book__empty">No sessions are open for booking right now. Please check back soon.</p>
+        ) : (
+          <ul class="twh-book__grid" role="list">
+            {sessions.map((s) => (
+              <li class={`twh-session twh-session--${s.state}`}>
+                <div class="twh-session__date">
+                  <span class="twh-session__dow">{s.short.split(' ')[0]}</span>
+                  <span class="twh-session__num">{s.short.split(' ')[1]}</span>
+                  <span class="twh-session__month">{s.short.split(' ')[2]}</span>
+                </div>
+                <div class="twh-session__info">
+                  <p class="twh-session__time">{s.start} – {s.end}</p>
+                  {s.room && <p class="twh-session__room">{s.room}</p>}
+                  <p class="twh-session__spots">{spotsLabel(s)}</p>
+                </div>
+                {s.state === 'open' ? (
+                  <a href={`/book/${s.slotId}?date=${s.date}`} class="twh-btn twh-btn--primary twh-btn--sm twh-session__btn">Book now</a>
+                ) : (
+                  <span class="twh-btn twh-btn--ghost twh-btn--sm twh-session__btn is-disabled" aria-disabled="true">{s.state === 'full' ? 'Full' : 'Closed'}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
   </div>
   {gallery.length > 0 && <Lightbox />}
 </PageLayout>

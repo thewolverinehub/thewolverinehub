@@ -1,0 +1,74 @@
+---
+import AccountLayout from '../../layouts/AccountLayout.astro';
+import Field from '../../components/ui/Field.astro';
+import { getMember } from '../../lib/auth/cms';
+
+export const prerender = false;
+
+const session = Astro.locals.session!;
+const member = await getMember(session.uid);
+if (!member) return Astro.redirect('/login', 302);
+
+const genders = [
+  { value: 'female', label: 'Female' },
+  { value: 'male', label: 'Male' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer-not-to-say', label: 'Prefer not to say' },
+];
+---
+
+<AccountLayout {member} active="profile" title="Profile">
+  <section class="twh-card" aria-labelledby="det-h">
+    <div class="twh-card__head"><h2 id="det-h" class="twh-card__title">Your details</h2></div>
+
+    <form class="twh-auth__form twh-acct__form" data-auth-form data-endpoint="/api/account/profile" data-success="Your details have been saved." novalidate>
+      <div class="twh-auth__row">
+        <Field name="fullName" label="Full name" value={member.fullName} autocomplete="name" required maxlength={80} />
+        <Field name="phone" label="Phone" type="tel" value={member.phone} autocomplete="tel" required />
+      </div>
+      <div class="twh-auth__row">
+        <Field name="dateOfBirth" label="Date of birth" type="date" value={member.dateOfBirth} autocomplete="bday" />
+        <Field name="gender" label="Gender" type="select" value={member.gender} options={genders} />
+      </div>
+      <div class="twh-auth__row">
+        <Field name="emergencyContactName" label="Emergency contact name" value={member.emergencyContactName} maxlength={80} />
+        <Field name="emergencyContactPhone" label="Emergency contact phone" type="tel" value={member.emergencyContactPhone} />
+      </div>
+      <Field name="fitnessGoals" label="Your goals" type="textarea" value={member.fitnessGoals} maxlength={500} />
+      <Field name="medicalNotes" label="Medical notes" type="textarea" value={member.medicalNotes} maxlength={800} hint="Injuries or conditions your coaches should know about. Only you and our coaches can see this." />
+
+      <label class="twh-auth__check">
+        <input type="checkbox" name="marketingOptIn" checked={member.marketingOptIn} />
+        <span>Send me news and offers.</span>
+      </label>
+
+      <p class="twh-auth__status" data-form-status hidden></p>
+      <button type="submit" class="twh-btn twh-btn--primary twh-btn--md">Save changes</button>
+    </form>
+  </section>
+
+  <div class="twh-acct__cols">
+    <section class="twh-card" aria-labelledby="acc-h">
+      <div class="twh-card__head"><h2 id="acc-h" class="twh-card__title">Account</h2></div>
+      <dl class="twh-facts">
+        <div><dt>Username</dt><dd>{member.username}</dd></div>
+        <div><dt>Email</dt><dd>{member.email}</dd></div>
+      </dl>
+      <p class="twh-empty__text" style="margin-top:1rem;">To change your email or username, <a href="/contact">contact us</a>.</p>
+    </section>
+
+    <section class="twh-card" aria-labelledby="pw-h">
+      <div class="twh-card__head"><h2 id="pw-h" class="twh-card__title">Change password</h2></div>
+      <form class="twh-auth__form twh-acct__form" data-auth-form data-endpoint="/api/account/password" data-success="Password updated." data-reset="true" novalidate>
+        <Field name="currentPassword" label="Current password" type="password" autocomplete="current-password" required />
+        <div>
+          <Field name="newPassword" label="New password" type="password" autocomplete="new-password" required strength="#pw-strength" />
+          <p class="twh-strength" id="pw-strength" data-score="0" aria-live="polite"><span></span></p>
+        </div>
+        <Field name="newPasswordConfirm" label="Confirm new password" type="password" autocomplete="new-password" required />
+        <p class="twh-auth__status" data-form-status hidden></p>
+        <button type="submit" class="twh-btn twh-btn--ghost twh-btn--md">Update password</button>
+      </form>
+    </section>
+  </div>
+</AccountLayout>
