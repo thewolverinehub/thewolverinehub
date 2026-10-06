@@ -17,6 +17,8 @@ export interface ColomboNow {
   dateISO: string;
   /** Minutes since Colombo midnight (0–1439) */
   minutes: number;
+  /** Seconds within the current minute (0–59) */
+  seconds: number;
 }
 
 const partsFmt = new Intl.DateTimeFormat('en-US', {
@@ -27,6 +29,7 @@ const partsFmt = new Intl.DateTimeFormat('en-US', {
   day: '2-digit',
   hour: '2-digit',
   minute: '2-digit',
+  second: '2-digit',
   hourCycle: 'h23',
 });
 
@@ -37,6 +40,7 @@ export function getColomboNow(date: Date = new Date()): ColomboNow {
     day: p.weekday.toLowerCase() as Day,
     dateISO: `${p.year}-${p.month}-${p.day}`,
     minutes: Number(p.hour) * 60 + Number(p.minute),
+    seconds: Number(p.second),
   };
 }
 
@@ -109,8 +113,18 @@ const clockDateFmt = new Intl.DateTimeFormat('en-GB', {
   month: 'long',
 });
 
+const clockSecFmt = new Intl.DateTimeFormat('en-US', {
+  timeZone: COLOMBO_TZ,
+  hour: 'numeric',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: true,
+});
+
 /** "8:42 PM" in Colombo */
 export const colomboClock = (date: Date = new Date()) => clockFmt.format(date);
+/** "8:42:07 PM" in Colombo (live clock) */
+export const colomboClockSeconds = (date: Date = new Date()) => clockSecFmt.format(date);
 /** "Sunday, 5 October" in Colombo */
 export const colomboDateLong = (date: Date = new Date()) => {
   const p: Record<string, string> = {};

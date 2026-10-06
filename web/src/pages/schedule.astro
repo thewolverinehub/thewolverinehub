@@ -4,10 +4,10 @@ import { getScheduleSlots, getGlobal, getPageBySlug } from '../lib/strapi/querie
 import type { StrapiScheduleSlot, StrapiPageHeroSection } from '../lib/strapi/types';
 import {
   DAYS, type Day, getColomboNow, weekDates, dateLabel, toMinutes, fmtMinutes, fmtDuration,
-  colomboClock, colomboDateLong,
+  colomboClockSeconds, colomboDateLong,
 } from '../lib/utils/colombo';
 import {
-  slotState, findNext, nextLabel, STATE_LABEL, type SlotLite,
+  slotState, findNext, nextLabel, nowMinutes, STATE_LABEL, type SlotLite,
 } from '../lib/utils/schedule';
 
 let global, slots: StrapiScheduleSlot[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
@@ -128,7 +128,7 @@ const seo = {
                 <span class="twh-schedule__pulse" aria-hidden="true"></span>
                 Sri Lanka Time <span class="twh-schedule__clock-gmt">· GMT+5:30</span>
               </p>
-              <p class="twh-schedule__clock-time" id="sch-clock">{colomboClock()}</p>
+              <p class="twh-schedule__clock-time" id="sch-clock">{colomboClockSeconds()}</p>
               <p class="twh-schedule__clock-date" id="sch-date">{colomboDateLong()}</p>
             </div>
 
@@ -224,7 +224,7 @@ const seo = {
                   ) : (
                     <ul class="twh-schedule__slots" role="list">
                       {byDay[day].map(slot => {
-                        const state = isToday ? slotState(slot, now.minutes) : 'upcoming';
+                        const state = isToday ? slotState(slot, nowMinutes(now)) : 'upcoming';
                         return (
                           <li
                             class="twh-schedule__slot"
@@ -362,8 +362,8 @@ const seo = {
 
 <script>
   import gsap from 'gsap';
-  import { DAYS, type Day, getColomboNow, weekDates, dateLabel, colomboClock, colomboDateLong } from '../lib/utils/colombo';
-  import { slotState, findNext, nextLabel, STATE_LABEL, type SlotLite } from '../lib/utils/schedule';
+  import { DAYS, type Day, getColomboNow, weekDates, dateLabel, colomboClockSeconds, colomboDateLong } from '../lib/utils/colombo';
+  import { slotState, findNext, nextLabel, nowMinutes, STATE_LABEL, type SlotLite } from '../lib/utils/schedule';
 
   const root = document.querySelector<HTMLElement>('#schedule');
 
@@ -378,6 +378,14 @@ const seo = {
     const weekView = root.querySelector<HTMLElement>('#sch-weekview')!;
     const slotEls  = Array.from(root.querySelectorAll<HTMLElement>('.twh-schedule__slot'));
 
+    // Sri Lanka "now". Starts from the device clock, then is corrected against the
+    // server's clock (see syncClock) so a wrong device clock/timezone can never matter.
+    let clockOffset = 0;
+    const nowDate = () => new Date(Date.now() + clockOffset);
+
+    // The visitor chose a day (tab / link / URL) → don't move them when midnight passes.
+    let userPickedDay = false;
+
     const state = {
       day: (root.dataset.defaultDay as Day) ?? 'monday',
       cls: 'all',
@@ -387,14 +395,14 @@ const seo = {
     // ── URL state (?day=&class=&view=) ───────────────────────────
     const params = new URLSearchParams(location.search);
     const pDay = params.get('day') as Day | null;
-    if (pDay && (DAYS as readonly string[]).includes(pDay)) state.day = pDay;
+    if (pDay && (DAYS as readonly string[]).includes(pDay)) { state.day = pDay; userPickedDay = true; }
     const pClass = params.get('class');
     if (pClass && chips.some(c => c.dataset.class === pClass)) state.cls = pClass;
     if (params.get('view') === 'week') state.view = 'week';
 
     function syncUrl() {
       const p = new URLSearchParams();
-      if (state.day !== getColomboNow().day) p.set('day', state.day);
+      if (state.day !== getColomboNow(nowDate()).day) p.set('day', state.day);
       if (state.cls !== 'all') p.set('class', state.cls);
       if (state.view !== 'day') p.set('view', state.view);
       const qs = p.toString();
@@ -414,19 +422,38 @@ const seo = {
       }));
 
     let lastToday = root.dataset.today;
+    let lastMinuteKey = '';
+    let lastDateText = '';
+    const clockEl = root.querySelector<HTMLElement>('#sch-clock');
+    const dateEl  = root.querySelector<HTMLElement>('#sch-date');
+    const cached = slotsLite();
 
-    function refreshLive() {
-      const nowDate = new Date();
-      const now = getColomboNow(nowDate);
+    /** Next-up / live banner (cheap — runs every second so countdowns tick). */
+    function renderNext(now: ReturnType<typeof getColomboNow>) {
+      const next = findNext(cached, now);
+      const t = nextLabel(next, now);
+      const box = root!.querySelector<HTMLElement>('#sch-next');
+      if (!box) return t;
+      box.classList.toggle('is-live', t.live);
+      const set = (id: string, text: string) => {
+        const el = root!.querySelector(id);
+        if (el && el.textContent !== text) el.textContent = text;
+      };
+      set('#sch-next-kicker', t.kicker);
+      set('#sch-next-title', t.title);
+      set('#sch-next-detail', t.detail);
+      const go = root!.querySelector<HTMLElement>('#sch-next-go');
+      if (go && next) go.dataset.gotoDay = next.slot.day;
+      return t;
+    }
 
-      const clock = root!.querySelector('#sch-clock');
-      const date  = root!.querySelector('#sch-date');
-      if (clock) clock.textContent = colomboClock(nowDate);
-      if (date)  date.textContent  = colomboDateLong(nowDate);
-
+    /** Heavier work — only when the Colombo minute (or day) changes. */
+    function refreshMinute(now: ReturnType<typeof getColomboNow>) {
       // New Colombo day since page load → re-date the week and move "Today"
       if (now.day !== lastToday) {
+        const prevToday = lastToday;
         lastToday = now.day;
+        root!.dataset.today = now.day;
         const dates = weekDates(now.dateISO, now.day);
         tabs.forEach(t => {
           const day = t.dataset.day as Day;
@@ -444,14 +471,37 @@ const seo = {
             t.append(tag);
           }
         });
+        // panel headings: date line + "Today" badge follow the new dates
+        panels.forEach(p => {
+          const day = p.dataset.day as Day;
+          const d = dateLabel(dates[day]);
+          const line = p.querySelector('.twh-schedule__panel-date');
+          if (line) line.innerHTML = `${d.long} <span>· Sri Lanka time</span>`;
+          const title = p.querySelector('.twh-schedule__panel-title');
+          title?.querySelector('.twh-schedule__panel-today')?.remove();
+          if (day === now.day && title) {
+            const badge = document.createElement('span');
+            badge.className = 'twh-schedule__panel-today';
+            badge.textContent = 'Today';
+            title.append(badge);
+          }
+        });
         root!.querySelectorAll('.twh-week__head, .twh-week__cell').forEach(el => {
           el.classList.toggle('is-today', (el as HTMLElement).dataset.day === now.day);
         });
+        root!.querySelectorAll<HTMLElement>('.twh-week__head').forEach(h => {
+          const d = dateLabel(dates[h.dataset.day as Day]);
+          const dateSpan = h.querySelector('.twh-week__date');
+          if (dateSpan) dateSpan.textContent = `${d.num} ${d.month}`;
+        });
+        // Midnight passed while the visitor was just watching "today" → follow the new day
+        if (!userPickedDay && state.day === prevToday) showDay(now.day, { animate: false });
       }
 
+      const nowMin = nowMinutes(now);
       slotEls.forEach(el => {
         const isToday = el.dataset.day === now.day;
-        const st = isToday ? slotState({ startMin: Number(el.dataset.start), endMin: Number(el.dataset.end) }, now.minutes) : 'upcoming';
+        const st = isToday ? slotState({ startMin: Number(el.dataset.start), endMin: Number(el.dataset.end) }, nowMin) : 'upcoming';
         el.dataset.state = st;
         const label = el.querySelector('[data-status]');
         if (label) label.textContent = isToday ? STATE_LABEL[st] : '';
@@ -464,19 +514,62 @@ const seo = {
         const inBand = band === 'morning' ? m < 720 : band === 'afternoon' ? m >= 720 && m < 1020 : m >= 1020;
         c.classList.toggle('is-now', c.dataset.day === now.day && inBand);
       });
+    }
 
-      // Next-up banner
-      const next = findNext(slotsLite(), now);
-      const t = nextLabel(next, now);
-      const box = root!.querySelector<HTMLElement>('#sch-next');
-      if (box) {
-        box.classList.toggle('is-live', t.live);
-        root!.querySelector('#sch-next-kicker')!.textContent = t.kicker;
-        root!.querySelector('#sch-next-title')!.textContent = t.title;
-        root!.querySelector('#sch-next-detail')!.textContent = t.detail;
-        const go = root!.querySelector<HTMLElement>('#sch-next-go');
-        if (go && next) go.dataset.gotoDay = next.slot.day;
-      }
+    /** Runs every second: live clock + date + countdown; full refresh on a new minute. */
+    function tick() {
+      const d = nowDate();
+      const now = getColomboNow(d);
+
+      const clockText = colomboClockSeconds(d);
+      if (clockEl && clockEl.textContent !== clockText) clockEl.textContent = clockText;
+      const dateText = colomboDateLong(d);
+      if (dateEl && dateText !== lastDateText) { dateEl.textContent = dateText; lastDateText = dateText; }
+
+      const key = now.dateISO + ':' + now.minutes;
+      if (key !== lastMinuteKey) { lastMinuteKey = key; refreshMinute(now); }
+      renderNext(now);
+    }
+
+    // Aligned to the real second so the clock never skips or stutters.
+    let timer: number | undefined;
+    function loop() {
+      tick();
+      const msToNext = 1000 - ((Date.now() + clockOffset) % 1000);
+      timer = window.setTimeout(loop, msToNext + 5);
+    }
+    function restartLoop() {
+      if (timer) window.clearTimeout(timer);
+      loop();
+    }
+
+    /**
+     * Correct the device clock against the server. Takes a few samples and trusts the one with the
+     * shortest round trip (its midpoint error is the smallest); a slow sample is never used.
+     */
+    let syncing = false;
+    async function syncClock() {
+      if (syncing) return;
+      syncing = true;
+      try {
+        let best: { rtt: number; offset: number } | null = null;
+        for (let i = 0; i < 3; i++) {
+          const t0 = Date.now();
+          const res = await fetch('/api/health', { cache: 'no-store' });
+          const body = await res.json();
+          const t1 = Date.now();
+          const server = Date.parse(body.timestamp);
+          if (!Number.isFinite(server)) continue;
+          const rtt = t1 - t0;
+          if (!best || rtt < best.rtt) {
+            best = { rtt, offset: server - (t0 + rtt / 2) };
+            // Apply right away; later (faster) samples only refine it. A slow sample can be off by
+            // up to rtt/2, so it is only used when the device clock is clearly wrong (> 2 s).
+            if (best.rtt < 3000 || Math.abs(best.offset) > 2000) { clockOffset = best.offset; restartLoop(); }
+          }
+        }
+      } catch { /* offline: keep using the device clock */ }
+      finally { syncing = false; }
     }
 
     // ── Rendering state → DOM ────────────────────────────────────
@@ -552,14 +645,14 @@ const seo = {
 
     // ── Events ───────────────────────────────────────────────────
     tabs.forEach((tab, i) => {
-      tab.addEventListener('click', () => showDay(tab.dataset.day as Day));
+      tab.addEventListener('click', () => { userPickedDay = true; showDay(tab.dataset.day as Day); });
       tab.addEventListener('keydown', e => {
         let to = -1;
         if (e.key === 'ArrowRight') to = (i + 1) % tabs.length;
         else if (e.key === 'ArrowLeft') to = (i - 1 + tabs.length) % tabs.length;
         else if (e.key === 'Home') to = 0;
         else if (e.key === 'End') to = tabs.length - 1;
-        if (to >= 0) { e.preventDefault(); showDay(tabs[to].dataset.day as Day, { focus: true }); }
+        if (to >= 0) { e.preventDefault(); userPickedDay = true; showDay(tabs[to].dataset.day as Day, { focus: true }); }
       });
     });
 
@@ -579,6 +672,7 @@ const seo = {
       if (go) {
         const day = go.dataset.gotoDay as Day;
         if (state.view !== 'day') showView('day');
+        userPickedDay = true;
         showDay(day);
         dayView.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
         return;
@@ -591,15 +685,23 @@ const seo = {
     });
 
     // ── Init ─────────────────────────────────────────────────────
-    refreshLive();
     applyFilter();
     showDay(state.day, { animate: false });
     showView(state.view);
     const first = panels.find(p => p.dataset.day === state.day);
     if (first && state.view === 'day') animateSlots(first);
 
-    setInterval(refreshLive, 15_000);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshLive(); });
+    // Start the live clock, then correct it against the server's clock.
+    loop();
+    void syncClock();
+    window.setInterval(syncClock, 10 * 60_000);
+
+    // Background tabs throttle timers — resync the moment the visitor comes back.
+    const wake = () => { restartLoop(); void syncClock(); };
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
+    window.addEventListener('focus', wake);
+    window.addEventListener('pageshow', (e) => { if (e.persisted) wake(); });
+    window.addEventListener('online', wake);
   }
 
   // ── Page hero entrance ─────────────────────────────────────────

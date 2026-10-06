@@ -147,3 +147,8 @@
 - **FAQ data:** 17 rows -> 13 unique questions (4 duplicates removed); every FAQ re-linked to its category (links had been lost). **FAQ page:** featured "Most asked" cards no longer repeat in the accordion ("More questions"); category pills only list categories that have questions.
 - **Stylesheets:** each page now has ONE stylesheet in `styles/pages/`. The four stale `components/twh-{coaches,pricing,contact,blog}-page.css` files (globally imported, overlapping the page files) were merged into `pages/twh-coaches-page|coach-detail|pricing-page|contact|blog|article.css` and deleted. Verified lossless: 0 computed-style differences on 9 pages at 1440/820/390 px. Merge tool lived in the scratchpad (PostCSS cascade flatten).
 - Page stylesheets for these pages are `<style is:global>` (unique `twh-` prefixes).
+
+### /schedule realtime (2026-10-06)
+- Live Sri Lanka clock now ticks every second (aligned to the real second); date, Today marker, class statuses and next-up refresh automatically with no reload. Countdown switches to a ticking mm:ss in the last 10 minutes; Live/Finished flip exactly at the minute.
+- Midnight rollover: dates re-label, Today moves, and the open tab follows the new day (unless the visitor picked another day).
+- Clock is corrected against the server (/api/health, min-RTT sampling) so a wrong device clock/timezone cannot matter; resyncs on focus / tab visible / back-forward cache restore / online and every 10 min.
