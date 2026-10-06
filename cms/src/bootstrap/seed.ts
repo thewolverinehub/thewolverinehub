@@ -168,7 +168,6 @@ async function seedAll(strapi: Core.Strapi): Promise<void> {
   await seedLegalPages(strapi);
 
   // ── Programs ─────────────────────────────────────────────────────────────
-  await seedPrograms(strapi);
 
   // ── Home page + inner pages ───────────────────────────────────────────────
   await seedHomePage(strapi);
@@ -336,13 +335,6 @@ async function patchMissingData(strapi: Core.Strapi): Promise<void> {
     }
   });
 
-  // ── Programs ─────────────────────────────────────────────────────────────
-  await tryRun('programs', async () => {
-    if ((await count('api::program.program')) === 0) {
-      await seedPrograms(strapi);
-      strapi.log.info('[seed:patch] Created programs');
-    }
-  });
 
   // ── Home page — always upsert so version-bump rewrites sections ──────────
   await tryRun('home page', async () => {
@@ -419,7 +411,7 @@ async function deduplicateDocuments(strapi: Core.Strapi): Promise<void> {
     'api::testimonial.testimonial', 'api::faq-category.faq-category',
     'api::faq.faq', 'api::post-category.post-category',
     'api::author.author', 'api::post.post', 'api::amenity.amenity',
-    'api::program.program', 'api::legal-page.legal-page', 'api::page.page',
+    'api::legal-page.legal-page', 'api::page.page',
   ];
 
   let totalRemoved = 0;
@@ -473,7 +465,7 @@ async function repairPublishedOnly(strapi: Core.Strapi): Promise<void> {
     'api::testimonial.testimonial', 'api::faq-category.faq-category',
     'api::faq.faq', 'api::post-category.post-category',
     'api::author.author', 'api::post.post', 'api::amenity.amenity',
-    'api::program.program', 'api::legal-page.legal-page', 'api::page.page',
+    'api::legal-page.legal-page', 'api::page.page',
   ];
 
   let created = 0;
@@ -1413,48 +1405,6 @@ async function seedLegalPages(strapi: Core.Strapi): Promise<void> {
 // ---------------------------------------------------------------------------
 // Programs
 // ---------------------------------------------------------------------------
-async function seedPrograms(strapi: Core.Strapi): Promise<void> {
-  const docs = strapi.documents as (uid: string) => any;
-  const list = [
-    {
-      name: 'Starter Program', slug: 'starter-program',
-      tagline: 'Your first 30 days, structured.',
-      shortDescription: 'A guided introduction to martial arts training for complete beginners. Two sessions per week, beginner workshops, and a coach check-in at week 2.',
-      fromPrice: 9500, currency: 'LKR', minimumCommitment: '1 month',
-      isFeatured: false, sortOrder: 1,
-      description: [
-        { type: 'paragraph', children: [{ type: 'text', text: "The Starter Program is designed specifically for people who have never trained martial arts before. We pair you with the right class, the right coach, and give you a structured 30-day pathway to build confidence and technique." }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'Two sessions per week. Access to beginner workshops. A coach check-in call at the end of week 2 to make sure you\'re on the right track.' }] },
-      ],
-    },
-    {
-      name: 'Signature Program', slug: 'signature-program',
-      tagline: 'For the committed athlete.',
-      shortDescription: 'Unlimited classes, priority booking, monthly progress check-ins, and a nutrition guide. Designed for members training 4–5× per week.',
-      fromPrice: 16500, currency: 'LKR', minimumCommitment: '1 month',
-      isFeatured: true, sortOrder: 2,
-      description: [
-        { type: 'paragraph', children: [{ type: 'text', text: 'Signature is our most popular programme and the one we recommend for anyone serious about consistent improvement. Unlimited access means you train as much as your body will allow.' }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'A monthly check-in with your coach tracks progress, adjusts your training split, and ensures you\'re moving toward your goals at the right pace.' }] },
-      ],
-    },
-    {
-      name: 'Transformation Program', slug: 'transformation-program',
-      tagline: 'Elite coaching. Total accountability.',
-      shortDescription: 'Unlimited classes plus two monthly personal sessions, body composition analysis, a custom training plan, and direct WhatsApp access to your head coach.',
-      fromPrice: 28000, currency: 'LKR', minimumCommitment: '1 month',
-      isFeatured: false, sortOrder: 3,
-      description: [
-        { type: 'paragraph', children: [{ type: 'text', text: "Transformation is for members who want more than a gym membership. You get the full coaching relationship — regular assessment, a periodised plan written for you specifically, and the accountability of a personal coach." }] },
-        { type: 'paragraph', children: [{ type: 'text', text: 'Used by competitive athletes, people with specific body composition goals, and anyone who wants to compress years of progress into months.' }] },
-      ],
-    },
-  ];
-  for (const prog of list) {
-    await docs('api::program.program').create({ data:prog });
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Home page — upsert so re-runs on version bump replace old sections
 // ---------------------------------------------------------------------------
@@ -1493,13 +1443,6 @@ async function seedHomePage(strapi: Core.Strapi): Promise<void> {
         heading: 'Every Discipline. Every Level.',
         cta: { label: 'All Classes', href: '/classes', variant: 'ghost', openInNewTab: false },
         visible: true, anchorId: 'classes',
-      },
-      {
-        __component: 'sections.program-tiers',
-        heading: 'Programs Built for Results.',
-        subheading: 'Every programme is structured, coach-led, and designed to take you somewhere specific.',
-        cta: { label: 'All Programs', href: '/programs', variant: 'primary', openInNewTab: false },
-        visible: true, anchorId: 'programs',
       },
       {
         __component: 'sections.coach-spotlight',
@@ -1570,7 +1513,7 @@ async function publishAllContent(strapi: Core.Strapi): Promise<void> {
     'api::testimonial.testimonial', 'api::faq.faq', 'api::faq-category.faq-category',
     'api::schedule-slot.schedule-slot', 'api::author.author',
     'api::post-category.post-category', 'api::post.post',
-    'api::amenity.amenity', 'api::legal-page.legal-page', 'api::program.program',
+    'api::amenity.amenity', 'api::legal-page.legal-page',
   ];
 
   let published = 0;

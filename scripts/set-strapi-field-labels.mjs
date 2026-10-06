@@ -242,7 +242,6 @@ const API_UIDS = [
   'api::discipline.discipline',
   'api::schedule-slot.schedule-slot',
   'api::coach.coach',
-  'api::program.program',
   'api::pricing-tier.pricing-tier',
   'api::pass.pass',
   'api::add-on.add-on',

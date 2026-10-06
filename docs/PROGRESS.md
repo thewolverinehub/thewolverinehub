@@ -163,4 +163,5 @@
 - **Email:** log-only (`email-log` rows). Confirmation on payment, cancellation notice, day-before reminder via cron (`ENABLE_CRON=true` on the CMS; 18:00 Colombo). Real sending needs `EMAIL_ENABLED=true` + a provider.
 - **Home:** Program section replaced by the animated "Our Story" section (`sections.our-story`, GSAP; story text is dummy).
 - **Verified locally:** register -> book -> preview pay -> confirmation email logged -> cancel -> cancellation email logged. astro check / eslint / build clean.
-- **TODO:** remove the unused `program` / `program-tiers` schema; real story copy; Amanda's surname; PayHere + real email provider; mobile pass on the new pages.
+- **Cleanup done:** `program` content type + `program-tiers` component removed (old DB table left orphaned, harmless). Railway: `SESSION_SECRET` + `PAYMENT_MODE=preview` on web, `ENABLE_CRON=true` on cms.
+- **TODO:** real story copy; Amanda's surname; PayHere + real email provider; mobile pass on the new pages.

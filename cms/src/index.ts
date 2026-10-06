@@ -25,8 +25,7 @@ const PUBLIC_READ = [
   'api::schedule-slot.schedule-slot',
   // coaches
   'api::coach.coach',
-  // programs & pricing
-  'api::program.program',
+  // pricing (legacy)
   'api::pricing-tier.pricing-tier',
   'api::pass.pass',
   'api::add-on.add-on',

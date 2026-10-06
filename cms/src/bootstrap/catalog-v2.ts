@@ -326,7 +326,7 @@ export async function runCatalogV2(strapi: Core.Strapi): Promise<boolean> {
 
   // 4) Programs + monthly pricing are gone
   await step('remove programs + packages', async () => {
-    for (const uid of ['api::program.program', 'api::pricing-tier.pricing-tier', 'api::pass.pass']) {
+    for (const uid of ['api::pricing-tier.pricing-tier', 'api::pass.pass']) {
       try {
         for (const d of await all(uid)) await docs(uid).delete({ documentId: d.documentId });
       } catch (err: any) {
