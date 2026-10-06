@@ -165,3 +165,9 @@
 - **Verified locally:** register -> book -> preview pay -> confirmation email logged -> cancel -> cancellation email logged. astro check / eslint / build clean.
 - **Cleanup done:** `program` content type + `program-tiers` component removed (old DB table left orphaned, harmless). Railway: `SESSION_SECRET` + `PAYMENT_MODE=preview` on web, `ENABLE_CRON=true` on cms.
 - **TODO:** real story copy; Amanda's surname; PayHere + real email provider; mobile pass on the new pages.
+
+### Incident + fixes (2026-10-07)
+- **Cause:** setting Railway variables redeployed the live CMS on the OLD code. Local and live share one Postgres, so the old CMS's schema sync dropped the new columns/tables (class price/frequency/targetAreas/equipment, class-coach links, bookings/payments/email-logs, user fields) and its legacy seed re-created the old home page, programs page and pricing tiers. Local Strapi then threw "relation ... does not exist" and class pages failed.
+- **Repair:** one-off bootstrap steps (`restoreClassData`, partial `runCatalogV2(only)`; flags `catalog-v2-class-restore-1`, `catalog-v2-reapply-1`) restored class data and re-applied home/programs/pricing cleanup. Verified via REST.
+- **Rule:** never redeploy/restart the live CMS (including setting env vars) while it runs older code than local — push first. Keep scratch files OUTSIDE `cms/` (the file watcher restarts Strapi).
+- **UI:** Our Story active card now lights up (reveal tween was pinning inline opacity); classes filter back to Level + Intensity (level "all" matches any level).

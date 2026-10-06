@@ -154,7 +154,7 @@ const accents = ['var(--color-twh-red)', 'var(--color-twh-yellow)', 'var(--color
 
       // ── chapter cards: reveal + drive the active chapter ─────
       chapters.forEach((c, i) => {
-        gsap.from(c.querySelector('.twh-story__card'), {
+        gsap.from(c, {
           y: 70, opacity: 0, duration: 0.9, ease: 'power3.out',
           scrollTrigger: { trigger: c, start: 'top 88%' },
         });

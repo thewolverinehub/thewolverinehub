@@ -1,11 +1,11 @@
 import type { Core } from '@strapi/strapi';
 import { applyContentManagerLabels } from './bootstrap/cm-labels';
 import { seedDefaultContent } from './bootstrap/seed';
-import { runCatalogV2 } from './bootstrap/catalog-v2';
+import { restoreClassData, runCatalogV2 } from './bootstrap/catalog-v2';
 
 // Bump this string whenever you change seed data, schemas, labels or add a migration.
 // Heavy bootstrap ops are skipped when the stored value matches — fast restarts.
-const BOOTSTRAP_VERSION = '2026-10-07-v1';
+const BOOTSTRAP_VERSION = '2026-10-07-v3';
 
 // ---------------------------------------------------------------------------
 // Public read-only content types — Public role gets find + findOne on these.
@@ -104,6 +104,24 @@ export default {
         }
       } catch (err) {
         strapi.log.error(`[bootstrap] Catalog v2 failed: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      // One-off: re-apply class price/targets/equipment/coaches after a schema sync by an older CMS dropped them.
+      try {
+        if (!(await bsStore.get({ key: 'catalog-v2-class-restore-1' })) && (await bsStore.get({ key: 'catalog-v2' }))) {
+          if (await restoreClassData(strapi)) await bsStore.set({ key: 'catalog-v2-class-restore-1', value: new Date().toISOString() });
+        }
+      } catch (err) {
+        strapi.log.error(`[bootstrap] class restore failed: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      // One-off: the older live CMS re-ran the legacy seed (home page, programs page, pricing tiers) — re-apply those steps.
+      try {
+        if (!(await bsStore.get({ key: 'catalog-v2-reapply-1' })) && (await bsStore.get({ key: 'catalog-v2' }))) {
+          if (await runCatalogV2(strapi, ['remove programs + packages', 'pricing page copy', 'home page'])) await bsStore.set({ key: 'catalog-v2-reapply-1', value: new Date().toISOString() });
+        }
+      } catch (err) {
+        strapi.log.error(`[bootstrap] catalog re-apply failed: ${err instanceof Error ? err.message : String(err)}`);
       }
 
       try {

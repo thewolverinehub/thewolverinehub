@@ -226,10 +226,11 @@ const stripIds = (v: any): any => {
 };
 
 // ── Runner ───────────────────────────────────────────────────────────────────
-export async function runCatalogV2(strapi: Core.Strapi): Promise<boolean> {
+export async function runCatalogV2(strapi: Core.Strapi, only?: string[]): Promise<boolean> {
   const docs = strapi.documents as Docs;
   const failures: string[] = [];
   const step = async (label: string, fn: () => Promise<void>) => {
+    if (only && !only.includes(label)) return;
     try {
       await fn();
       strapi.log.info(`[catalog-v2] ✔ ${label}`);
@@ -472,9 +473,49 @@ export async function runCatalogV2(strapi: Core.Strapi): Promise<boolean> {
             return s;
         }
       });
+    if (!sections.some((s) => s.__component === 'sections.our-story')) {
+      const at = sections.findIndex((s) => s.__component === 'sections.class-rail');
+      sections.splice(at + 1, 0, STORY);
+    }
     await docs('api::page.page').update({ documentId: page.documentId, status: 'published', data: { sections } });
   });
 
   strapi.log.info(`[catalog-v2] finished${failures.length ? ` with ${failures.length} failed step(s): ${failures.join(', ')}` : ' — all steps OK'}`);
   return failures.length === 0;
+}
+
+/**
+ * Restores the per-class pay-per-class fields (price, frequency, targets, equipment, coach links).
+ * Needed once after the shared DB was synced by a CMS running the older schema, which drops those
+ * columns/link table. Idempotent and cheap — only touches classes that exist by slug.
+ */
+export async function restoreClassData(strapi: Core.Strapi): Promise<boolean> {
+  const docs = strapi.documents as Docs;
+  const coaches = (await docs('api::coach.coach').findMany({ status: 'published', limit: 100 })) as any[];
+  const classes = (await docs('api::class.class').findMany({ status: 'published', limit: 1000 })) as any[];
+  let ok = true;
+  for (const [i, c] of CLASSES.entries()) {
+    const found = classes.find((e) => e.slug === c.slug);
+    if (!found) continue;
+    try {
+      await docs('api::class.class').update({
+        documentId: found.documentId,
+        status: 'published',
+        data: {
+          frequency: c.frequency,
+          price: c.price,
+          isFree: c.price === 0,
+          targetAreas: c.targetAreas.join('\n'),
+          equipment: c.equipment.join('\n'),
+          coaches: c.coaches.map((s) => coaches.find((k) => k.slug === s)?.documentId).filter(Boolean),
+          sortOrder: i + 1,
+        },
+      });
+    } catch (err: any) {
+      ok = false;
+      strapi.log.error(`[catalog-v2] restore failed for ${c.slug}: ${err?.message ?? err}`);
+    }
+  }
+  strapi.log.info(`[catalog-v2] class data restore ${ok ? 'OK' : 'had errors'}`);
+  return ok;
 }

@@ -785,46 +785,6 @@ export interface SectionsPricingTeaser extends Struct.ComponentSchema {
   };
 }
 
-export interface SectionsProgramTiers extends Struct.ComponentSchema {
-  collectionName: 'components_sections_program_tiers';
-  info: {
-    displayName: 'Program Tiers';
-    icon: 'star';
-  };
-  attributes: {
-    anchorId: Schema.Attribute.String &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Optional HTML anchor for deep-linking, e.g. "about". Used in URLs like /page#about.';
-          label: 'Section Anchor ID';
-        };
-      }>;
-    cta: Schema.Attribute.Component<'shared.cta-button', false> &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Action button configuration for this section.';
-          label: 'Call-to-Action Button';
-        };
-      }>;
-    heading: Schema.Attribute.String &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Title above this group of footer links.';
-          label: 'Column Heading';
-        };
-      }>;
-    subheading: Schema.Attribute.Text;
-    visible: Schema.Attribute.Boolean &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Untick to hide this section without deleting it.';
-          label: 'Visible on Page?';
-        };
-      }> &
-      Schema.Attribute.DefaultTo<true>;
-  };
-}
-
 export interface SectionsRichText extends Struct.ComponentSchema {
   collectionName: 'components_sections_rich_texts';
   info: {
@@ -1257,7 +1217,6 @@ declare module '@strapi/strapi' {
       'sections.page-hero': SectionsPageHero;
       'sections.partner-strip': SectionsPartnerStrip;
       'sections.pricing-teaser': SectionsPricingTeaser;
-      'sections.program-tiers': SectionsProgramTiers;
       'sections.rich-text': SectionsRichText;
       'sections.scroll-chapter': SectionsScrollChapter;
       'sections.stat-counters': SectionsStatCounters;

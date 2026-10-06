@@ -60,13 +60,19 @@ const intensityTextColour: Record<string, string> = {
   extreme: 'var(--color-twh-white)',
 };
 
-// Filter groups — "All" is frontend-only. Day and price combine (AND).
-const DAY_NAMES: Record<Day, string> = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' };
+// Filter groups — "All" is frontend-only. Level and intensity combine (AND).
+// A class whose level is "all" suits every level, so it stays visible under any level choice.
 const FILTER_GROUPS = [
-  { key: 'day', label: 'Day', options: DAYS.map((d) => ({ label: DAY_NAMES[d], value: d, accent: 'var(--color-twh-yellow)', ink: 'var(--color-twh-black)' })) },
-  { key: 'price', label: 'Price', options: [
-    { label: 'Free', value: 'free', accent: 'var(--color-twh-blue)', ink: 'var(--color-twh-white)' },
-    { label: 'Paid', value: 'paid', accent: 'var(--color-twh-red)',  ink: 'var(--color-twh-white)' },
+  { key: 'level', label: 'Level', options: [
+    { label: 'Beginner',     value: 'beginner',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
+    { label: 'Intermediate', value: 'intermediate', accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
+    { label: 'Advanced',     value: 'advanced',     accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
+  ]},
+  { key: 'intensity', label: 'Intensity', options: [
+    { label: 'Low',     value: 'low',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
+    { label: 'Medium',  value: 'medium',  accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
+    { label: 'High',    value: 'high',    accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
+    { label: 'Extreme', value: 'extreme', accent: 'var(--color-twh-red-deep)', ink: 'var(--color-twh-white)' },
   ]},
 ];
 
@@ -141,8 +147,8 @@ const seo = {
             <li
               class="twh-classes__card"
               style={`--card-accent: ${accent};`}
-              data-days={days.join(',')}
-              data-price={isFree ? 'free' : 'paid'}
+              data-intensity={cls.intensity}
+              data-level={cls.level}
               data-has-video={hasVideo}
             >
               <a
@@ -223,7 +229,7 @@ const seo = {
       <div class="twh-classes__empty" id="no-results" style="display:none;" aria-live="polite">
         <WolverineSlash class="twh-classes__empty-icon" aria-hidden="true" />
         <p class="twh-classes__empty-heading">No Classes at the Moment</p>
-        <p class="twh-classes__empty-sub" id="no-results-sub">No classes match those filters. Try another day or <a href="/schedule">see the full schedule</a>.</p>
+        <p class="twh-classes__empty-sub" id="no-results-sub">No classes match those filters. Try another level or intensity, or <a href="/schedule">see the full schedule</a>.</p>
       </div>
     </div>
   </section>
@@ -238,15 +244,15 @@ const seo = {
   gsap.registerPlugin(ScrollTrigger);
 
   // ── Filter ──────────────────────────────────────────────────
-  // Day and price are independent groups, combined with AND.
+  // Level and intensity are independent groups, combined with AND.
   // Clicking the active option again (or "All") clears that selection.
   const btns  = document.querySelectorAll<HTMLButtonElement>('.twh-classes__filter-btn');
   const cards = document.querySelectorAll<HTMLElement>('.twh-classes__card');
   const noRes = document.getElementById('no-results')!;
-  const state: Record<string, string> = { day: 'all', price: 'all' };
+  const state: Record<string, string> = { level: 'all', intensity: 'all' };
 
   function applyFilter() {
-    const none = state.day === 'all' && state.price === 'all';
+    const none = state.level === 'all' && state.intensity === 'all';
     btns.forEach(b => {
       const group = b.dataset.filterGroup!;
       const on = group === 'all' ? none : state[group] === b.dataset.filter;
@@ -256,8 +262,8 @@ const seo = {
     let visible = 0;
     cards.forEach(card => {
       const show =
-        (state.day === 'all'   || (card.dataset.days ?? '').split(',').includes(state.day)) &&
-        (state.price === 'all' || card.dataset.price === state.price);
+        (state.level === 'all'     || card.dataset.level === 'all' || card.dataset.level === state.level) &&
+        (state.intensity === 'all' || card.dataset.intensity === state.intensity);
       card.classList.toggle('is-filtered-out', !show);
       if (show) {
         visible++;
@@ -272,8 +278,8 @@ const seo = {
     btn.addEventListener('click', () => {
       const group = btn.dataset.filterGroup!;
       if (group === 'all') {
-        state.day = 'all';
-        state.price = 'all';
+        state.level = 'all';
+        state.intensity = 'all';
       } else {
         state[group] = state[group] === btn.dataset.filter ? 'all' : btn.dataset.filter!;
       }

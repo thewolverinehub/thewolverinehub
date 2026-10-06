@@ -2019,7 +2019,6 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
         'sections.scroll-chapter',
         'sections.feature-split',
         'sections.triptych',
-        'sections.program-tiers',
         'sections.coach-spotlight',
         'sections.coach-carousel',
         'sections.pricing-teaser',
@@ -2555,104 +2554,6 @@ export interface ApiPricingTierPricingTier extends Struct.CollectionTypeSchema {
         'content-manager': {
           description: 'Short punchy line shown beneath the title (one sentence max).';
           label: 'Tagline';
-        };
-      }>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiProgramProgram extends Struct.CollectionTypeSchema {
-  collectionName: 'programs';
-  info: {
-    description: 'A training program tier (e.g. Starter, Signature, Transformation). Contains pricing, description, and key features.';
-    displayName: 'Program';
-    pluralName: 'programs';
-    singularName: 'program';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'LKR'>;
-    description: Schema.Attribute.Blocks &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Detailed description with rich text formatting.';
-          label: 'Description';
-        };
-      }>;
-    fromPrice: Schema.Attribute.Decimal;
-    heroImage: Schema.Attribute.Media<'images'>;
-    isFeatured: Schema.Attribute.Boolean &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Featured items appear in homepage sections and spotlights.';
-          label: 'Featured?';
-        };
-      }> &
-      Schema.Attribute.DefaultTo<false>;
-    isLimitedAvailability: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::program.program'
-    > &
-      Schema.Attribute.Private;
-    minimumCommitment: Schema.Attribute.String;
-    name: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Full display name.';
-          label: 'Name';
-        };
-      }>;
-    publishedAt: Schema.Attribute.DateTime;
-    questionnaireFields: Schema.Attribute.JSON;
-    requiresQuestionnaire: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    seo: Schema.Attribute.Component<'shared.seo', false> &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Search engine optimisation settings for this page.';
-          label: 'SEO Settings';
-        };
-      }>;
-    shortDescription: Schema.Attribute.Text;
-    slug: Schema.Attribute.UID<'name'> &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'URL path segment, auto-generated from the title. E.g. "our-classes" \u2192 /our-classes.';
-          label: 'URL Slug';
-        };
-      }>;
-    sortOrder: Schema.Attribute.Integer &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Lower numbers appear first in listings. Items with the same number are sorted alphabetically.';
-          label: 'Sort Order';
-        };
-      }> &
-      Schema.Attribute.DefaultTo<0>;
-    tagline: Schema.Attribute.String &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Short punchy line shown beneath the title (one sentence max).';
-          label: 'Tagline';
-        };
-      }>;
-    thumbnail: Schema.Attribute.Media<'images'> &
-      Schema.Attribute.SetPluginOptions<{
-        'content-manager': {
-          description: 'Small preview image used in grids, cards, and listings.';
-          label: 'Thumbnail';
         };
       }>;
     updatedAt: Schema.Attribute.DateTime;
@@ -3759,7 +3660,6 @@ declare module '@strapi/strapi' {
       'api::post-category.post-category': ApiPostCategoryPostCategory;
       'api::post.post': ApiPostPost;
       'api::pricing-tier.pricing-tier': ApiPricingTierPricingTier;
-      'api::program.program': ApiProgramProgram;
       'api::redirect.redirect': ApiRedirectRedirect;
       'api::schedule-slot.schedule-slot': ApiScheduleSlotScheduleSlot;
       'api::stat.stat': ApiStatStat;
