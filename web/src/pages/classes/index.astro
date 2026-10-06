@@ -61,7 +61,6 @@ const intensityTextColour: Record<string, string> = {
 };
 
 // Filter groups — "All" is frontend-only. Level and intensity combine (AND).
-// A class whose level is "all" suits every level, so it stays visible under any level choice.
 const FILTER_GROUPS = [
   { key: 'level', label: 'Level', options: [
     { label: 'Beginner',     value: 'beginner',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
@@ -262,7 +261,7 @@ const seo = {
     let visible = 0;
     cards.forEach(card => {
       const show =
-        (state.level === 'all'     || card.dataset.level === 'all' || card.dataset.level === state.level) &&
+        (state.level === 'all'     || card.dataset.level === state.level) &&
         (state.intensity === 'all' || card.dataset.intensity === state.intensity);
       card.classList.toggle('is-filtered-out', !show);
       if (show) {
