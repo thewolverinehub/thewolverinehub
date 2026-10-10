@@ -197,3 +197,11 @@
 - **Contact:** the three "best way to reach you" buttons are an equal-width segmented control aligned to the inputs. Leads now store `topic` + `preferredContact`; a lead lifecycle emails the business (`CONTACT_NOTIFY_EMAIL`, else the email in Global) and sends the visitor an acknowledgement — both logged in Email Log until a provider is connected.
 - **E2E check (20 assertions):** 4 sessions / 3 classes in one order -> one checkout -> one payment -> one email (+PDF) -> partial cancel -> lead + 2 emails. All pass.
 - **Deploy note:** adds columns (`bookings.order_id`, `leads.topic`, `leads.preferred_contact`) to the shared DB — push before the live CMS restarts (see "shared DB" rule).
+
+### Legal pages, Gallery + Journal redesign (2026-10-10)
+- **Footer:** "Our Story" removed from the footer menu (CMS footer data + fallback). Header menu already done.
+- **Privacy Policy / Terms of Use:** `/privacy` and `/terms` now exist (they 404'd before). Shared `LegalDocument.astro` — contents list with scroll-spy, last-updated date, print button, cross-link, "Questions?" card. Content lives in Strapi "Legal Pages" (rewritten for the pay-per-class model: accounts, per-session payments, 15-min holds, 12h cancellation, refunds, PayHere, cookies, Sri Lanka PDPA). **Template text — the client should have a lawyer review it.**
+- **Gallery (new UI):** spotlight bento of featured photos, sticky toolbar (category chips with counts, mosaic/grid toggle), hover overlays, "show more", reveal-on-scroll, shared lightbox (now skips filtered-out items). 18 dummy photos across 7 categories uploaded to Strapi (captioned "Dummy media").
+- **Journal listing (new UI):** featured-story hero, topic chips + live search, magazine card grid, "load more", CTA band.
+- **Journal article (new UI):** full-bleed cover hero with dek + byline, reading-progress bar, share rail (WhatsApp / Facebook / X / copy link), "In this article" contents with scroll-spy, drop cap + styled headings/quotes, author card, previous/next, related stories. Dummy cover images for all 4 posts + dummy author avatars.
+- CMS: fixed the gallery-item category field label (was "FAQ Category").

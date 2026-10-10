@@ -1,0 +1,72 @@
+/* ============================================================
+   LEGAL — /privacy, /terms
+   Prefix: twh-legal
+   ============================================================ */
+
+.twh-legal-wrap { max-width: 1160px; margin: 0 auto; padding: 0 2rem; }
+.twh-legal-eyebrow { margin: 0 0 0.9rem; font-size: 0.8125rem; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-twh-yellow); }
+.twh-legal-eyebrow span { margin-right: 0.35rem; color: var(--color-twh-red); }
+
+.twh-legal-hero { position: relative; overflow: clip; padding: 4.5rem 0 3rem; background: radial-gradient(800px 360px at 85% 0%, rgba(27, 63, 148, 0.35), transparent 62%), var(--color-twh-black); border-bottom: 1px solid var(--color-twh-grey-900); }
+.twh-legal-hero__bg { position: absolute; inset: 0; pointer-events: none; }
+.twh-legal-hero__slash { position: absolute; top: -12%; right: 6%; width: min(36vw, 420px); color: var(--color-twh-ink); transform: rotate(10deg); }
+.twh-legal-hero__inner { position: relative; }
+.twh-legal-hero__title { margin: 0; font-family: var(--font-display); font-size: clamp(3rem, 8vw, 6rem); line-height: 0.95; letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-twh-white); text-shadow: 4px 4px 0 var(--color-twh-red); }
+.twh-legal-hero__sub { margin: 1.2rem 0 1.5rem; max-width: 56ch; font-size: 1.125rem; line-height: 1.6; color: var(--color-twh-grey-200); }
+.twh-legal-hero__meta { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.twh-legal-hero__meta li { padding: 0.45rem 0.9rem; font-size: 0.875rem; color: var(--color-twh-grey-200); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--color-twh-grey-700); border-radius: 99px; }
+.twh-legal-hero__meta b { color: var(--color-twh-white); }
+.twh-legal-hero__meta a { color: var(--color-twh-yellow); font-weight: 700; text-decoration: none; }
+.twh-legal-print { padding: 0; font: inherit; font-size: inherit; color: var(--color-twh-grey-100); background: none; border: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.twh-legal-print:hover { color: var(--color-twh-yellow); }
+
+.twh-legal { padding: 3.5rem 0 6rem; background: var(--color-twh-black); }
+.twh-legal__grid { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 3.5rem; align-items: start; }
+.twh-legal__toc { position: sticky; top: 100px; }
+.twh-legal__toc-title { margin: 0 0 0.75rem; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-twh-grey-300); }
+.twh-legal__toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; counter-reset: t; }
+.twh-legal__toc li { counter-increment: t; }
+.twh-legal__toc a { display: flex; gap: 0.7rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; font-weight: 600; line-height: 1.35; color: var(--color-twh-grey-300); text-decoration: none; border-left: 3px solid var(--color-twh-grey-800); transition: color 0.15s, border-color 0.15s, background 0.15s; }
+.twh-legal__toc a::before { content: counter(t, decimal-leading-zero); color: var(--color-twh-grey-500); font-variant-numeric: tabular-nums; }
+.twh-legal__toc a:hover { color: var(--color-twh-white); background: rgba(255, 255, 255, 0.04); }
+.twh-legal__toc a.is-active { color: var(--color-twh-white); border-left-color: var(--color-twh-yellow); background: rgba(255, 194, 14, 0.07); }
+.twh-legal__toc a.is-active::before { color: var(--color-twh-yellow); }
+
+.twh-legal__doc { min-width: 0; max-width: 780px; }
+.twh-legal__prose h2 { scroll-margin-top: 110px; margin: 2.75rem 0 0.9rem; padding-top: 1.5rem; font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-twh-white); border-top: 1px solid var(--color-twh-grey-800); }
+.twh-legal__prose h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.twh-legal__prose p { margin: 0 0 1rem; font-size: 1.0625rem; line-height: 1.75; color: var(--color-twh-grey-100); }
+.twh-legal__prose ul, .twh-legal__prose ol { margin: 0 0 1.1rem; padding-left: 1.3rem; display: grid; gap: 0.5rem; }
+.twh-legal__prose li { font-size: 1.0625rem; line-height: 1.7; color: var(--color-twh-grey-100); }
+.twh-legal__prose ul { list-style: disc; }
+.twh-legal__prose ol { list-style: decimal; }
+.twh-legal__prose li::marker { color: var(--color-twh-red); }
+.twh-legal__prose a { color: var(--color-twh-yellow); }
+.twh-legal__empty { padding: 2rem; color: var(--color-twh-grey-300); border: 1px dashed var(--color-twh-grey-700); }
+
+.twh-legal__help { margin-top: 3.5rem; padding: 1.75rem; background: linear-gradient(120deg, var(--color-twh-blue-deep), var(--color-twh-ink) 70%); border: 1px solid var(--color-twh-grey-700); border-left: 5px solid var(--color-twh-yellow); }
+.twh-legal__help h2 { margin: 0; font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-twh-white); }
+.twh-legal__help p { margin: 0.4rem 0 1.1rem; color: var(--color-twh-grey-200); }
+.twh-legal__help-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+@media (max-width: 1023px) {
+  .twh-legal__grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+  .twh-legal__toc { position: static; padding: 1.1rem; background: var(--color-twh-ink); border: 1px solid var(--color-twh-grey-800); }
+  .twh-legal__toc ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .twh-legal-wrap { padding: 0 1.25rem; }
+  .twh-legal-hero { padding: 3rem 0 2.25rem; }
+  .twh-legal { padding: 2.25rem 0 4rem; }
+  .twh-legal__toc ol { grid-template-columns: minmax(0, 1fr); }
+  .twh-legal__help { padding: 1.25rem; }
+  .twh-legal__help-actions .twh-btn { flex: 1 1 100%; justify-content: center; }
+}
+
+@media print {
+  .twh-legal__toc, .twh-legal-hero__bg, .twh-legal__help, .twh-legal-hero__meta { display: none !important; }
+  .twh-legal, .twh-legal-hero { background: #fff !important; }
+  .twh-legal-hero__title, .twh-legal__prose h2 { color: #000 !important; text-shadow: none !important; border-color: #ccc !important; }
+  .twh-legal-hero__sub, .twh-legal__prose p, .twh-legal__prose li { color: #222 !important; }
+}

@@ -1,106 +1,162 @@
 ---
+/**
+ * Journal article — full-bleed cover hero, reading-progress bar, share rail, "in this article"
+ * contents (built from the headings, follows your scroll), author card, prev / next and related stories.
+ */
 import PageLayout from '../../layouts/PageLayout.astro';
-import { getPostBySlug, getGlobal } from '../../lib/strapi/queries';
+import WolverineSlash from '../../components/ui/WolverineSlash.astro';
+import { getPostBySlug, getPosts, getGlobal } from '../../lib/strapi/queries';
 import { blocksToHtml } from '../../lib/strapi/blocks';
 import { articleSchema, breadcrumbSchema } from '../../lib/seo/json-ld';
+import type { StrapiMedia, StrapiPost } from '../../lib/strapi/types';
 
 const { slug } = Astro.params;
 
-let global, post;
+let global, post: StrapiPost | null | undefined, all: StrapiPost[] = [];
 try {
-  [global, post] = await Promise.all([getGlobal(), getPostBySlug(slug!)]);
+  [global, post, all] = await Promise.all([getGlobal(), getPostBySlug(slug!), getPosts(1, 60)]);
 } catch { /* CMS offline */ }
 
 if (!post) return Astro.redirect('/blog', 307);
 
-const contentHtml = blocksToHtml(post.content);
+const html = blocksToHtml(post.content);
+const date = (iso: string, long = true) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: long ? 'long' : 'short', year: 'numeric' });
+const img = (m?: StrapiMedia, size: 'medium' | 'large' = 'large') => m?.formats?.[size]?.url ?? m?.url;
+const initials = (n?: string) => (n ?? 'W').split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-}
+// neighbours + related
+const idx = all.findIndex((p) => p.documentId === post!.documentId);
+const newer = idx > 0 ? all[idx - 1] : undefined;
+const older = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : undefined;
+const sameCat = all.filter((p) => p.documentId !== post!.documentId && p.category?.slug && p.category.slug === post!.category?.slug);
+const related = [...sameCat, ...all.filter((p) => p.documentId !== post!.documentId && !sameCat.includes(p))].slice(0, 3);
+
+const url = Astro.url.href;
+const share = {
+  whatsapp: `https://wa.me/?text=${encodeURIComponent(`${post.title} ${url}`)}`,
+  facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+  x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(url)}`,
+};
+const tags = (post.tags ?? '').split('\n').map((t) => t.trim()).filter(Boolean);
 
 const jsonLd = [
   articleSchema(post, post.author?.name),
   breadcrumbSchema([
-    { name: 'Home',    url: '/' },
+    { name: 'Home', url: '/' },
     { name: 'Journal', url: '/blog' },
     { name: post.title, url: `/blog/${post.slug}` },
   ]),
 ];
-
-const seo = post.seo ?? {
-  metaTitle: `${post.title} — The Wolverine Hub`,
-  metaDescription: post.summary ?? post.title,
-};
+const seo = post.seo ?? { metaTitle: `${post.title} — The Wolverine Hub`, metaDescription: post.summary ?? post.title };
 ---
 
 <PageLayout {seo} {global} {jsonLd}>
-  <article class="twh-article">
-    <div class="twh-article__inner">
+  <div class="twh-ar-progress" id="ar-progress" aria-hidden="true"><span></span></div>
 
-      <!-- Back link -->
-      <a href="/blog" class="twh-article__back">← Journal</a>
-
-      <!-- Cover image -->
-      {post.coverImage && (
-        <div class="twh-article__cover">
-          <img
-            src={post.coverImage.url}
-            alt={post.coverImage.alternativeText ?? post.title}
-          />
-        </div>
-      )}
-
-      <!-- Category + Title -->
-      {post.category && (
-        <p style="font-size:0.7rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:var(--color-twh-yellow);margin:0 0 0.75rem;">
-          {post.category.name}
-        </p>
-      )}
-
-      <h1 style="font-family:var(--font-display);font-size:var(--text-4xl);text-transform:uppercase;letter-spacing:0.02em;line-height:0.95;color:var(--color-twh-white);margin:0 0 2rem;">
-        {post.title}
-      </h1>
-
-      <!-- Byline -->
-      <div class="twh-article__byline">
-        {post.author && (
-          <div class="twh-article__author">
-            {post.author.photo && (
-              <img
-                src={post.author.photo.url}
-                alt={post.author.photo.alternativeText ?? post.author.name}
-                class="twh-article__author-photo"
-              />
-            )}
-            <span class="twh-article__author-name">{post.author.name}</span>
-          </div>
-        )}
-        <div class="twh-article__meta">
-          <span>{formatDate(post.publishedAt)}</span>
-          {post.readingTimeMinutes && <span>{post.readingTimeMinutes} min read</span>}
-        </div>
+  <!-- ═════════ Hero ═════════ -->
+  <header class="twh-ar-hero">
+    {img(post.coverImage) ? <img class="twh-ar-hero__img" src={img(post.coverImage)} alt={post.coverImage?.alternativeText ?? post.title} width="1600" height="900" fetchpriority="high" /> : <span class="twh-ar-hero__empty" aria-hidden="true"><WolverineSlash class="twh-ar-hero__slash" /></span>}
+    <span class="twh-ar-hero__shade" aria-hidden="true"></span>
+    <div class="twh-ar-wrap twh-ar-hero__inner">
+      <a href="/blog" class="twh-ar-back">← Journal</a>
+      {post.category && <span class="twh-ar-pill">{post.category.name}</span>}
+      <h1 class="twh-ar-title">{post.title}</h1>
+      {post.summary && <p class="twh-ar-dek">{post.summary}</p>}
+      <div class="twh-ar-by">
+        {post.author?.photo?.url
+          ? <img class="twh-ar-by__photo" src={post.author.photo.url} alt="" width="44" height="44" />
+          : <span class="twh-ar-by__avatar" aria-hidden="true">{initials(post.author?.name)}</span>}
+        <span class="twh-ar-by__text">
+          <b>{post.author?.name ?? 'The Wolverine Hub'}</b>
+          <small>{date(post.publishedAt)}{post.readingTimeMinutes ? ` · ${post.readingTimeMinutes} min read` : ''}</small>
+        </span>
       </div>
-
-      <!-- Body -->
-      <div class="twh-article__prose">
-        {contentHtml
-          ? <Fragment set:html={contentHtml} />
-          : <p style="color:rgba(255,255,255,0.35);">Article content coming soon.</p>
-        }
-      </div>
-
-      <!-- Tags -->
-      {post.tags && post.tags.trim().length > 0 && (
-        <div class="twh-article__tags" aria-label="Post tags">
-          {post.tags.split('\n').filter(Boolean).map(tag => (
-            <span class="twh-article__tag">{tag}</span>
-          ))}
-        </div>
-      )}
-
     </div>
-  </article>
+  </header>
+
+  <!-- ═════════ Body ═════════ -->
+  <div class="twh-ar-wrap twh-ar-grid">
+    <aside class="twh-ar-share" aria-label="Share this story">
+      <span class="twh-ar-share__label">Share</span>
+      <a href={share.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" title="WhatsApp"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.04 2a9.9 9.9 0 0 0-8.4 15.1L2 22l5-1.6A9.9 9.9 0 1 0 12.04 2Zm0 1.8a8.1 8.1 0 1 1-4.3 15l-.3-.2-2.9.9.9-2.8-.2-.3A8.1 8.1 0 0 1 12.04 3.8Zm-3 3.8c-.2 0-.5.1-.7.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3l-1.9-.9c-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.4-2.3-1.4-.8-.8-1.4-1.7-1.5-2-.2-.3 0-.4.1-.6l.5-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.1c-.2-.5-.5-.5-.7-.5Z"/></svg></a>
+      <a href={share.facebook} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" title="Facebook"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13.5 22v-8.2h2.8l.5-3.3h-3.3V8.4c0-.95.4-1.7 1.8-1.7H17V3.8c-.3 0-1.3-.15-2.4-.15-2.5 0-4.1 1.5-4.1 4.2v2.6H7.7v3.3h2.8V22h3Z"/></svg></a>
+      <a href={share.x} target="_blank" rel="noopener noreferrer" aria-label="Share on X" title="X"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg></a>
+      <button type="button" aria-label="Copy link" title="Copy link" data-copy-url={url}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/></svg></button>
+      <span class="twh-ar-share__toast" role="status" aria-live="polite" hidden>Link copied</span>
+    </aside>
+
+    <article class="twh-ar-doc">
+      <nav class="twh-ar-toc twh-ar-toc--inline" aria-label="In this article" hidden><details><summary>In this article</summary><ol></ol></details></nav>
+      <div class="twh-ar-prose" id="ar-prose">{html ? <Fragment set:html={html} /> : <p class="twh-ar-empty">Article content coming soon.</p>}</div>
+
+      {tags.length > 0 && (
+        <ul class="twh-ar-tags" role="list" aria-label="Tags">{tags.map((t) => <li>#{t}</li>)}</ul>
+      )}
+
+      {post.author && (
+        <aside class="twh-ar-author" aria-label="About the author">
+          {post.author.photo?.url
+            ? <img src={post.author.photo.url} alt="" width="72" height="72" />
+            : <span class="twh-ar-author__avatar" aria-hidden="true">{initials(post.author.name)}</span>}
+          <div>
+            <p class="twh-ar-author__kicker">Written by</p>
+            <h2 class="twh-ar-author__name">{post.author.name}</h2>
+            {post.author.bio && <p class="twh-ar-author__bio">{post.author.bio}</p>}
+          </div>
+        </aside>
+      )}
+
+      {(newer || older) && (
+        <nav class="twh-ar-pager" aria-label="More stories">
+          {older ? <a href={`/blog/${older.slug}`} class="twh-ar-pager__link"><small>← Older</small><b>{older.title}</b></a> : <span></span>}
+          {newer ? <a href={`/blog/${newer.slug}`} class="twh-ar-pager__link twh-ar-pager__link--next"><small>Newer →</small><b>{newer.title}</b></a> : <span></span>}
+        </nav>
+      )}
+    </article>
+
+    <aside class="twh-ar-toc twh-ar-toc--rail" aria-label="In this article" hidden>
+      <p class="twh-ar-toc__title">In this article</p>
+      <ol></ol>
+    </aside>
+  </div>
+
+  <!-- ═════════ Related ═════════ -->
+  {related.length > 0 && (
+    <section class="twh-ar-related" aria-labelledby="ar-rel-h">
+      <div class="twh-ar-wrap">
+        <h2 class="twh-ar-related__title" id="ar-rel-h"><span aria-hidden="true">/</span> Keep reading</h2>
+        <ul class="twh-ar-related__grid" role="list">
+          {related.map((p) => (
+            <li>
+              <a href={`/blog/${p.slug}`} class="twh-ar-rel">
+                <span class="twh-ar-rel__media">{img(p.coverImage, 'medium') ? <img src={img(p.coverImage, 'medium')} alt="" loading="lazy" width="800" height="450" /> : <i aria-hidden="true">/</i>}</span>
+                <span class="twh-ar-rel__body">
+                  {p.category && <small>{p.category.name}</small>}
+                  <b>{p.title}</b>
+                  <em>{date(p.publishedAt, false)}{p.readingTimeMinutes ? ` · ${p.readingTimeMinutes} min` : ''}</em>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section class="twh-ar-cta">
+    <div class="twh-ar-wrap twh-ar-cta__inner">
+      <h2>Ready to train?</h2>
+      <div class="twh-ar-cta__actions">
+        <a href="/classes" class="twh-btn twh-btn--primary twh-btn--lg">Browse classes</a>
+        <a href="/schedule" class="twh-btn twh-btn--ghost twh-btn--lg">See the schedule</a>
+      </div>
+    </div>
+  </section>
 </PageLayout>
 
 <style is:global>@import '../../styles/pages/twh-article.css';</style>
+
+<script>
+  import { initArticle } from '../../scripts/interactions/article';
+  initArticle();
+</script>

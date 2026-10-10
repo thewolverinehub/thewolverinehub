@@ -103,7 +103,7 @@
 
     function open(group: string, trigger: HTMLElement) {
       const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-lightbox]'))
-        .filter((el) => el.dataset.lightbox === group);
+        .filter((el) => el.dataset.lightbox === group && el.getClientRects().length > 0); // skip filtered-out (hidden) items
       items = triggers.map(readItem);
       show(Math.max(0, triggers.indexOf(trigger)));
       dialog!.showModal();

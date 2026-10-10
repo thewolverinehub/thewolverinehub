@@ -1,0 +1,103 @@
+---
+/**
+ * Shared layout for Privacy Policy / Terms of Use. Content comes from the "Legal Pages" collection
+ * in Strapi (slug "privacy" / "terms"); the contents list is built from the headings.
+ */
+import PageLayout from '../../layouts/PageLayout.astro';
+import WolverineSlash from '../ui/WolverineSlash.astro';
+import { getGlobal, getLegalPage } from '../../lib/strapi/queries';
+import { blocksToHtml } from '../../lib/strapi/blocks';
+import type { StrapiGlobal, StrapiLegalPage } from '../../lib/strapi/types';
+
+interface Props {
+  slug: 'privacy' | 'terms';
+  fallbackTitle: string;
+  intro: string;
+  other: { href: string; label: string };
+}
+
+const { slug, fallbackTitle, intro, other } = Astro.props;
+
+let global: StrapiGlobal | undefined, page: StrapiLegalPage | null | undefined;
+try {
+  [global, page] = await Promise.all([getGlobal(), getLegalPage(slug)]);
+} catch { /* CMS offline */ }
+
+const title = page?.title ?? fallbackTitle;
+const slugify = (t: string) => t.toLowerCase().replace(/&amp;/g, 'and').replace(/<[^>]+>/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+let html = blocksToHtml(page?.content);
+const toc: { id: string; label: string }[] = [];
+html = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (_m, inner: string) => {
+  const label = inner.replace(/<[^>]+>/g, '').trim();
+  const id = slugify(label);
+  toc.push({ id, label });
+  return `<h2 id="${id}">${inner}</h2>`;
+});
+
+const updated = page?.lastUpdated
+  ? new Date(`${page.lastUpdated}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  : null;
+
+const email = global?.email;
+const seo = page?.seo ?? { metaTitle: `${title} — The Wolverine Hub`, metaDescription: intro };
+---
+
+<PageLayout {seo} {global}>
+  <section class="twh-legal-hero">
+    <div class="twh-legal-hero__bg" aria-hidden="true"><WolverineSlash class="twh-legal-hero__slash" /></div>
+    <div class="twh-legal-wrap twh-legal-hero__inner">
+      <p class="twh-legal-eyebrow"><span aria-hidden="true">/</span> Legal</p>
+      <h1 class="twh-legal-hero__title">{title}</h1>
+      <p class="twh-legal-hero__sub">{intro}</p>
+      <ul class="twh-legal-hero__meta" role="list">
+        {updated && <li>Last updated <b>{updated}</b></li>}
+        <li><a href={other.href}>{other.label} →</a></li>
+        <li><button type="button" class="twh-legal-print" data-print>Print / save as PDF</button></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="twh-legal">
+    <div class="twh-legal-wrap twh-legal__grid">
+      {toc.length > 0 && (
+        <nav class="twh-legal__toc" aria-label="Contents">
+          <p class="twh-legal__toc-title">Contents</p>
+          <ol role="list">
+            {toc.map((t) => <li><a href={`#${t.id}`} data-toc={t.id}>{t.label.replace(/^\d+\.\s*/, '')}</a></li>)}
+          </ol>
+        </nav>
+      )}
+
+      <article class="twh-legal__doc">
+        {html ? <div class="twh-legal__prose" set:html={html} /> : <p class="twh-legal__empty">This page is being prepared. Please check back soon.</p>}
+
+        <aside class="twh-legal__help">
+          <h2>Questions?</h2>
+          <p>If anything here is unclear, we are happy to explain.</p>
+          <div class="twh-legal__help-actions">
+            <a href="/contact" class="twh-btn twh-btn--primary twh-btn--md">Contact us</a>
+            {email && <a href={`mailto:${email}`} class="twh-btn twh-btn--ghost twh-btn--md">{email}</a>}
+          </div>
+        </aside>
+      </article>
+    </div>
+  </section>
+</PageLayout>
+
+<style is:global>@import '../../styles/pages/twh-legal.css';</style>
+
+<script>
+  document.querySelector<HTMLButtonElement>('[data-print]')?.addEventListener('click', () => window.print());
+
+  // highlight the section being read in the contents list
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc]'));
+  const heads = links.map((l) => document.getElementById(l.dataset.toc!)).filter(Boolean) as HTMLElement[];
+  if (heads.length && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) links.forEach((l) => l.classList.toggle('is-active', l.dataset.toc === e.target.id));
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    heads.forEach((h) => io.observe(h));
+  }
+</script>

@@ -59,8 +59,8 @@
       ],
       "pluginOptions": {
         "content-manager": {
-          "label": "FAQ Category",
-          "description": "Groups this question with related FAQs on the FAQ page."
+          "label": "Category",
+          "description": "Groups this photo for the filter buttons on the Gallery page."
         }
       }
     },

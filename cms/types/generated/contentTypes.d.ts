@@ -1509,8 +1509,8 @@ export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.SetPluginOptions<{
         'content-manager': {
-          description: 'Groups this question with related FAQs on the FAQ page.';
-          label: 'FAQ Category';
+          description: 'Groups this photo for the filter buttons on the Gallery page.';
+          label: 'Category';
         };
       }>;
     createdAt: Schema.Attribute.DateTime;

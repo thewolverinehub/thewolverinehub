@@ -425,3 +425,12 @@ export interface StrapiListResponse<T> {
 export interface StrapiSingleResponse<T> {
   data: T;
 }
+
+export interface StrapiLegalPage {
+  documentId: string;
+  title: string;
+  slug: string;
+  content: unknown; // blocks
+  lastUpdated?: string;
+  seo?: StrapiSeo;
+}

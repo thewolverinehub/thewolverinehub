@@ -1,21 +1,30 @@
 ---
+/**
+ * Journal — featured story hero, live search + category chips, magazine card grid with
+ * "show more". Posts come from the "Posts" collection in Strapi.
+ */
 import PageLayout from '../../layouts/PageLayout.astro';
+import WolverineSlash from '../../components/ui/WolverineSlash.astro';
 import { getPosts, getGlobal, getPageBySlug } from '../../lib/strapi/queries';
-import type { StrapiPost, StrapiPageHeroSection } from '../../lib/strapi/types';
+import type { StrapiPost, StrapiPageHeroSection, StrapiMedia } from '../../lib/strapi/types';
 
 let global, posts: StrapiPost[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, posts, pageData] = await Promise.all([getGlobal(), getPosts(1, 13), getPageBySlug('blog')]);
+  [global, posts, pageData] = await Promise.all([getGlobal(), getPosts(1, 60), getPageBySlug('blog')]);
 } catch { /* CMS offline */ }
 
-const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
+const pageHero = pageData?.sections?.find((s) => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
-const featured = posts.find(p => p.isFeatured) ?? posts[0];
-const rest     = posts.filter(p => p.documentId !== featured?.documentId);
+const featured = posts.find((p) => p.isFeatured) ?? posts[0];
+const rest = posts.filter((p) => p.documentId !== featured?.documentId);
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+const cats = [...new Map(posts.filter((p) => p.category).map((p) => [p.category!.slug, p.category!.name])).entries()]
+  .map(([slug, name]) => ({ slug, name, count: posts.filter((p) => p.category?.slug === slug).length }));
+
+const date = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const img = (m?: StrapiMedia, size: 'medium' | 'large' = 'medium') => m?.formats?.[size]?.url ?? m?.url;
+const initials = (n?: string) => (n ?? 'W').split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+const INITIAL = 6;
 
 const seo = {
   metaTitle: 'Journal — The Wolverine Hub',
@@ -24,80 +33,114 @@ const seo = {
 ---
 
 <PageLayout {seo} {global}>
-  <div class="twh-page-hero">
-    <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Journal'}</p>
-      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Inside<br/>The Hub.'} />
-      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Training guides, fighter spotlights, nutrition, and stories from inside The Wolverine Hub.'}</p>
+  <!-- ═════════ Hero ═════════ -->
+  <section class="twh-bl-hero">
+    <div class="twh-bl-hero__bg" aria-hidden="true"><WolverineSlash class="twh-bl-hero__slash" /></div>
+    <div class="twh-bl-wrap twh-bl-hero__inner">
+      <p class="twh-bl-eyebrow"><span aria-hidden="true">/</span> {pageHero?.eyebrow ?? 'Journal'}</p>
+      <h1 class="twh-bl-hero__title" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Inside<br/>The Hub.'} />
+      <p class="twh-bl-hero__sub">{pageHero?.subheading ?? 'Training guides, fighter spotlights, nutrition, and stories from inside The Wolverine Hub.'}</p>
     </div>
-  </div>
+  </section>
 
-  <section class="twh-blog" aria-label="Journal posts">
-    <div class="twh-blog__inner">
-
-      {posts.length === 0 ? (
-        <div class="twh-blog__empty">
-          <div class="twh-blog__empty-slash" aria-hidden="true">///</div>
-          <h2 class="twh-blog__empty-heading">Coming Soon.</h2>
-          <p class="twh-blog__empty-body">Stories, guides, and spotlights are on their way.</p>
-        </div>
-      ) : (
-        <>
-          {featured && (
-            <div class="twh-blog__featured" id="blog-featured">
-              <a href={`/blog/${featured.slug}`} class="twh-blog__featured-link">
-                <div class="twh-blog__featured-img">
-                  {featured.coverImage
-                    ? <img src={featured.coverImage.url} alt={featured.coverImage.alternativeText ?? featured.title} />
-                    : <div style="width:100%;height:100%;background:var(--color-twh-grey-900);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:5rem;color:rgba(255,255,255,0.04);">/</div>
-                  }
-                </div>
-                <div class="twh-blog__featured-body">
-                  <p class="twh-blog__featured-eyebrow">
-                    {featured.category?.name ?? 'Featured'}
-                  </p>
-                  <h2 class="twh-blog__featured-title">{featured.title}</h2>
-                  {featured.summary && <p class="twh-blog__featured-summary">{featured.summary}</p>}
-                  <div class="twh-blog__featured-meta">
-                    {featured.author && <span>{featured.author.name}</span>}
-                    <span>{formatDate(featured.publishedAt)}</span>
-                    {featured.readingTimeMinutes && <span>{featured.readingTimeMinutes} min read</span>}
-                  </div>
-                </div>
-              </a>
-            </div>
-          )}
-
-          {rest.length > 0 && (
-            <>
-              <p class="twh-blog__grid-heading">Latest</p>
-              <ul class="twh-blog__grid" role="list" id="blog-grid">
-                {rest.map(post => (
-                  <li class="twh-blog__card">
-                    <a href={`/blog/${post.slug}`} class="twh-blog__card-link">
-                      <div class="twh-blog__card-img">
-                        {post.coverImage
-                          ? <img src={post.coverImage.url} alt={post.coverImage.alternativeText ?? post.title} loading="lazy" />
-                          : <div class="twh-blog__card-img-placeholder" aria-hidden="true">/</div>
-                        }
-                      </div>
-                      <div class="twh-blog__card-body">
-                        {post.category && <p class="twh-blog__card-cat">{post.category.name}</p>}
-                        <h2 class="twh-blog__card-title">{post.title}</h2>
-                        {post.summary && <p class="twh-blog__card-summary">{post.summary}</p>}
-                        <div class="twh-blog__card-meta">
-                          <span>{formatDate(post.publishedAt)}</span>
-                          {post.readingTimeMinutes && <span>{post.readingTimeMinutes} min</span>}
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </>
+  {posts.length === 0 ? (
+    <section class="twh-bl-wrap twh-bl-empty">
+      <p class="twh-bl-empty__title">Coming soon.</p>
+      <p>Stories, guides and spotlights are on their way.</p>
+    </section>
+  ) : (
+    <>
+      <!-- ═════════ Featured ═════════ -->
+      {featured && (
+        <section class="twh-bl-feat" aria-label="Featured story">
+          <div class="twh-bl-wrap">
+            <a href={`/blog/${featured.slug}`} class="twh-bl-feat__card">
+              {img(featured.coverImage, 'large')
+                ? <img class="twh-bl-feat__img" src={img(featured.coverImage, 'large')} alt={featured.coverImage?.alternativeText ?? featured.title} width="1600" height="900" fetchpriority="high" />
+                : <span class="twh-bl-feat__img twh-bl-feat__img--empty" aria-hidden="true">/</span>}
+              <span class="twh-bl-feat__shade" aria-hidden="true"></span>
+              <span class="twh-bl-feat__body">
+                <span class="twh-bl-pill">Featured{featured.category ? ` · ${featured.category.name}` : ''}</span>
+                <h2 class="twh-bl-feat__title">{featured.title}</h2>
+                {featured.summary && <p class="twh-bl-feat__summary">{featured.summary}</p>}
+                <span class="twh-bl-meta">
+                  <span class="twh-bl-avatar" aria-hidden="true">{initials(featured.author?.name)}</span>
+                  <span>{featured.author?.name ?? 'The Wolverine Hub'}</span>
+                  <i aria-hidden="true">·</i><span>{date(featured.publishedAt)}</span>
+                  {featured.readingTimeMinutes && <><i aria-hidden="true">·</i><span>{featured.readingTimeMinutes} min read</span></>}
+                </span>
+                <span class="twh-bl-feat__cta">Read the story <b aria-hidden="true">→</b></span>
+              </span>
+            </a>
+          </div>
+        </section>
       )}
+
+      <!-- ═════════ Toolbar ═════════ -->
+      <div class="twh-bl-toolbar">
+        <div class="twh-bl-wrap twh-bl-toolbar__inner">
+          <div class="twh-bl-chips" role="group" aria-label="Filter by topic">
+            <button type="button" class="twh-bl-chip" data-cat="all" aria-pressed="true">All <span>{posts.length}</span></button>
+            {cats.map((c) => <button type="button" class="twh-bl-chip" data-cat={c.slug} aria-pressed="false">{c.name} <span>{c.count}</span></button>)}
+          </div>
+          <form class="twh-bl-search" role="search" id="bl-form">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <label for="bl-search" class="sr-only">Search stories</label>
+            <input id="bl-search" type="search" placeholder="Search stories…" autocomplete="off" spellcheck="false" />
+          </form>
+        </div>
+      </div>
+
+      <!-- ═════════ Grid ═════════ -->
+      <section class="twh-bl-main" aria-label="All stories">
+        <div class="twh-bl-wrap">
+          <p class="twh-bl-count" id="bl-count" aria-live="polite">{rest.length} stories</p>
+          <ul class="twh-bl-grid" id="bl-grid" data-initial={INITIAL} role="list">
+            {rest.map((p) => (
+              <li class="twh-bl-item" data-cat={p.category?.slug ?? 'other'} data-text={`${p.title} ${p.summary ?? ''} ${p.tags ?? ''}`.toLowerCase()}>
+                <a href={`/blog/${p.slug}`} class="twh-bl-card">
+                  <span class="twh-bl-card__media">
+                    {img(p.coverImage)
+                      ? <img src={img(p.coverImage)} alt={p.coverImage?.alternativeText ?? p.title} loading="lazy" decoding="async" width="800" height="450" />
+                      : <span class="twh-bl-card__empty" aria-hidden="true">/</span>}
+                    {p.category && <span class="twh-bl-pill twh-bl-pill--float">{p.category.name}</span>}
+                  </span>
+                  <span class="twh-bl-card__body">
+                    <h3 class="twh-bl-card__title">{p.title}</h3>
+                    {p.summary && <p class="twh-bl-card__summary">{p.summary}</p>}
+                    <span class="twh-bl-meta twh-bl-meta--sm">
+                      <span class="twh-bl-avatar" aria-hidden="true">{initials(p.author?.name)}</span>
+                      <span>{p.author?.name ?? 'The Wolverine Hub'}</span>
+                      <i aria-hidden="true">·</i><span>{date(p.publishedAt)}</span>
+                      {p.readingTimeMinutes && <><i aria-hidden="true">·</i><span>{p.readingTimeMinutes} min</span></>}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <div class="twh-bl-none" id="bl-none" hidden>
+            <p class="twh-bl-none__title">No stories match</p>
+            <p>Try different words or pick another topic.</p>
+            <button type="button" class="twh-btn twh-btn--ghost twh-btn--md" id="bl-reset">Clear filters</button>
+          </div>
+          <div class="twh-bl-more"><button type="button" class="twh-btn twh-btn--ghost twh-btn--lg" id="bl-more" hidden>Load more stories</button></div>
+        </div>
+      </section>
+    </>
+  )}
+
+  <section class="twh-bl-cta">
+    <div class="twh-bl-wrap twh-bl-cta__inner">
+      <div>
+        <p class="twh-bl-eyebrow"><span aria-hidden="true">/</span> Ready to train?</p>
+        <h2 class="twh-bl-cta__title">Read it. Then do it.</h2>
+      </div>
+      <div class="twh-bl-cta__actions">
+        <a href="/classes" class="twh-btn twh-btn--primary twh-btn--lg">Browse classes</a>
+        <a href="/schedule" class="twh-btn twh-btn--ghost twh-btn--lg">See the schedule</a>
+      </div>
     </div>
   </section>
 </PageLayout>
@@ -105,40 +148,6 @@ const seo = {
 <style is:global>@import '../../styles/pages/twh-blog.css';</style>
 
 <script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  gsap.registerPlugin(ScrollTrigger);
-
-  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-    const hero = document.querySelector('.twh-page-hero__inner');
-    if (hero) {
-      const tl = gsap.timeline();
-      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
-      const heading = hero.querySelector('.twh-page-hero__heading');
-      const sub     = hero.querySelector('.twh-page-hero__sub');
-      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
-      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
-      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
-    }
-
-    const featured = document.getElementById('blog-featured');
-    if (featured) {
-      gsap.fromTo(featured, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out',
-        scrollTrigger: { trigger: featured, start: 'top 85%' } });
-    }
-
-    const cards = document.querySelectorAll('.twh-blog__card');
-    if (cards.length) {
-      gsap.fromTo(cards,
-        { y: 25, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, stagger: 0.07, ease: 'power3.out',
-          scrollTrigger: { trigger: '#blog-grid', start: 'top 80%' } }
-      );
-    }
-  });
-
-  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
-    document.querySelectorAll<HTMLElement>('.twh-blog__featured, .twh-blog__card')
-      .forEach(el => { el.style.opacity = '1'; });
-  });
+  import { initBlogList } from '../../scripts/interactions/blog-list';
+  initBlogList();
 </script>
