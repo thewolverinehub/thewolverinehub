@@ -1,5 +1,12 @@
 ---
+/**
+ * Contact — "Start here." Live open-now status (Sri Lanka time), one-tap connect tiles with
+ * copy buttons, a topic picker that tailors the form, and a visit card with today's hours
+ * highlighted. All details come from Strapi (global); the form posts to /api/contact.
+ */
 import PageLayout from '../layouts/PageLayout.astro';
+import WolverineSlash from '../components/ui/WolverineSlash.astro';
+import SocialLinks from '../components/ui/SocialLinks.astro';
 import { getGlobal, getPageBySlug } from '../lib/strapi/queries';
 import type { StrapiGlobal, StrapiPageHeroSection } from '../lib/strapi/types';
 
@@ -8,132 +15,157 @@ try {
   [global, pageData] = await Promise.all([getGlobal(), getPageBySlug('contact')]);
 } catch { /* CMS offline */ }
 
-const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
+const pageHero = pageData?.sections?.find((s) => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
-const phone    = global?.phone    ?? '+94 11 234 5678';
-const email    = global?.email    ?? 'hello@thewolverinehub.com';
-const address  = global?.address  ?? '42 Braybrooke Place, Colombo 02, Sri Lanka';
+const phone = global?.phone ?? '+94 11 234 5678';
+const email = global?.email ?? 'hello@thewolverinehub.com';
+const address = global?.address ?? '42 Braybrooke Place, Colombo 02, Sri Lanka';
 const whatsapp = global?.whatsapp ?? phone;
-const hours    = global?.hoursJson ?? {
-  'Monday – Friday':  '06:00 AM – 10:00 PM',
-  Saturday:           '07:00 AM – 08:00 PM',
-  Sunday:             '08:00 AM – 06:00 PM',
+const hours = global?.hoursJson ?? {
+  'Monday – Friday': '06:00 AM – 10:00 PM',
+  Saturday: '07:00 AM – 08:00 PM',
+  Sunday: '08:00 AM – 06:00 PM',
 };
+const mapHref = global?.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+const digits = (v: string) => v.replace(/\D/g, '');
+
+const tiles = [
+  { key: 'whatsapp', label: 'WhatsApp', value: 'Message us', href: `https://wa.me/${digits(whatsapp)}`, copy: '', ext: true, icon: 'M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3Zm-3 5.5c.2-.4.5-.4.7-.4h.5c.2 0 .4.1.5.4l.8 1.8c.1.2 0 .4-.1.6l-.5.6c-.1.2-.2.3 0 .5.4.8 1.5 1.9 2.4 2.3.2.1.4.1.5-.1l.7-.8c.2-.2.3-.2.5-.1l1.8.9c.2.1.3.2.3.4 0 .4-.2 1.2-.9 1.5-.6.3-1.3.3-2.1 0-1.7-.6-3.2-1.8-4.2-3.4-.8-1.2-1.4-2.6-.9-3.8l.1-.3Z' },
+  { key: 'call', label: 'Call', value: phone, href: `tel:${phone.replace(/\s/g, '')}`, copy: phone, ext: false, icon: 'M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z' },
+  { key: 'email', label: 'Email', value: email, href: `mailto:${email}`, copy: email, ext: false, icon: 'M3 6h18v12H3zM3 7l9 7 9-7' },
+  { key: 'map', label: 'Directions', value: 'Open in Maps', href: mapHref, copy: '', ext: true, icon: 'M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z' },
+];
+
+const topics = [
+  { key: 'classes', title: 'Booking & classes', hint: 'Which class suits me? Schedule or booking help.', placeholder: 'Tell us your level and what you want to work on…', starter: 'Hi! I need help choosing a class.' },
+  { key: 'billing', title: 'Pricing & payments', hint: 'Class prices, payments, refunds.', placeholder: 'Which class or order is this about?', starter: 'Hi! I have a question about pricing / a payment.' },
+  { key: 'coaching', title: 'Coaching & Elite', hint: 'Elite Champion, athlete programmes, 1-to-1.', placeholder: 'Tell us your goal and experience…', starter: 'Hi! I am interested in coaching.' },
+  { key: 'other', title: 'Something else', hint: 'Partnerships, press, feedback — anything.', placeholder: 'What is on your mind?', starter: '' },
+];
 
 const seo = {
   metaTitle: 'Contact — The Wolverine Hub',
-  metaDescription: 'Get in touch or ask us anything. We\'re in Colombo, Sri Lanka.',
+  metaDescription: "Get in touch or ask us anything. We're in Colombo, Sri Lanka — WhatsApp, call, email or visit.",
 };
+const hoursJson = JSON.stringify(hours);
 ---
 
 <PageLayout {seo} {global}>
-  <!-- Page hero -->
-  <div class="twh-page-hero">
-    <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Get In Touch'}</p>
-      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Start Here.'} />
-      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Questions, or just want to know if this place is right for you — send us a message.'}</p>
+  <!-- ═════════ Hero ═════════ -->
+  <section class="twh-ct-hero">
+    <div class="twh-ct-hero__bg" aria-hidden="true">
+      <WolverineSlash class="twh-ct-hero__slash" />
+      <span class="twh-ct-hero__glow"></span>
     </div>
-  </div>
+    <div class="twh-ct-wrap twh-ct-hero__inner">
+      <div class="twh-ct-hero__copy">
+        <p class="twh-ct-eyebrow"><span aria-hidden="true">/</span> {pageHero?.eyebrow ?? 'Get in touch'}</p>
+        <h1 class="twh-ct-hero__title" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Start<br/>Here.'} />
+        <p class="twh-ct-hero__sub">{pageHero?.subheading ?? 'Questions, or just want to know if this place is right for you — pick a way to reach us.'}</p>
+        <p class="twh-ct-status" id="open-status" data-state="unknown" aria-live="polite"><span class="twh-ct-status__dot" aria-hidden="true"></span><span id="open-status-text">Checking opening hours…</span></p>
+      </div>
 
-  <section class="twh-contact" aria-label="Contact us">
-    <div class="twh-contact__inner">
+      <ul class="twh-ct-tiles" role="list">
+        {tiles.map((t) => (
+          <li class="twh-ct-tile" data-key={t.key}>
+            <a href={t.href} class="twh-ct-tile__link" target={t.ext ? '_blank' : undefined} rel={t.ext ? 'noopener noreferrer' : undefined}>
+              <svg class="twh-ct-tile__icon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={t.icon} /></svg>
+              <span class="twh-ct-tile__label">{t.label}</span>
+              <span class="twh-ct-tile__value">{t.value}</span>
+            </a>
+            {t.copy && <button type="button" class="twh-ct-tile__copy" data-copy={t.copy} aria-label={`Copy ${t.label.toLowerCase()}`}>Copy</button>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
 
-      <!-- Contact info -->
-      <div class="twh-contact__info" id="contact-info">
-        <h2 class="twh-contact__info-heading">Find Us.</h2>
-        <p class="twh-contact__info-sub">We're in the heart of Colombo. Walk-ins welcome during opening hours — or reach out ahead of time.</p>
+  <!-- ═════════ Topic + form + visit ═════════ -->
+  <section class="twh-ct-main" aria-labelledby="ct-form-h">
+    <div class="twh-ct-wrap twh-ct-main__grid">
 
-        <div class="twh-contact__details">
-          <div class="twh-contact__detail-item">
-            <span class="twh-contact__detail-slash" aria-hidden="true">/</span>
-            <div class="twh-contact__detail-content">
-              <p class="twh-contact__detail-label">Address</p>
-              <p class="twh-contact__detail-value">{address}</p>
-            </div>
-          </div>
-          <div class="twh-contact__detail-item">
-            <span class="twh-contact__detail-slash" aria-hidden="true">/</span>
-            <div class="twh-contact__detail-content">
-              <p class="twh-contact__detail-label">Phone</p>
-              <a href={`tel:${phone.replace(/\s/g,'')}`} class="twh-contact__detail-value">{phone}</a>
-            </div>
-          </div>
-          <div class="twh-contact__detail-item">
-            <span class="twh-contact__detail-slash" aria-hidden="true">/</span>
-            <div class="twh-contact__detail-content">
-              <p class="twh-contact__detail-label">WhatsApp</p>
-              <a href={`https://wa.me/${whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" class="twh-contact__detail-value">Message us</a>
-            </div>
-          </div>
-          <div class="twh-contact__detail-item">
-            <span class="twh-contact__detail-slash" aria-hidden="true">/</span>
-            <div class="twh-contact__detail-content">
-              <p class="twh-contact__detail-label">Email</p>
-              <a href={`mailto:${email}`} class="twh-contact__detail-value">{email}</a>
-            </div>
-          </div>
+      <div class="twh-ct-formcard" id="contact-form-wrap">
+        <div class="twh-ct-formcard__head">
+          <p class="twh-ct-eyebrow"><span aria-hidden="true">/</span> Message us</p>
+          <h2 class="twh-ct-h2" id="ct-form-h">What is on your mind?</h2>
+          <p class="twh-ct-note">We reply within 24 hours on business days.</p>
         </div>
 
-        <!-- Hours -->
-        <div class="twh-contact__hours">
-          <p class="twh-contact__hours-heading">Opening Hours</p>
-          <div class="twh-contact__hours-grid">
-            {Object.entries(hours).map(([day, time]) => (
-              <div class="twh-contact__hours-row">
-                <span class="twh-contact__hours-day">{day}</span>
-                <span class="twh-contact__hours-time">{time}</span>
+        <fieldset class="twh-ct-topics" aria-label="Topic">
+          <legend class="sr-only">Choose a topic</legend>
+          {topics.map((t, i) => (
+            <label class="twh-ct-topic">
+              <input type="radio" name="topic" value={t.key} checked={i === 0} data-placeholder={t.placeholder} data-starter={t.starter} form="contact-form" />
+              <span class="twh-ct-topic__box"><b>{t.title}</b><small>{t.hint}</small></span>
+            </label>
+          ))}
+        </fieldset>
+
+        <form class="twh-ct-form" id="contact-form" novalidate>
+          <div class="twh-ct-row">
+            <div class="twh-ct-field">
+              <label for="cf-name">Name <span class="twh-ct-req" aria-label="required">*</span></label>
+              <input id="cf-name" name="name" type="text" autocomplete="name" required placeholder="Your full name" />
+            </div>
+            <div class="twh-ct-field">
+              <label for="cf-email">Email <span class="twh-ct-req" aria-label="required">*</span></label>
+              <input id="cf-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            </div>
+          </div>
+          <div class="twh-ct-row">
+            <div class="twh-ct-field">
+              <label for="cf-phone">Phone</label>
+              <input id="cf-phone" name="phone" type="tel" autocomplete="tel" placeholder="+94 77 000 0000" />
+            </div>
+            <fieldset class="twh-ct-field twh-ct-prefer">
+              <legend>Best way to reach you</legend>
+              <div class="twh-ct-pills">
+                <label><input type="radio" name="prefer" value="WhatsApp" checked /><span>WhatsApp</span></label>
+                <label><input type="radio" name="prefer" value="Phone call" /><span>Call</span></label>
+                <label><input type="radio" name="prefer" value="Email" /><span>Email</span></label>
               </div>
-            ))}
+            </fieldset>
           </div>
+          <div class="twh-ct-field">
+            <label for="cf-message">Message</label>
+            <textarea id="cf-message" name="message" rows="5" maxlength="1000" placeholder="Tell us what you're looking for…"></textarea>
+            <p class="twh-ct-count"><span id="cf-count">0</span> / 1000</p>
+          </div>
+
+          <div class="twh-ct-honeypot" aria-hidden="true"><input name="website" type="text" tabindex="-1" autocomplete="off" /></div>
+          <div id="contact-status" class="twh-ct-status-msg" role="alert" aria-live="polite"></div>
+
+          <button class="twh-btn twh-btn--primary twh-btn--lg twh-ct-submit" type="submit">Send message</button>
+        </form>
+
+        <div class="twh-ct-done" id="contact-done" hidden>
+          <span class="twh-ct-done__check" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
+          <h3>Message sent.</h3>
+          <p id="contact-done-text">Thanks — we'll be in touch within 24 hours.</p>
+          <button type="button" class="twh-btn twh-btn--ghost twh-btn--md" id="contact-again">Send another message</button>
         </div>
       </div>
 
-      <!-- Contact form -->
-      <div class="twh-contact__form-wrap" id="contact-form-wrap">
-        <form class="twh-contact__form" id="contact-form" novalidate>
-          <div>
-            <h2 class="twh-contact__form-heading">Send a Message.</h2>
-            <p class="twh-contact__form-sub">We reply within 24 hours on business days.</p>
-          </div>
+      <aside class="twh-ct-visit" id="contact-info" aria-label="Visit us">
+        <p class="twh-ct-eyebrow"><span aria-hidden="true">/</span> Visit us</p>
+        <h2 class="twh-ct-h2">Find the gym.</h2>
+        <address class="twh-ct-address">{address}</address>
+        <a href={mapHref} class="twh-btn twh-btn--ghost twh-btn--md" target="_blank" rel="noopener noreferrer">Get directions</a>
 
-          <div class="twh-contact__field">
-            <label class="twh-contact__label" for="cf-name">
-              Name <span class="twh-contact__label-required" aria-label="required">*</span>
-            </label>
-            <input class="twh-contact__input" id="cf-name" name="name" type="text" autocomplete="name" required placeholder="Your full name" />
-          </div>
+        <div class="twh-ct-hours" data-hours={hoursJson}>
+          <p class="twh-ct-hours__title">Opening hours <small>Sri Lanka time</small></p>
+          <ul role="list">
+            {Object.entries(hours).map(([day, time]) => (
+              <li class="twh-ct-hours__row" data-day={day}><span>{day}</span><b>{time}</b></li>
+            ))}
+          </ul>
+        </div>
 
-          <div class="twh-contact__field">
-            <label class="twh-contact__label" for="cf-email">
-              Email <span class="twh-contact__label-required" aria-label="required">*</span>
-            </label>
-            <input class="twh-contact__input" id="cf-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
-          </div>
-
-          <div class="twh-contact__field">
-            <label class="twh-contact__label" for="cf-phone">Phone</label>
-            <input class="twh-contact__input" id="cf-phone" name="phone" type="tel" autocomplete="tel" placeholder="+94 77 000 0000" />
-          </div>
-
-          <div class="twh-contact__field">
-            <label class="twh-contact__label" for="cf-message">Message</label>
-            <textarea class="twh-contact__textarea" id="cf-message" name="message" rows="4" placeholder="Tell us what you're looking for…"></textarea>
-          </div>
-
-          <!-- Honeypot -->
-          <div class="twh-contact__honeypot" aria-hidden="true">
-            <input name="website" type="text" tabindex="-1" autocomplete="off" />
-          </div>
-
-          <div id="contact-status" class="twh-contact__status" role="alert" aria-live="polite"></div>
-
-          <button class="twh-btn twh-btn--primary twh-btn--md twh-contact__submit" type="submit">
-            Send Message
-          </button>
-        </form>
-      </div>
-
+        <div class="twh-ct-follow">
+          <p class="twh-ct-hours__title">Follow along</p>
+          <SocialLinks {global} variant="footer" />
+        </div>
+      </aside>
     </div>
   </section>
 </PageLayout>
@@ -141,85 +173,6 @@ const seo = {
 <style is:global>@import '../styles/pages/twh-contact.css';</style>
 
 <script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  gsap.registerPlugin(ScrollTrigger);
-
-  // ── Entrance animations ────────────────────────────────────────
-  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-    const hero = document.querySelector('.twh-page-hero__inner');
-    if (hero) {
-      const tl = gsap.timeline();
-      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
-      const heading = hero.querySelector('.twh-page-hero__heading');
-      const sub     = hero.querySelector('.twh-page-hero__sub');
-      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
-      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
-      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
-    }
-
-    const info = document.getElementById('contact-info');
-    const form = document.getElementById('contact-form-wrap');
-    if (info) gsap.fromTo(info, { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: 'power3.out', scrollTrigger: { trigger: info, start: 'top 85%' } });
-    if (form) gsap.fromTo(form, { x:  30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: 'power3.out', scrollTrigger: { trigger: form, start: 'top 85%' } });
-  });
-
-  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
-    ['contact-info','contact-form-wrap'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.opacity = '1';
-    });
-  });
-
-  // ── Form submission ────────────────────────────────────────────
-  const form   = document.getElementById('contact-form') as HTMLFormElement;
-  const status = document.getElementById('contact-status')!;
-  const submit = form?.querySelector<HTMLButtonElement>('[type="submit"]');
-
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Honeypot check
-    const honeypot = form.querySelector<HTMLInputElement>('[name="website"]');
-    if (honeypot?.value) return;
-
-    const data = new FormData(form);
-    const name    = (data.get('name')    as string).trim();
-    const email   = (data.get('email')   as string).trim();
-    const phone   = (data.get('phone')   as string).trim();
-    const message = (data.get('message') as string).trim();
-
-    if (!name || !email) {
-      showStatus('error', 'Please fill in your name and email.');
-      return;
-    }
-
-    if (submit) { submit.disabled = true; submit.textContent = 'Sending…'; }
-
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, message }),
-      });
-
-      if (res.ok) {
-        showStatus('success', "Message sent — we'll be in touch within 24 hours.");
-        form.reset();
-      } else {
-        const json = await res.json().catch(() => ({}));
-        showStatus('error', json.message ?? 'Something went wrong. Please try again.');
-      }
-    } catch {
-      showStatus('error', 'Network error. Please check your connection and try again.');
-    } finally {
-      if (submit) { submit.disabled = false; submit.textContent = 'Send Message'; }
-    }
-  });
-
-  function showStatus(state: 'success' | 'error', msg: string) {
-    status.dataset.state = state;
-    status.textContent   = msg;
-    status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+  import { initContact } from '../scripts/interactions/contact';
+  initContact();
 </script>

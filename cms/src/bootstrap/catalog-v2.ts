@@ -519,3 +519,25 @@ export async function restoreClassData(strapi: Core.Strapi): Promise<boolean> {
   strapi.log.info(`[catalog-v2] class data restore ${ok ? 'OK' : 'had errors'}`);
   return ok;
 }
+
+/** One-off copy fixes for page heroes that still mention things that no longer exist (free trial, memberships). */
+export async function patchHeroCopy(strapi: Core.Strapi): Promise<boolean> {
+  const docs = strapi.documents as Docs;
+  const fixes: Record<string, string> = {
+    contact: 'Questions about classes, booking or payments — or just want to know if this place is right for you? Pick a way to reach us.',
+  };
+  let ok = true;
+  for (const [slug, subheading] of Object.entries(fixes)) {
+    try {
+      const page = (await docs('api::page.page').findMany({ status: 'published', filters: { slug }, populate: { sections: { populate: '*' } } }))[0];
+      if (!page) continue;
+      const strip = (v: any): any => Array.isArray(v) ? v.map(strip) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => k !== 'id').map(([k, x]) => [k, strip(x)])) : v;
+      const sections = strip(page.sections).map((s: any) => (s.__component === 'sections.page-hero' ? { ...s, subheading } : s));
+      await docs('api::page.page').update({ documentId: page.documentId, status: 'published', data: { sections } });
+    } catch (err: any) {
+      ok = false;
+      strapi.log.error(`[catalog-v2] hero copy ${slug}: ${err?.message ?? err}`);
+    }
+  }
+  return ok;
+}

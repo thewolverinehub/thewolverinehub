@@ -416,3 +416,10 @@
   .twh-session, .twh-program__avatar { transition: none; }
   .twh-session--open:hover, .twh-program__coach:hover .twh-program__avatar { transform: none; }
 }
+
+/* ── Cover image + What to expect ─────────────────────────── */
+.twh-class-detail__cover { margin: 0 0 2rem; overflow: hidden; border: 1px solid var(--color-twh-grey-800); border-top: 3px solid var(--color-twh-red); background: var(--color-twh-ink); }
+.twh-class-detail__cover img { display: block; width: 100%; height: auto; max-height: 460px; object-fit: cover; }
+.twh-program--expect .twh-program__prose h3 { margin: 1.25rem 0 0.5rem; font-size: 1.125rem; letter-spacing: 0.06em; color: var(--color-twh-yellow); }
+.twh-program--expect .twh-program__prose ul { margin: 0 0 0.5rem; padding-left: 1.25rem; display: grid; gap: 0.4rem; }
+.twh-program--expect .twh-program__prose li::marker { color: var(--color-twh-red); }

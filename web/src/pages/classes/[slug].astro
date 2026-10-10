@@ -47,6 +47,7 @@ const intensityColour: Record<string, string> = {
 };
 const accentColor = intensityColour[cls.intensity] ?? 'var(--color-twh-grey-600)';
 const bodyHtml = blocksToHtml(cls.description);
+const expectHtml = cls.whatToExpect ? blocksToHtml(cls.whatToExpect) : '';
 
 // ── Media ────────────────────────────────────────────────────
 const featuredVideo = cls.featuredVideo?.url ? cls.featuredVideo : undefined;
@@ -54,6 +55,9 @@ const gallery: StrapiMedia[] = (cls.gallery ?? []).filter((m) => m?.url);
 const isVideo = (m: StrapiMedia) => m.mime?.startsWith('video/');
 const tileSrc = (m: StrapiMedia) => m.formats?.medium?.url ?? m.formats?.small?.url ?? m.url;
 const posterUrl = cls.thumbnail?.formats?.large?.url ?? cls.thumbnail?.url;
+
+// A wide image for the top of the page: first gallery image, else the thumbnail
+const coverImage: StrapiMedia | undefined = gallery.find((m) => !isVideo(m)) ?? cls.thumbnail ?? undefined;
 
 const dayName = (d: string) => d.charAt(0).toUpperCase() + d.slice(1);
 
@@ -87,6 +91,12 @@ const seo = cls.seo ?? {
 
       <!-- Main column -->
       <div class="twh-class-detail__body">
+
+        {coverImage && (
+          <figure class="twh-class-detail__cover">
+            <img src={coverImage.formats?.large?.url ?? coverImage.url} alt={coverImage.alternativeText ?? cls.name} width={coverImage.width ?? 1400} height={coverImage.height ?? 933} fetchpriority="high" />
+          </figure>
+        )}
 
         <!-- ═════════ Program ═════════ -->
         <section class="twh-program" id="program" aria-labelledby="program-h">
@@ -156,6 +166,13 @@ const seo = cls.seo ?? {
               ))}
             </ul>
             <p class="twh-program__muted">All times are Sri Lanka time (GMT+5:30).</p>
+          </section>
+        )}
+
+        {expectHtml && (
+          <section class="twh-program twh-program--expect" aria-labelledby="cls-expect-h">
+            <h2 id="cls-expect-h" class="twh-program__title"><span aria-hidden="true">/</span> What to expect</h2>
+            <div class="twh-program__prose"><Fragment set:html={expectHtml} /></div>
           </section>
         )}
 

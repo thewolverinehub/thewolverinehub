@@ -1,11 +1,11 @@
 import type { Core } from '@strapi/strapi';
 import { applyContentManagerLabels } from './bootstrap/cm-labels';
 import { seedDefaultContent } from './bootstrap/seed';
-import { restoreClassData, runCatalogV2 } from './bootstrap/catalog-v2';
+import { patchHeroCopy, restoreClassData, runCatalogV2 } from './bootstrap/catalog-v2';
 
 // Bump this string whenever you change seed data, schemas, labels or add a migration.
 // Heavy bootstrap ops are skipped when the stored value matches — fast restarts.
-const BOOTSTRAP_VERSION = '2026-10-07-v3';
+const BOOTSTRAP_VERSION = '2026-10-10-v1';
 
 // ---------------------------------------------------------------------------
 // Public read-only content types — Public role gets find + findOne on these.
@@ -122,6 +122,14 @@ export default {
         }
       } catch (err) {
         strapi.log.error(`[bootstrap] catalog re-apply failed: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      try {
+        if (!(await bsStore.get({ key: 'hero-copy-1' })) && (await bsStore.get({ key: 'catalog-v2' }))) {
+          if (await patchHeroCopy(strapi)) await bsStore.set({ key: 'hero-copy-1', value: new Date().toISOString() });
+        }
+      } catch (err) {
+        strapi.log.error(`[bootstrap] hero copy failed: ${err instanceof Error ? err.message : String(err)}`);
       }
 
       try {

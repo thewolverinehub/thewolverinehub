@@ -272,6 +272,8 @@ export interface StrapiClass {
   previewVideo?: StrapiMedia;
   featuredVideo?: StrapiMedia;
   gallery?: StrapiMedia[];
+  /** blocks — shown as "What to expect" */
+  whatToExpect?: unknown;
   isFree: boolean;
   sortOrder: number;
   seo?: StrapiSeo;

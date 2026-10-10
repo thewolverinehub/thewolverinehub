@@ -1,107 +1,212 @@
 ---
+/**
+ * Pricing — "Pay per class". Everything is driven by the classes in Strapi (price, duration,
+ * weekly sessions). Sections: hero with live price range, rate ladder (filterable bars),
+ * "Plan your week" calculator, billing rules, mini FAQ, CTA.
+ */
 import PageLayout from '../layouts/PageLayout.astro';
-import { getClasses, getFaqs, getGlobal, getPageBySlug } from '../lib/strapi/queries';
+import WolverineSlash from '../components/ui/WolverineSlash.astro';
+import { getClasses, getFaqs, getGlobal, getPageBySlug, getScheduleSlots } from '../lib/strapi/queries';
 import { blocksToHtml } from '../lib/strapi/blocks';
 import { formatLKR } from '../lib/utils/colombo';
-import type { StrapiClass, StrapiFaq, StrapiPageHeroSection } from '../lib/strapi/types';
+import type { StrapiClass, StrapiFaq, StrapiPageHeroSection, StrapiScheduleSlot } from '../lib/strapi/types';
 
-let global, classes: StrapiClass[] = [], faqs: StrapiFaq[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
+let global, classes: StrapiClass[] = [], faqs: StrapiFaq[] = [], slots: StrapiScheduleSlot[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, classes, faqs, pageData] = await Promise.all([getGlobal(), getClasses(), getFaqs(), getPageBySlug('pricing')]);
+  [global, classes, faqs, slots, pageData] = await Promise.all([getGlobal(), getClasses(), getFaqs(), getScheduleSlots(), getPageBySlug('pricing')]);
 } catch { /* CMS offline */ }
 
 const pageHero = pageData?.sections?.find((s) => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 const logged = Boolean(Astro.locals.session);
 
-// Group classes by price: free first, then ascending. The group with the most classes is "Most popular".
-const groups = Array.from(
-  classes.reduce((map, c) => {
-    const key = c.isFree || (c.price ?? 0) === 0 ? 0 : c.price;
-    map.set(key, [...(map.get(key) ?? []), c]);
-    return map;
-  }, new Map<number, StrapiClass[]>()),
-).sort((a, b) => a[0] - b[0]);
-const popularPrice = [...groups].sort((a, b) => b[1].length - a[1].length)[0]?.[0];
+const weekly = new Map<string, number>();
+for (const s of slots) if (s.class?.slug) weekly.set(s.class.slug, (weekly.get(s.class.slug) ?? 0) + 1);
+
+const rows = classes
+  .map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    tagline: c.tagline ?? '',
+    price: c.isFree ? 0 : (c.price ?? 0),
+    minutes: c.durationMinutes,
+    perWeek: Math.max(1, weekly.get(c.slug) ?? 1),
+    level: c.level,
+  }))
+  .sort((a, b) => a.price - b.price || a.name.localeCompare(b.name));
+
+const paid = rows.filter((r) => r.price > 0);
+const minPaid = paid[0]?.price ?? 0;
+const maxPaid = paid[paid.length - 1]?.price ?? 0;
+const freeCount = rows.length - paid.length;
+const top = Math.max(1, maxPaid);
+const dur = (m: number) => (m >= 240 ? 'Day pass' : `${m} min`);
+const tierOf = (p: number) => (p === 0 ? 'free' : p <= 3000 ? 'core' : 'premium');
 
 const bookingFaqs = faqs.filter((f) => f.category?.slug === 'booking-payments').slice(0, 5);
 
-const steps = [
-  { n: '01', title: 'Create your account', text: 'Sign up free with your name, phone and email — it takes a minute.' },
-  { n: '02', title: 'Pick a class & date', text: 'Choose a session from the schedule and see exactly how many spots are left.' },
-  { n: '03', title: 'Pay & train', text: 'Pay for that session online. You get a confirmation, and a reminder the evening before.' },
+const rules = [
+  { n: '01', title: 'Pay only for what you book', text: 'Every class has its own price per session. No membership, no joining fee, no lock-in — ever.' },
+  { n: '02', title: 'Your seat is held 15 minutes', text: 'Pick a session and we hold your spot while you pay, so nobody takes it from under you.' },
+  { n: '03', title: 'Cancel free up to 12 hours before', text: 'Plans change. Cancel at least 12 hours ahead and the full amount goes back to you.' },
+  { n: '04', title: 'Instant confirmation + reminder', text: 'You get a confirmation straight after paying and a reminder the evening before your session.' },
 ];
 
 const seo = {
   metaTitle: 'Class Pricing — The Wolverine Hub',
-  metaDescription: 'No memberships, no lock-ins. See the price of every class and pay only for the sessions you book.',
+  metaDescription: 'No memberships, no lock-ins. See the price of every class, plan your week and pay only for the sessions you book.',
 };
+const calcData = JSON.stringify(rows.map((r) => ({ slug: r.slug, name: r.name, price: r.price, perWeek: r.perWeek })));
 ---
 
 <PageLayout {seo} {global}>
-  <div class="twh-page-hero">
-    <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'Pricing'}</p>
-      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Pay Per<br/>Class.'} />
-      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'No memberships. No lock-ins. Book the sessions you want and pay for each one.'}</p>
+  <!-- ═════════ Hero ═════════ -->
+  <section class="twh-px-hero">
+    <div class="twh-px-hero__bg" aria-hidden="true">
+      <WolverineSlash class="twh-px-hero__slash twh-px-hero__slash--a" />
+      <WolverineSlash class="twh-px-hero__slash twh-px-hero__slash--b" />
+      <span class="twh-px-hero__grid"></span>
     </div>
-  </div>
+    <div class="twh-px-hero__inner">
+      <div class="twh-px-hero__copy">
+        <p class="twh-px-eyebrow"><span aria-hidden="true">/</span> {pageHero?.eyebrow ?? 'Pricing'}</p>
+        <h1 class="twh-px-hero__title" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Pay Per<br/>Class.'} />
+        <p class="twh-px-hero__sub">{pageHero?.subheading ?? 'No memberships. No lock-ins. Book the sessions you want and pay for each one.'}</p>
+        <div class="twh-px-hero__cta">
+          <a href="#planner" class="twh-btn twh-btn--primary twh-btn--lg">Plan my week</a>
+          <a href="/schedule" class="twh-btn twh-btn--ghost twh-btn--lg">See the schedule</a>
+        </div>
+      </div>
 
-  <section class="twh-rates" aria-labelledby="rates-h">
-    <div class="twh-rates__inner">
-      <h2 id="rates-h" class="twh-rates__title"><span aria-hidden="true">/</span> Rates per session</h2>
-
-      {groups.length === 0 ? (
-        <p class="twh-rates__empty">Class rates are coming soon — <a href="/contact">contact us</a> for details.</p>
-      ) : (
-        <ul class="twh-rates__grid" role="list">
-          {groups.map(([price, list]) => (
-            <li class={`twh-rate${price === popularPrice ? ' is-popular' : ''}${price === 0 ? ' is-free' : ''}`}>
-              {price === popularPrice && <span class="twh-rate__flag">Most classes</span>}
-              <p class="twh-rate__amount">{price === 0 ? 'FREE' : formatLKR(price)}</p>
-              <p class="twh-rate__per">{price === 0 ? 'no charge' : 'per session'}</p>
-              <ul class="twh-rate__classes" role="list">
-                {list.map((c) => (
-                  <li><a href={`/classes/${c.slug}`}><b>{c.name}</b><small>{c.tagline}</small></a></li>
-                ))}
-              </ul>
-            </li>
-          ))}
+      <div class="twh-px-hero__card" role="group" aria-label="Price range">
+        <p class="twh-px-hero__card-label">Paid sessions from</p>
+        <p class="twh-px-hero__price" data-count-to={minPaid} data-prefix="LKR ">{minPaid > 0 ? formatLKR(minPaid) : 'FREE'}</p>
+        <p class="twh-px-hero__range">{paid.length > 0 ? `up to ${formatLKR(maxPaid)} per session` : 'per session'}</p>
+        <ul class="twh-px-hero__facts" role="list">
+          <li><b>{rows.length}</b> classes</li>
+          <li><b>{freeCount}</b> free class</li>
+          <li><b>12h</b> free cancel</li>
         </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ Rate ladder ═════════ -->
+  <section class="twh-px-sec" id="rates" aria-labelledby="ladder-h">
+    <div class="twh-px-wrap">
+      <div class="twh-px-head">
+        <p class="twh-px-eyebrow"><span aria-hidden="true">/</span> Rate card</p>
+        <h2 class="twh-px-title" id="ladder-h">Every class. Every price.</h2>
+        <p class="twh-px-lead">Bars show each session price against the most expensive class. Tap a class for the full programme.</p>
+      </div>
+
+      {rows.length === 0 ? (
+        <p class="twh-px-empty">Class rates are coming soon — <a href="/contact">contact us</a> for details.</p>
+      ) : (
+        <>
+          <div class="twh-px-filter" role="group" aria-label="Filter rates">
+            <button type="button" class="twh-px-chip" data-tier="all" aria-pressed="true">All <span>{rows.length}</span></button>
+            {freeCount > 0 && <button type="button" class="twh-px-chip" data-tier="free" aria-pressed="false">Free <span>{freeCount}</span></button>}
+            <button type="button" class="twh-px-chip" data-tier="core" aria-pressed="false">Core <span>{rows.filter((r) => tierOf(r.price) === 'core').length}</span></button>
+            <button type="button" class="twh-px-chip" data-tier="premium" aria-pressed="false">Premium <span>{rows.filter((r) => tierOf(r.price) === 'premium').length}</span></button>
+          </div>
+
+          <ol class="twh-px-ladder" role="list" id="ladder">
+            {rows.map((r) => (
+              <li class="twh-px-rung" data-tier={tierOf(r.price)} style={`--w:${r.price === 0 ? 3 : Math.max(8, Math.round((r.price / top) * 100))}%`}>
+                <a href={`/classes/${r.slug}`} class="twh-px-rung__link">
+                  <span class="twh-px-rung__name"><b>{r.name}</b><small>{r.tagline} · {dur(r.minutes)}</small></span>
+                  <span class="twh-px-rung__bar" aria-hidden="true"><i></i></span>
+                  <span class="twh-px-rung__price">{r.price === 0 ? 'FREE' : formatLKR(r.price)}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
     </div>
   </section>
 
-  <section class="twh-rates twh-rates--steps" aria-labelledby="how-h">
-    <div class="twh-rates__inner">
-      <h2 id="how-h" class="twh-rates__title"><span aria-hidden="true">/</span> How it works</h2>
-      <ol class="twh-steps" role="list">
-        {steps.map((s) => (
-          <li class="twh-step"><span class="twh-step__n">{s.n}</span><h3>{s.title}</h3><p>{s.text}</p></li>
+  <!-- ═════════ Planner ═════════ -->
+  {rows.length > 0 && (
+    <section class="twh-px-sec twh-px-sec--alt" id="planner" aria-labelledby="plan-h">
+      <div class="twh-px-wrap">
+        <div class="twh-px-head">
+          <p class="twh-px-eyebrow"><span aria-hidden="true">/</span> Plan your week</p>
+          <h2 class="twh-px-title" id="plan-h">What will your week cost?</h2>
+          <p class="twh-px-lead">Pick the classes you like and how many sessions a week. It is only an estimate — you still pay session by session.</p>
+        </div>
+
+        <div class="twh-px-plan" data-planner data-classes={calcData}>
+          <ul class="twh-px-plan__list" role="list">
+            {rows.map((r) => (
+              <li class="twh-px-pick" data-slug={r.slug} data-price={r.price} data-max={r.perWeek}>
+                <button type="button" class="twh-px-pick__toggle" aria-pressed="false">
+                  <span class="twh-px-pick__check" aria-hidden="true"></span>
+                  <span class="twh-px-pick__name"><b>{r.name}</b><small>{r.price === 0 ? 'Free' : formatLKR(r.price)} · up to {r.perWeek}×/week</small></span>
+                </button>
+                <div class="twh-px-step" hidden>
+                  <button type="button" class="twh-px-step__btn" data-dec aria-label={`Fewer ${r.name} sessions`}>−</button>
+                  <output class="twh-px-step__val" data-val>1</output>
+                  <button type="button" class="twh-px-step__btn" data-inc aria-label={`More ${r.name} sessions`}>+</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <aside class="twh-px-sum" aria-live="polite" aria-label="Estimate">
+            <p class="twh-px-sum__label">Your estimate</p>
+            <p class="twh-px-sum__big" data-week>LKR 0</p>
+            <p class="twh-px-sum__sub">per week · <b data-sessions>0</b> sessions</p>
+            <div class="twh-px-sum__month"><span>Approx. per month</span><b data-month>LKR 0</b></div>
+            <ul class="twh-px-sum__lines" role="list" data-lines><li class="twh-px-sum__empty">Choose a class to start.</li></ul>
+            <a href="/schedule" class="twh-btn twh-btn--primary twh-btn--md twh-px-sum__cta" data-cta>Book these classes</a>
+            <button type="button" class="twh-px-sum__reset" data-reset>Reset</button>
+          </aside>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- ═════════ Rules ═════════ -->
+  <section class="twh-px-sec" aria-labelledby="rules-h">
+    <div class="twh-px-wrap">
+      <div class="twh-px-head">
+        <p class="twh-px-eyebrow"><span aria-hidden="true">/</span> How billing works</p>
+        <h2 class="twh-px-title" id="rules-h">Simple. Fair. No small print.</h2>
+      </div>
+      <ol class="twh-px-rules" role="list">
+        {rules.map((r) => (
+          <li class="twh-px-rule"><span class="twh-px-rule__n">{r.n}</span><h3>{r.title}</h3><p>{r.text}</p></li>
         ))}
       </ol>
     </div>
   </section>
 
   {bookingFaqs.length > 0 && (
-    <section class="twh-rates" aria-labelledby="faq-h">
-      <div class="twh-rates__inner twh-rates__inner--narrow">
-        <h2 id="faq-h" class="twh-rates__title"><span aria-hidden="true">/</span> Good to know</h2>
-        <div class="twh-rates__faq">
+    <section class="twh-px-sec twh-px-sec--alt" aria-labelledby="pfaq-h">
+      <div class="twh-px-wrap twh-px-wrap--narrow">
+        <div class="twh-px-head">
+          <p class="twh-px-eyebrow"><span aria-hidden="true">/</span> Good to know</p>
+          <h2 class="twh-px-title" id="pfaq-h">Billing questions</h2>
+        </div>
+        <div class="twh-px-faq">
           {bookingFaqs.map((f) => (
-            <details class="twh-faqlite">
+            <details class="twh-px-faq__item">
               <summary>{f.question}</summary>
               <div set:html={blocksToHtml(f.answer as any)} />
             </details>
           ))}
         </div>
+        <p class="twh-px-faq__more"><a href="/faq">More questions →</a></p>
       </div>
     </section>
   )}
 
-  <section class="twh-rates twh-rates--cta">
-    <div class="twh-rates__inner">
-      <p class="twh-rates__cta-text">Ready to train?</p>
-      <div class="twh-rates__cta-btns">
+  <!-- ═════════ CTA ═════════ -->
+  <section class="twh-px-cta">
+    <div class="twh-px-wrap">
+      <p class="twh-px-cta__text">Ready to train?</p>
+      <div class="twh-px-hero__cta twh-px-hero__cta--center">
         <a href="/schedule" class="twh-btn twh-btn--primary twh-btn--lg">See the schedule</a>
         {!logged && <a href="/register" class="twh-btn twh-btn--ghost twh-btn--lg">Create an account</a>}
       </div>
@@ -110,3 +215,8 @@ const seo = {
 </PageLayout>
 
 <style is:global>@import '../styles/pages/twh-pricing-page.css';</style>
+
+<script>
+  import { initPricing } from '../scripts/interactions/pricing';
+  initPricing();
+</script>

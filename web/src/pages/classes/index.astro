@@ -46,32 +46,12 @@ const DESC_MAX  = 50;
 const clip = (text: string, max: number) =>
   text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
 
-const intensityColour: Record<string, string> = {
-  low:     'var(--color-twh-blue)',
-  medium:  'var(--color-twh-yellow)',
-  high:    'var(--color-twh-red)',
-  extreme: 'var(--color-twh-red-deep)',
-};
-
-const intensityTextColour: Record<string, string> = {
-  low:     'var(--color-twh-white)',
-  medium:  'var(--color-twh-black)',
-  high:    'var(--color-twh-white)',
-  extreme: 'var(--color-twh-white)',
-};
-
-// Filter groups — "All" is frontend-only. Level and intensity combine (AND).
+// Filter groups — "All" is frontend-only. Only Level filters the grid (intensity is shown on each class page).
 const FILTER_GROUPS = [
   { key: 'level', label: 'Level', options: [
     { label: 'Beginner',     value: 'beginner',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
     { label: 'Intermediate', value: 'intermediate', accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
     { label: 'Advanced',     value: 'advanced',     accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
-  ]},
-  { key: 'intensity', label: 'Intensity', options: [
-    { label: 'Low',     value: 'low',     accent: 'var(--color-twh-blue)',     ink: 'var(--color-twh-white)' },
-    { label: 'Medium',  value: 'medium',  accent: 'var(--color-twh-yellow)',   ink: 'var(--color-twh-black)' },
-    { label: 'High',    value: 'high',    accent: 'var(--color-twh-red)',      ink: 'var(--color-twh-white)' },
-    { label: 'Extreme', value: 'extreme', accent: 'var(--color-twh-red-deep)', ink: 'var(--color-twh-white)' },
   ]},
 ];
 
@@ -137,16 +117,13 @@ const seo = {
       <ul class="twh-classes__grid" role="list" id="classes-grid">
         {display.map((cls) => {
           const hasVideo = Boolean(cls.previewVideo?.url);
-          const accent  = intensityColour[cls.intensity]     ?? 'var(--color-twh-grey-700)';
-          const txtClr  = intensityTextColour[cls.intensity] ?? 'var(--color-twh-white)';
           const days = daysOf(cls.slug);
           const isFree = (cls.price ?? 0) === 0 || cls.isFree;
           const priceText = isFree ? 'Free' : formatLKR(cls.price);
           return (
             <li
               class="twh-classes__card"
-              style={`--card-accent: ${accent};`}
-              data-intensity={cls.intensity}
+              style="--card-accent: var(--color-twh-red);"
               data-level={cls.level}
               data-has-video={hasVideo}
             >
@@ -156,7 +133,7 @@ const seo = {
                 aria-label={`${cls.name}${cls.tagline ? ` — ${cls.tagline}` : ''}, ${priceText}${isFree ? '' : ' per session'}${days.length ? `, ${daysLine(days)}` : ''}`}
               >
 
-                <!-- Left intensity stripe -->
+                <!-- Left accent stripe -->
                 <span class="twh-classes__card-stripe" aria-hidden="true"></span>
 
                 <!-- Full-bleed media -->
@@ -187,14 +164,6 @@ const seo = {
                   )}
                   <div class="twh-classes__card-overlay" aria-hidden="true"></div>
                 </div>
-
-                <!-- Intensity badge -->
-                <span
-                  class="twh-classes__card-badge"
-                  style={`background: ${accent}; color: ${txtClr};`}
-                >
-                  {cls.intensity}
-                </span>
 
                 {hasVideo && (
                   <span class="twh-classes__card-playhint" aria-hidden="true">
@@ -228,7 +197,7 @@ const seo = {
       <div class="twh-classes__empty" id="no-results" style="display:none;" aria-live="polite">
         <WolverineSlash class="twh-classes__empty-icon" aria-hidden="true" />
         <p class="twh-classes__empty-heading">No Classes at the Moment</p>
-        <p class="twh-classes__empty-sub" id="no-results-sub">No classes match those filters. Try another level or intensity, or <a href="/schedule">see the full schedule</a>.</p>
+        <p class="twh-classes__empty-sub" id="no-results-sub">No classes match those filters. Try another level, or <a href="/schedule">see the full schedule</a>.</p>
       </div>
     </div>
   </section>
@@ -243,15 +212,15 @@ const seo = {
   gsap.registerPlugin(ScrollTrigger);
 
   // ── Filter ──────────────────────────────────────────────────
-  // Level and intensity are independent groups, combined with AND.
+  // Only the Level group filters the grid.
   // Clicking the active option again (or "All") clears that selection.
   const btns  = document.querySelectorAll<HTMLButtonElement>('.twh-classes__filter-btn');
   const cards = document.querySelectorAll<HTMLElement>('.twh-classes__card');
   const noRes = document.getElementById('no-results')!;
-  const state: Record<string, string> = { level: 'all', intensity: 'all' };
+  const state: Record<string, string> = { level: 'all' };
 
   function applyFilter() {
-    const none = state.level === 'all' && state.intensity === 'all';
+    const none = state.level === 'all';
     btns.forEach(b => {
       const group = b.dataset.filterGroup!;
       const on = group === 'all' ? none : state[group] === b.dataset.filter;
@@ -261,8 +230,7 @@ const seo = {
     let visible = 0;
     cards.forEach(card => {
       const show =
-        (state.level === 'all'     || card.dataset.level === state.level) &&
-        (state.intensity === 'all' || card.dataset.intensity === state.intensity);
+        (state.level === 'all'    || card.dataset.level === state.level);
       card.classList.toggle('is-filtered-out', !show);
       if (show) {
         visible++;
@@ -278,7 +246,6 @@ const seo = {
       const group = btn.dataset.filterGroup!;
       if (group === 'all') {
         state.level = 'all';
-        state.intensity = 'all';
       } else {
         state[group] = state[group] === btn.dataset.filter ? 'all' : btn.dataset.filter!;
       }

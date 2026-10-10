@@ -1,190 +1,150 @@
 ---
+/**
+ * FAQ — live search (with highlighting), category rail with counts, deep links (#question-id),
+ * expand / collapse all, and a "still need help?" hand-off. Questions come from Strapi.
+ */
 import PageLayout from '../layouts/PageLayout.astro';
+import WolverineSlash from '../components/ui/WolverineSlash.astro';
 import { getGlobal, getFaqs, getFaqCategories, getPageBySlug } from '../lib/strapi/queries';
 import { blocksToHtml } from '../lib/strapi/blocks';
+import { faqSchema } from '../lib/seo/json-ld';
 import type { StrapiFaq, StrapiFaqCategory, StrapiPageHeroSection } from '../lib/strapi/types';
 
 let global, faqs: StrapiFaq[] = [], categories: StrapiFaqCategory[] = [], pageData: Awaited<ReturnType<typeof getPageBySlug>> = null;
 try {
-  [global, faqs, categories, pageData] = await Promise.all([
-    getGlobal(), getFaqs(), getFaqCategories(), getPageBySlug('faq'),
-  ]);
+  [global, faqs, categories, pageData] = await Promise.all([getGlobal(), getFaqs(), getFaqCategories(), getPageBySlug('faq')]);
 } catch { /* CMS offline */ }
 
-const pageHero = pageData?.sections?.find(s => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
+const pageHero = pageData?.sections?.find((s) => s.__component === 'sections.page-hero') as StrapiPageHeroSection | undefined;
 
+const para = (text: string) => [{ type: 'paragraph', children: [{ type: 'text', text }] }];
 const fallbackFaqs: StrapiFaq[] = [
-  { documentId: '1', question: 'Do I need experience to join?', answer: [{ type:'paragraph', children:[{type:'text', text:'No experience required. All our programs have beginner entry points and coaches who scale intensity to your level.'}] }], isFeatured: true, sortOrder: 1 },
-  { documentId: '2', question: 'What should I bring to my first class?', answer: [{ type:'paragraph', children:[{type:'text', text:'Comfortable training clothes, a water bottle, and an open mind. Boxing gloves and wraps can be borrowed for your first session.'}] }], isFeatured: true, sortOrder: 2 },
-  { documentId: '3', question: 'Are there lock-in contracts?', answer: [{ type:'paragraph', children:[{type:'text', text:'None. Every membership is month-to-month. Cancel with 30 days notice, no questions asked.'}] }], isFeatured: true, sortOrder: 3 },
-  { documentId: '4', question: 'Can I try before committing?', answer: [{ type:'paragraph', children:[{type:'text', text:'Yes — your first class is free. Walk in any time during open hours and try a session at no cost.'}] }], isFeatured: false, sortOrder: 4 },
-  { documentId: '5', question: 'How many classes can I attend per week?', answer: [{ type:'paragraph', children:[{type:'text', text:'Starter members get 2 classes per week. Signature and Transformation members have unlimited access to the full schedule.'}] }], isFeatured: false, sortOrder: 5 },
-  { documentId: '6', question: 'Is there parking available?', answer: [{ type:'paragraph', children:[{type:'text', text:'Yes, free parking is available in the building car park. Enter from the side street and validate at the front desk.'}] }], isFeatured: false, sortOrder: 6 },
+  { documentId: 'f1', question: 'Do I need experience to join?', answer: para('No experience needed. Every class has coaches who scale the session to your level.'), isFeatured: true, sortOrder: 1 },
+  { documentId: 'f2', question: 'How does paying per class work?', answer: para('Each class has its own price per session. Pick a session, pay online, and your spot is confirmed — there is no membership or lock-in.'), isFeatured: true, sortOrder: 2 },
+  { documentId: 'f3', question: 'Can I cancel a booking?', answer: para('Yes. Cancel at least 12 hours before the session starts and you are refunded in full.'), isFeatured: true, sortOrder: 3 },
+  { documentId: 'f4', question: 'What should I bring to my first class?', answer: para('Comfortable training clothes, a water bottle and a towel. Arrive 10 minutes early to meet your coach.'), isFeatured: false, sortOrder: 4 },
+  { documentId: 'f5', question: 'Is there parking available?', answer: para('Yes, free parking is available. Ask at the front desk if you need directions.'), isFeatured: false, sortOrder: 5 },
 ];
 
-const displayFaqs = faqs.length > 0 ? faqs : fallbackFaqs;
-const displayCategories: StrapiFaqCategory[] = categories.length > 0 ? categories : [];
+const list = (faqs.length > 0 ? faqs : fallbackFaqs).slice().sort((a, b) => a.sortOrder - b.sortOrder);
+const cats = categories
+  .map((c) => ({ ...c, count: list.filter((f) => f.category?.documentId === c.documentId).length }))
+  .filter((c) => c.count > 0)
+  .sort((a, b) => a.sortOrder - b.sortOrder);
+const uncategorised = list.filter((f) => !f.category).length;
+const popular = list.filter((f) => f.isFeatured).slice(0, 4);
 
-// Group by category
-const grouped = new Map<string, { label: string; items: StrapiFaq[] }>();
-grouped.set('all', { label: 'All Questions', items: displayFaqs });
-for (const cat of displayCategories) {
-  const items = displayFaqs.filter(f => f.category?.documentId === cat.documentId);
-  if (items.length > 0) grouped.set(cat.slug, { label: cat.name, items });
-}
+const items = list.map((f) => ({
+  id: `q-${f.documentId}`,
+  question: f.question,
+  html: blocksToHtml(f.answer as any),
+  cat: f.category?.slug ?? 'other',
+  catName: f.category?.name ?? 'General',
+}));
 
-// "Most asked" quick answers are shown once at the top; the accordion below lists the rest,
-// so no question appears twice.
-const featured = displayFaqs.filter(f => f.isFeatured).slice(0, 3);
-const featuredIds = new Set(featured.map(f => f.documentId));
-const listFaqs = displayFaqs.filter(f => !featuredIds.has(f.documentId));
-// only offer category filters that actually have questions in the accordion
-const listCategories = displayCategories.filter(c => listFaqs.some(f => f.category?.documentId === c.documentId));
-
+const whatsapp = (global?.whatsapp ?? global?.phone ?? '').replace(/\D/g, '');
 const seo = {
   metaTitle: 'FAQ — The Wolverine Hub',
-  metaDescription: 'Everything you need to know before your first class. Memberships, classes, equipment, parking, and more.',
+  metaDescription: 'Answers about booking classes, paying per session, cancellations, equipment, parking and more.',
 };
 ---
 
-<PageLayout {seo} {global}>
-  <div class="twh-page-hero">
-    <div class="twh-page-hero__inner">
-      <p class="twh-page-hero__eyebrow">{pageHero?.eyebrow ?? 'FAQ'}</p>
-      <h1 class="twh-page-hero__heading" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Got<br/>Questions?'} />
-      <p class="twh-page-hero__sub">{pageHero?.subheading ?? 'Everything you need to know before you walk through the door.'}</p>
+<PageLayout {seo} {global} jsonLd={faqSchema(list)}>
+  <!-- ═════════ Hero + search ═════════ -->
+  <section class="twh-fq-hero">
+    <div class="twh-fq-hero__bg" aria-hidden="true">
+      <WolverineSlash class="twh-fq-hero__slash" />
+      <span class="twh-fq-hero__q">?</span>
     </div>
-  </div>
+    <div class="twh-fq-wrap twh-fq-hero__inner">
+      <p class="twh-fq-eyebrow"><span aria-hidden="true">/</span> {pageHero?.eyebrow ?? 'FAQ'}</p>
+      <h1 class="twh-fq-hero__title" set:html={pageHero ? pageHero.heading.replace(/\n/g, '<br/>') : 'Got<br/>Questions?'} />
+      <p class="twh-fq-hero__sub">{pageHero?.subheading ?? 'Search the answers, or browse by topic.'}</p>
 
-  <section class="twh-faq" aria-label="Frequently asked questions">
-    <div class="twh-faq__inner">
+      <form class="twh-fq-search" role="search" id="fq-form">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <label for="fq-search" class="sr-only">Search the FAQ</label>
+        <input id="fq-search" type="search" placeholder="Search — e.g. cancel, parking, payment…" autocomplete="off" spellcheck="false" />
+        <kbd aria-hidden="true">/</kbd>
+        <button type="button" class="twh-fq-search__clear" id="fq-clear" aria-label="Clear search" hidden>×</button>
+      </form>
 
-      <!-- Featured quick answers -->
-      {featured.length > 0 && (
-        <div class="twh-faq__section-head">
-          <h2 class="twh-faq__section-title">Most asked</h2>
-        </div>
-        <div class="twh-faq__featured">
-          {featured.map(faq => {
-            const html = blocksToHtml(faq.answer as any);
-            return (
-              <div class="twh-faq__featured-item">
-                <p class="twh-faq__featured-q">{faq.question}</p>
-                {html
-                  ? <div class="twh-faq__featured-a"><Fragment set:html={html} /></div>
-                  : <p class="twh-faq__featured-a">Answer coming soon.</p>
-                }
-              </div>
-            );
-          })}
+      {popular.length > 0 && (
+        <div class="twh-fq-popular">
+          <span>Popular:</span>
+          {popular.map((p) => <a href={`#q-${p.documentId}`} class="twh-fq-popular__chip" data-jump={`q-${p.documentId}`}>{p.question}</a>)}
         </div>
       )}
+    </div>
+  </section>
 
-      <!-- Full accordion list (everything not already shown above) -->
-      <div class="twh-faq__main">
-        {listFaqs.length > 0 && (
-          <div class="twh-faq__section-head">
-            <h2 class="twh-faq__section-title">{featured.length > 0 ? 'More questions' : 'All questions'}</h2>
-          </div>
-        )}
-        {listCategories.length > 1 && (
-          <div class="twh-faq__filters" role="tablist" aria-label="Filter by category">
-            <button class="twh-faq__filter twh-faq__filter--active" data-filter="all" role="tab" aria-selected="true">All</button>
-            {listCategories.map(cat => (
-              <button class="twh-faq__filter" data-filter={cat.slug} role="tab" aria-selected="false">
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        )}
+  <!-- ═════════ Browser ═════════ -->
+  <section class="twh-fq-main" aria-label="Frequently asked questions">
+    <div class="twh-fq-wrap twh-fq-main__grid">
 
-        <div class="twh-faq__list">
-          {listFaqs.map(faq => {
-            const html = blocksToHtml(faq.answer as any);
-            const catSlug = faq.category?.slug ?? 'general';
-            return (
-              <details class="twh-faq__item" data-category={catSlug}>
-                <summary class="twh-faq__question">
-                  <span class="twh-faq__question-text">{faq.question}</span>
-                  <span class="twh-faq__toggle" aria-hidden="true">
-                    <span class="twh-faq__plus">+</span>
-                    <span class="twh-faq__minus">−</span>
-                  </span>
+      <nav class="twh-fq-rail" aria-label="Topics">
+        <p class="twh-fq-rail__title">Topics</p>
+        <ul role="list">
+          <li><button type="button" class="twh-fq-topic" data-cat="all" aria-pressed="true"><span>All questions</span><b>{list.length}</b></button></li>
+          {cats.map((c) => <li><button type="button" class="twh-fq-topic" data-cat={c.slug} aria-pressed="false"><span>{c.name}</span><b>{c.count}</b></button></li>)}
+          {uncategorised > 0 && <li><button type="button" class="twh-fq-topic" data-cat="other" aria-pressed="false"><span>General</span><b>{uncategorised}</b></button></li>}
+        </ul>
+      </nav>
+
+      <div class="twh-fq-results">
+        <div class="twh-fq-bar">
+          <p class="twh-fq-count" id="fq-count" aria-live="polite">{items.length} questions</p>
+          <button type="button" class="twh-fq-toggle" id="fq-toggle" data-state="collapsed">Expand all</button>
+        </div>
+
+        <ol class="twh-fq-list" id="fq-list" role="list">
+          {items.map((q) => (
+            <li class="twh-fq-item" id={q.id} data-cat={q.cat}>
+              <details>
+                <summary>
+                  <span class="twh-fq-item__tag">{q.catName}</span>
+                  <span class="twh-fq-item__q" data-q>{q.question}</span>
+                  <span class="twh-fq-item__icon" aria-hidden="true"></span>
                 </summary>
-                <div class="twh-faq__answer">
-                  {html
-                    ? <Fragment set:html={html} />
-                    : <p style="color:rgba(255,255,255,0.4);">Answer coming soon.</p>
-                  }
+                <div class="twh-fq-item__a">
+                  <div class="twh-fq-item__body" data-a>{q.html ? <Fragment set:html={q.html} /> : <p>Answer coming soon.</p>}</div>
+                  <button type="button" class="twh-fq-item__link" data-copy-link={`#${q.id}`}>Copy link</button>
                 </div>
               </details>
-            );
-          })}
+            </li>
+          ))}
+        </ol>
+
+        <div class="twh-fq-empty" id="fq-empty" hidden>
+          <p class="twh-fq-empty__title">No answers found</p>
+          <p class="twh-fq-empty__text">Try different words — or ask us directly and we'll reply within 24 hours.</p>
+          <a href="/contact" class="twh-btn twh-btn--primary twh-btn--md">Ask a question</a>
         </div>
       </div>
+    </div>
+  </section>
 
-      <!-- Still have questions CTA -->
-      <div class="twh-faq__cta">
-        <p class="twh-faq__cta-text">Still have questions?</p>
-        <a href="/contact" class="twh-btn twh-btn--primary twh-btn--md">Talk to Us</a>
+  <!-- ═════════ Still need help ═════════ -->
+  <section class="twh-fq-help">
+    <div class="twh-fq-wrap">
+      <div class="twh-fq-help__card">
+        <div>
+          <p class="twh-fq-eyebrow"><span aria-hidden="true">/</span> Still stuck?</p>
+          <h2 class="twh-fq-help__title">Talk to a human.</h2>
+          <p class="twh-fq-help__text">Can't find what you need? Message us — we usually reply the same day.</p>
+        </div>
+        <div class="twh-fq-help__actions">
+          <a href="/contact" class="twh-btn twh-btn--primary twh-btn--lg">Contact us</a>
+          {whatsapp.length >= 8 && <a href={`https://wa.me/${whatsapp}`} class="twh-btn twh-btn--ghost twh-btn--lg" target="_blank" rel="noopener noreferrer">WhatsApp</a>}
+        </div>
       </div>
-
     </div>
   </section>
 </PageLayout>
 
-<style>@import '../styles/pages/twh-faq.css';</style>
+<style is:global>@import '../styles/pages/twh-faq.css';</style>
 
 <script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  gsap.registerPlugin(ScrollTrigger);
-
-  // Category filter
-  const filters = document.querySelectorAll<HTMLButtonElement>('.twh-faq__filter');
-  const items   = document.querySelectorAll<HTMLDetailsElement>('.twh-faq__item');
-
-  filters.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = btn.dataset.filter ?? 'all';
-      filters.forEach(b => { b.classList.remove('twh-faq__filter--active'); b.setAttribute('aria-selected', 'false'); });
-      btn.classList.add('twh-faq__filter--active');
-      btn.setAttribute('aria-selected', 'true');
-      items.forEach(item => {
-        const show = target === 'all' || item.dataset.category === target;
-        (item as HTMLElement).style.display = show ? '' : 'none';
-      });
-    });
-  });
-
-  // Animations
-  gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-    const hero = document.querySelector('.twh-page-hero__inner');
-    if (hero) {
-      const tl = gsap.timeline();
-      const eyebrow = hero.querySelector('.twh-page-hero__eyebrow');
-      const heading = hero.querySelector('.twh-page-hero__heading');
-      const sub     = hero.querySelector('.twh-page-hero__sub');
-      if (eyebrow) tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
-      if (heading) tl.fromTo(heading, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.25');
-      if (sub)     tl.fromTo(sub,     { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.3');
-    }
-
-    gsap.fromTo('.twh-faq__featured-item',
-      { y: 24, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power3.out',
-        scrollTrigger: { trigger: '.twh-faq__featured', start: 'top 80%' } }
-    );
-
-    gsap.fromTo('.twh-faq__item',
-      { y: 16, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out',
-        scrollTrigger: { trigger: '.twh-faq__list', start: 'top 80%' } }
-    );
-  });
-
-  gsap.matchMedia().add('(prefers-reduced-motion: reduce)', () => {
-    document.querySelectorAll<HTMLElement>('.twh-faq__featured-item, .twh-faq__item')
-      .forEach(el => { el.style.opacity = '1'; });
-  });
+  import { initFaq } from '../scripts/interactions/faq';
+  initFaq();
 </script>
