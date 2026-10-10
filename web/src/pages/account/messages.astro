@@ -1,0 +1,69 @@
+---
+/**
+ * Messages: every email we send you. While no email provider is connected the emails are only
+ * recorded ("logged"), so this page is how you can see exactly what a member would have received.
+ */
+import AccountLayout from '../../layouts/AccountLayout.astro';
+import { getMember, myEmails, type MemberEmail } from '../../lib/auth/cms';
+import { dateLabel } from '../../lib/utils/colombo';
+
+export const prerender = false;
+
+const session = Astro.locals.session!;
+const member = await getMember(session.uid);
+if (!member) return Astro.redirect('/login', 302);
+
+let emails: MemberEmail[] = [];
+let loadError = false;
+try {
+  ({ emails } = await myEmails(member.id));
+} catch {
+  loadError = true;
+}
+
+const typeLabel: Record<string, string> = {
+  'booking-confirmation': 'Booking confirmed',
+  'booking-reminder': 'Session reminder',
+  'booking-cancelled': 'Booking cancelled',
+  welcome: 'Welcome',
+  'password-reset': 'Password reset',
+  other: 'Message',
+};
+const tone: Record<string, string> = { 'booking-confirmation': 'good', 'booking-reminder': 'warn', 'booking-cancelled': 'muted', welcome: 'good', 'password-reset': 'muted', other: 'muted' };
+const when = (iso: string) => {
+  const d = new Date(iso);
+  return `${dateLabel(d.toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' })).long} · ${d.toLocaleTimeString('en-US', { timeZone: 'Asia/Colombo', hour: 'numeric', minute: '2-digit' })}`;
+};
+const statusLabel = (s: string) => (s === 'sent' ? 'Delivered' : s === 'failed' ? 'Failed' : 'Preview');
+---
+
+<AccountLayout {member} active="messages" title="Messages">
+  {loadError && <p class="twh-banner twh-banner--warn" role="alert">We couldn't load your messages right now. Please refresh in a moment.</p>}
+
+  <p class="twh-banner twh-banner--info" role="note">
+    <b>Email preview mode.</b> Real emails aren't switched on yet, so each message below is recorded here instead of being delivered to <b>{member.email}</b>.
+  </p>
+
+  <section class="twh-card" aria-labelledby="msg-h">
+    <div class="twh-card__head"><h2 id="msg-h" class="twh-card__title">Your messages</h2></div>
+
+    {emails.length === 0 ? (
+      <div class="twh-empty"><p class="twh-empty__title">No messages yet</p><p class="twh-empty__text">Booking confirmations, reminders and receipts will appear here.</p></div>
+    ) : (
+      <ul class="twh-msgs" role="list">
+        {emails.map((m) => (
+          <li class="twh-msg">
+            <details>
+              <summary>
+                <span class={`twh-pill twh-pill--${tone[m.type] ?? 'muted'}`}>{typeLabel[m.type] ?? 'Message'}</span>
+                <span class="twh-msg__subject">{m.subject}</span>
+                <span class="twh-msg__meta">{when(m.createdAt)} · {statusLabel(m.status)}</span>
+              </summary>
+              <pre class="twh-msg__body">{m.body}</pre>
+            </details>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</AccountLayout>

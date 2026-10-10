@@ -198,3 +198,33 @@
   background: var(--color-twh-black);
   border-radius: 50%;
 }
+
+/* ── Signed-in account dropdown ───────────────────────────── */
+.twh-acctmenu { position: relative; }
+.twh-acctmenu__btn { gap: 0.5rem; cursor: pointer; }
+.twh-acctmenu__caret { transition: transform 0.2s; }
+.twh-acctmenu.is-open .twh-acctmenu__caret { transform: rotate(180deg); }
+.twh-acctmenu__panel {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 60;
+  min-width: 220px;
+  padding: 0.5rem;
+  background: var(--color-twh-ink);
+  border: 1px solid var(--color-twh-grey-700);
+  border-top: 3px solid var(--color-twh-yellow);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+}
+.twh-acctmenu__panel[hidden] { display: none; }
+.twh-acctmenu__who { margin: 0; padding: 0.5rem 0.75rem 0.6rem; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-twh-grey-400); border-bottom: 1px solid var(--color-twh-grey-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.twh-acctmenu__panel a, .twh-acctmenu__out { display: block; width: 100%; padding: 0.65rem 0.75rem; font: inherit; font-size: 0.9375rem; font-weight: 600; text-align: left; color: var(--color-twh-grey-100); text-decoration: none; background: none; border: 0; border-left: 3px solid transparent; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+.twh-acctmenu__panel a:hover, .twh-acctmenu__panel a:focus-visible, .twh-acctmenu__out:hover, .twh-acctmenu__out:focus-visible { background: rgba(255, 255, 255, 0.06); border-left-color: var(--color-twh-yellow); color: var(--color-twh-white); }
+.twh-acctmenu__panel form { margin: 0; padding-top: 0.25rem; border-top: 1px solid var(--color-twh-grey-800); }
+.twh-acctmenu__out { color: #ff6b70; }
+@media (max-width: 640px) {
+  .twh-acctmenu__label { display: none; }
+  .twh-acctmenu__btn { padding-inline: 0.65rem; }
+  .twh-acctmenu__panel { right: -0.5rem; min-width: 200px; }
+}
+@media (prefers-reduced-motion: reduce) { .twh-acctmenu__caret { transition: none; } }

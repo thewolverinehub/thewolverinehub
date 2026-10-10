@@ -94,6 +94,8 @@ export interface BookingMailData {
   amount: number;
   room?: string;
   coachNames?: string;
+  /** set when a paid booking was cancelled and (test-mode) refunded */
+  refundAmount?: number;
 }
 
 const money = (n: number) => (n > 0 ? `LKR ${n.toLocaleString('en-US')}` : 'Free');
@@ -144,8 +146,8 @@ export function bookingCancelledEmail(b: BookingMailData): OutgoingEmail {
     to: b.email,
     type: 'booking-cancelled',
     subject: `Booking cancelled — ${b.className}, ${longDate(b.sessionDate)}`,
-    text: `Hi ${b.name},\n\nYour booking has been cancelled.\n\n${d.text}\n\nIf you paid for this session, our team will arrange your refund.\n\nThe Wolverine Hub`,
-    html: layout('Booking cancelled', `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hi ${esc(b.name)}, your booking has been cancelled.</p>${d.html}<p style="font-size:13px;color:#a0a0a8;line-height:1.6;">If you paid for this session, our team will arrange your refund.</p>`, { label: 'Book another class', href: `${SITE_URL()}/schedule` }),
+    text: `Hi ${b.name},\n\nYour booking has been cancelled.\n\n${d.text}\n\n${b.refundAmount ? `Refund: ${money(b.refundAmount)} has been refunded to your original payment method (test mode — no real money moved).` : 'No payment was taken for this session.'}\n\nThe Wolverine Hub`,
+    html: layout('Booking cancelled', `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hi ${esc(b.name)}, your booking has been cancelled.</p>${d.html}<p style="font-size:13px;color:#a0a0a8;line-height:1.6;">${b.refundAmount ? `<b style="color:#ffc20e;">${esc(money(b.refundAmount))}</b> has been refunded to your original payment method <i>(test mode — no real money moved)</i>.` : 'No payment was taken for this session.'}</p>`, { label: 'Book another class', href: `${SITE_URL()}/schedule` }),
   };
 }
 

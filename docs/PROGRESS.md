@@ -171,3 +171,12 @@
 - **Repair:** one-off bootstrap steps (`restoreClassData`, partial `runCatalogV2(only)`; flags `catalog-v2-class-restore-1`, `catalog-v2-reapply-1`) restored class data and re-applied home/programs/pricing cleanup. Verified via REST.
 - **Rule:** never redeploy/restart the live CMS (including setting env vars) while it runs older code than local — push first. Keep scratch files OUTSIDE `cms/` (the file watcher restarts Strapi).
 - **UI:** Our Story active card now lights up (reveal tween was pinning inline opacity); classes filter back to Level + Intensity (level "all" matches any level).
+
+### Account hardening + polish (2026-10-10)
+- **Tested signed-in as a real user in the browser:** register, sign in (username + email), dashboard, schedule -> review -> checkout -> pay / fail / cancel payment, paid + free bookings, cancel (with refund), profile save + persistence, password change (wrong / mismatch / success), sign out (sidebar + header + menu + Back button).
+- **Fixed:** profile/password forms were unstyled (field CSS was not loaded in the account layout); cancel used a 4-second "tap again" button that silently timed out -> now a confirmation dialog stating the refund; mobile account pages scrolled sideways (grid `1fr` + nowrap tabs); `/contact` overflow; footer column alignment + wordmark clipping; mobile menu bar hidden under the floating pill; auth hero compacted on phones; global `overflow-x: clip` safety net.
+- **Sign out everywhere:** header account dropdown (Overview, Bookings, Payments, Messages, Profile, Sign out), menu bar links on mobile; pages restored from the back/forward cache reload so a signed-out user never sees a stale account page.
+- **Dummy payments/emails made visible:** cancelling a paid booking marks the payment `refunded` (refund details stored in `rawPayload`) and the cancellation email states the (test-mode) refund; new **Messages** tab (`/account/messages`, CMS `GET /api/bookings/messages`) shows every email the member would have received.
+- **Menu:** "Our Story" removed from the header menu (CMS data + fallbacks); it remains a home-page section.
+- **Social icons:** new `SocialLinks.astro` (real SVG glyphs, brand-colour hover, 44px targets) used in footer + menu; coach Instagram buttons use the icon. WhatsApp/TikTok icons appear automatically once their URLs are set in Strapi (Global).
+- **Gotcha:** a new GET route in `notify` did not register; the same endpoint works under `bookings/` (`01-custom-booking.ts`). Never put scratch files in `cms/` (restarts Strapi).

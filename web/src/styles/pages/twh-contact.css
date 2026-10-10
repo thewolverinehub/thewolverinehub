@@ -14,7 +14,7 @@
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 5rem;
   align-items: start;
 }
@@ -274,7 +274,7 @@ a.twh-contact__detail-value:hover {
 
 @media (max-width: 1023px) {
   .twh-contact__inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 3rem;
   }
 }

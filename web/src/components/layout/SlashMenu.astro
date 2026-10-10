@@ -1,6 +1,7 @@
 ---
 import type { StrapiHeader, StrapiGlobal } from '../../lib/strapi/types';
 import WolverineSlash from '../ui/WolverineSlash.astro';
+import SocialLinks from '../ui/SocialLinks.astro';
 
 interface Props {
   header?: StrapiHeader;
@@ -16,13 +17,15 @@ const fallbackItems = [
   { label: 'Classes',   href: '/classes',   indexNumber: '01', description: '12 classes. Pay per session.' },
   { label: 'Schedule',  href: '/schedule',  indexNumber: '02', description: 'Book your next session.' },
   { label: 'Coaches',   href: '/coaches',   indexNumber: '03', description: 'Train with the best.' },
-  { label: 'Our Story', href: '/#story',    indexNumber: '04', description: 'Built in the ring.' },
-  { label: 'Pricing',   href: '/pricing',   indexNumber: '05', description: 'Simple per-class rates.' },
-  { label: 'Contact',   href: '/contact',   indexNumber: '06', description: 'Find us. Say hello.' },
+  { label: 'Pricing',   href: '/pricing',   indexNumber: '04', description: 'Simple per-class rates.' },
+  { label: 'Contact',   href: '/contact',   indexNumber: '05', description: 'Find us. Say hello.' },
 ];
 
-const items = (header?.menuItems?.length ?? 0) > 0
-  ? header!.menuItems.map((item, i) => ({
+// "Our Story" now lives on the home page only — never as a menu item (even if still present in the CMS).
+const menuFromCms = (header?.menuItems ?? []).filter((m) => !/#story/.test(m.href) && m.label.trim().toLowerCase() !== 'our story');
+const session = Astro.locals.session;
+const items = menuFromCms.length > 0
+  ? menuFromCms.map((item, i) => ({
       label: item.label,
       href: item.href,
       indexNumber: item.indexNumber ?? String(i + 1).padStart(2, '0'),
@@ -98,12 +101,16 @@ const items = (header?.menuItems?.length ?? 0) > 0
   </div>
 
   <div class="twh-sm__bar">
-    <div class="twh-sm__socials">
-      {global?.instagram && <a href={global.instagram} target="_blank" rel="noopener noreferrer" class="twh-sm__social">IG</a>}
-      {global?.facebook  && <a href={global.facebook}  target="_blank" rel="noopener noreferrer" class="twh-sm__social">FB</a>}
-      {global?.youtube   && <a href={global.youtube}   target="_blank" rel="noopener noreferrer" class="twh-sm__social">YT</a>}
-    </div>
-    {global?.email && <a href={`mailto:${global.email}`} class="twh-sm__contact">{global.email}</a>}
+    <SocialLinks {global} variant="menu" class="twh-sm__socials" />
+    {session ? (
+      <div class="twh-sm__account">
+        <a href="/account" class="twh-sm__account-link">My Account</a>
+        <a href="/account/bookings" class="twh-sm__account-link">My Bookings</a>
+        <form method="post" action="/api/auth/logout" data-logout-form><button type="submit" class="twh-sm__account-link twh-sm__account-link--btn">Sign out</button></form>
+      </div>
+    ) : (
+      global?.email && <a href={`mailto:${global.email}`} class="twh-sm__contact">{global.email}</a>
+    )}
   </div>
 </div>
 

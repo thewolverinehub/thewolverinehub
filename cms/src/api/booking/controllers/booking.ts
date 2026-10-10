@@ -48,6 +48,16 @@ export default factories.createCoreController('api::booking.booking', ({ strapi 
     await run(ctx, async () => listForUser(strapi, userIdOf(ctx)));
   },
 
+  /** GET /api/bookings/messages?userId= → emails sent (or logged) to this member, newest first */
+  async messages(ctx) {
+    await run(ctx, async () => {
+      const user = await (strapi.db as any).query('plugin::users-permissions.user').findOne({ where: { id: userIdOf(ctx) } });
+      if (!user?.email) return { emails: [] };
+      const rows: any[] = await (strapi.db as any).query('api::email-log.email-log').findMany({ where: { to: user.email }, orderBy: { createdAt: 'desc' }, limit: 50 });
+      return { emails: rows.map((r) => ({ documentId: r.documentId, subject: r.subject, type: r.type, status: r.status, body: r.body, createdAt: r.createdAt })) };
+    });
+  },
+
   /** GET /api/bookings/availability?from=YYYY-MM-DD&to=YYYY-MM-DD → { "slotId|date": seatsTaken } */
   async availability(ctx) {
     await run(ctx, async () => {

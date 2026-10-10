@@ -1,0 +1,56 @@
+/* ============================================================
+   SOCIAL ICONS — footer + slash menu
+   Prefix: twh-social
+   ============================================================ */
+
+.twh-social { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+
+.twh-social__link {
+  --brand: var(--color-twh-yellow);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--color-twh-grey-300);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid var(--color-twh-grey-700);
+  border-radius: 2px;
+  transition: color 0.18s, background 0.18s, border-color 0.18s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.twh-social__link svg { display: block; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+
+.twh-social__link:hover,
+.twh-social__link:focus-visible { color: var(--color-twh-black); background: var(--brand); border-color: var(--brand); transform: translateY(-3px); }
+.twh-social__link:hover svg,
+.twh-social__link:focus-visible svg { transform: scale(1.12); }
+.twh-social__link:focus-visible { outline: 2px solid var(--color-twh-yellow); outline-offset: 3px; }
+.twh-social__link:active { transform: translateY(0); }
+
+/* brand hover colours (icon stays legible on each) */
+.twh-social__link--instagram { --brand: #e1306c; }
+.twh-social__link--facebook  { --brand: #1877f2; }
+.twh-social__link--youtube   { --brand: #ff0033; }
+.twh-social__link--tiktok    { --brand: #25f4ee; }
+.twh-social__link--whatsapp  { --brand: #25d366; }
+.twh-social__link--instagram:hover, .twh-social__link--facebook:hover, .twh-social__link--youtube:hover,
+.twh-social__link--instagram:focus-visible, .twh-social__link--facebook:focus-visible, .twh-social__link--youtube:focus-visible { color: var(--color-twh-white); }
+
+/* menu variant — compact, borderless until hover */
+.twh-social--menu { gap: 0.25rem; margin-left: -0.6rem; } /* optically align the icon glyphs with the text beside them */
+.twh-social--menu .twh-social__link { width: 40px; height: 40px; border-color: transparent; color: var(--color-twh-grey-400); }
+.twh-social--menu .twh-social__link svg { width: 18px; height: 18px; }
+
+@media (max-width: 480px) {
+  .twh-social--footer { gap: 0.4rem; }
+  .twh-social--footer .twh-social__link { width: 42px; height: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twh-social__link, .twh-social__link svg { transition: none; }
+  .twh-social__link:hover, .twh-social__link:focus-visible { transform: none; }
+  .twh-social__link:hover svg, .twh-social__link:focus-visible svg { transform: none; }
+}

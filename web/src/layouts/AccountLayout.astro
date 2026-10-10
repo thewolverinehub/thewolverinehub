@@ -9,7 +9,7 @@ import { displayName, type Member } from '../lib/auth/cms';
 
 interface Props {
   member: Member;
-  active: 'overview' | 'bookings' | 'payments' | 'profile';
+  active: 'overview' | 'bookings' | 'payments' | 'messages' | 'profile';
   title: string;
 }
 
@@ -27,11 +27,12 @@ const tabs = [
   { key: 'overview', label: 'Overview', href: '/account', icon: 'M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10' },
   { key: 'bookings', label: 'My Bookings', href: '/account/bookings', icon: 'M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z' },
   { key: 'payments', label: 'Payments', href: '/account/payments', icon: 'M3 7h18v12H3zM3 11h18M7 15h3' },
+  { key: 'messages', label: 'Messages', href: '/account/messages', icon: 'M3 6h18v12H3zM3 7l9 7 9-7' },
   { key: 'profile', label: 'Profile', href: '/account/profile', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21c.6-4 4-6 8-6s7.4 2 8 6' },
 ] as const;
 ---
 
-<PageLayout seo={{ metaTitle: `${title} — My Account — The Wolverine Hub` }} {global} noindex>
+<PageLayout seo={{ metaTitle: `${title} — My Account — The Wolverine Hub`, metaDescription: 'Your Wolverine Hub member area.' }} {global} noindex>
   <section class="twh-acct">
     <header class="twh-acct__hero">
       <div class="twh-acct__hero-inner">
@@ -57,7 +58,7 @@ const tabs = [
             </li>
           ))}
           <li class="twh-acct__signout">
-            <form method="post" action="/api/auth/logout">
+            <form method="post" action="/api/auth/logout" data-logout-form>
               <button type="submit" class="twh-acct__tab twh-acct__tab--btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4M16 17l5-5-5-5M21 12H9" /></svg>
                 Sign out
@@ -74,7 +75,20 @@ const tabs = [
   </section>
 </PageLayout>
 
-<style is:global>@import '../styles/pages/twh-account.css';</style>
+<dialog class="twh-dlg" id="cancel-dialog" aria-labelledby="cancel-dlg-title" aria-describedby="cancel-dlg-text">
+  <form method="dialog" class="twh-dlg__box">
+    <h2 class="twh-dlg__title" id="cancel-dlg-title">Cancel this booking?</h2>
+    <p class="twh-dlg__what" data-dlg-what></p>
+    <p class="twh-dlg__text" id="cancel-dlg-text" data-dlg-text></p>
+    <p class="twh-dlg__error" data-dlg-error role="alert" hidden></p>
+    <div class="twh-dlg__actions">
+      <button type="submit" value="keep" class="twh-btn twh-btn--ghost twh-btn--md" data-dlg-keep>Keep my booking</button>
+      <button type="button" class="twh-btn twh-btn--primary twh-btn--md twh-dlg__danger" data-dlg-confirm>Yes, cancel it</button>
+    </div>
+  </form>
+</dialog>
+
+<style is:global>@import '../styles/pages/twh-auth.css';@import '../styles/pages/twh-account.css';</style>
 
 <script>
   import { initAuthForms } from '../scripts/interactions/auth-form';

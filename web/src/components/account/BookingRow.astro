@@ -35,7 +35,14 @@ const [dow, num, month] = b.short.split(' ');
   {actions && (b.canCancel || (b.awaitingPayment && b.orderId)) && (
     <div class="twh-bk__actions">
       {b.awaitingPayment && b.orderId && <a href={`/checkout/${b.orderId}`} class="twh-btn twh-btn--primary twh-btn--sm">Pay now</a>}
-      {b.canCancel && <button type="button" class="twh-btn twh-btn--ghost twh-btn--sm" data-cancel-booking={b.documentId}>Cancel</button>}
+      {b.canCancel && <button
+          type="button"
+          class="twh-btn twh-btn--ghost twh-btn--sm"
+          data-cancel-booking={b.documentId}
+          data-cancel-title={b.classNameSnapshot}
+          data-cancel-when={`${b.short} · ${fmtMinutes(b.startMin)}`}
+          data-cancel-refund={b.status === 'confirmed' && b.amount > 0 ? formatLKR(b.amount) : ''}
+        >Cancel booking</button>}
     </div>
   )}
 </li>

@@ -62,10 +62,22 @@ const cta = header?.primaryCta ?? { label: 'Sign In / Sign Up', href: '/login', 
     <!-- Right side -->
     <div class="twh-header__right">
       {session ? (
-        <a href="/account" class="twh-btn twh-btn--primary twh-btn--sm twh-header__cta twh-header__account" aria-label="My account">
-          <span class="twh-header__avatar" aria-hidden="true">{memberInitial}</span>
-          My Account
-        </a>
+        <div class="twh-acctmenu" data-acctmenu>
+          <button type="button" class="twh-btn twh-btn--primary twh-btn--sm twh-header__cta twh-header__account twh-acctmenu__btn" aria-haspopup="true" aria-expanded="false" aria-controls="acctmenu-panel" data-acctmenu-btn>
+            <span class="twh-header__avatar" aria-hidden="true">{memberInitial}</span>
+            <span class="twh-acctmenu__label">My Account</span>
+            <svg class="twh-acctmenu__caret" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <div class="twh-acctmenu__panel" id="acctmenu-panel" role="menu" hidden data-acctmenu-panel>
+            <p class="twh-acctmenu__who">{session.name}</p>
+            <a href="/account" role="menuitem">Overview</a>
+            <a href="/account/bookings" role="menuitem">My Bookings</a>
+            <a href="/account/payments" role="menuitem">Payments</a>
+            <a href="/account/messages" role="menuitem">Messages</a>
+            <a href="/account/profile" role="menuitem">Profile</a>
+            <form method="post" action="/api/auth/logout" data-logout-form><button type="submit" role="menuitem" class="twh-acctmenu__out">Sign out</button></form>
+          </div>
+        </div>
       ) : (
         <a
           href={cta.href}
@@ -100,3 +112,24 @@ const cta = header?.primaryCta ?? { label: 'Sign In / Sign Up', href: '/login', 
 <style>
   @import '../../styles/components/twh-header.css';
 </style>
+
+<script>
+  // Account dropdown + "always show a fresh signed-in state" (Back button / bfcache)
+  const root = document.querySelector<HTMLElement>('[data-acctmenu]');
+  if (root) {
+    const btn = root.querySelector<HTMLButtonElement>('[data-acctmenu-btn]')!;
+    const panel = root.querySelector<HTMLElement>('[data-acctmenu-panel]')!;
+    const set = (open: boolean) => {
+      panel.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      root.classList.toggle('is-open', open);
+    };
+    btn.addEventListener('click', () => set(panel.hidden));
+    document.addEventListener('click', (e) => { if (!root.contains(e.target as Node)) set(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { set(false); btn.focus(); } });
+  }
+  window.addEventListener('pageshow', (e) => {
+    // restored from the back/forward cache: the signed-in state may be stale (e.g. after Sign out)
+    if ((e as PageTransitionEvent).persisted) window.location.reload();
+  });
+</script>

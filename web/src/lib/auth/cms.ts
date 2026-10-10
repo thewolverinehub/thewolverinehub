@@ -141,6 +141,18 @@ export interface Payment {
   booking?: Booking | null;
 }
 
+export interface MemberEmail {
+  documentId: string;
+  subject: string;
+  type: string;
+  status: 'logged' | 'sent' | 'failed';
+  body: string | null;
+  createdAt: string;
+}
+
+/** Emails the system sent (or, until a provider is connected, logged) to this member. */
+export const myEmails = (userId: number) => cms<{ emails: MemberEmail[] }>(`/api/bookings/messages?userId=${userId}`);
+
 export const reserveBooking = (userId: number, slotId: string, date: string) =>
   cms<{ booking: Booking; payment: Payment; resumed: boolean }>('/api/bookings/reserve', { method: 'POST', json: { userId, slotId, date } });
 

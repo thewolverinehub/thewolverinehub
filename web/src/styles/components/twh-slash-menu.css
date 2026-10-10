@@ -397,16 +397,6 @@
   gap: 1rem;
 }
 
-.twh-sm__social {
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--color-twh-grey-500);
-  text-decoration: none;
-  transition: color 0.15s;
-}
-
-.twh-sm__social:hover { color: var(--color-twh-white); }
 
 .twh-sm__contact {
   font-size: 0.8125rem;
@@ -487,8 +477,11 @@ body.menu-is-open #main-content {
   .twh-sm__nav { padding: 4.5rem 1.5rem 2rem; }
   .twh-sm__name { font-size: clamp(2.25rem, 11vw, 3.5rem); }
   .twh-sm__close { top: 1rem; right: 1rem; }
-  .twh-sm__bar { gap: 0.75rem; padding: 0 1.25rem; }
+  .twh-sm__bar { height: auto; min-height: 64px; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; padding: 0.5rem 1.25rem calc(0.5rem + env(safe-area-inset-bottom)); }
+  .twh-sm__socials { flex-wrap: nowrap; }
   .twh-sm__contact { display: none; }
+  /* the floating Menu pill would sit on top of the bar while the menu is open */
+  .twh-sm.is-open + .twh-sm-pill { display: none; }
 }
 
 /* ── 13. Reduced motion ──────────────────────────────────── */
@@ -510,3 +503,11 @@ body.menu-is-open #main-content {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Signed-in shortcuts in the menu bar */
+.twh-sm__account { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1.25rem; }
+.twh-sm__account form { margin: 0; }
+.twh-sm__account-link { padding: 0.35rem 0; font: inherit; font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-twh-grey-300); text-decoration: none; background: none; border: 0; cursor: pointer; transition: color 0.15s; }
+.twh-sm__account-link:hover, .twh-sm__account-link:focus-visible { color: var(--color-twh-yellow); }
+.twh-sm__account-link--btn { color: var(--color-twh-red); }
+.twh-sm__account-link--btn:hover { color: var(--color-twh-white); }

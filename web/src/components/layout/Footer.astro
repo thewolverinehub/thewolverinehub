@@ -1,6 +1,7 @@
 ---
 import type { StrapiFooter, StrapiGlobal } from '../../lib/strapi/types';
 import WolverineSlash from '../ui/WolverineSlash.astro';
+import SocialLinks from '../ui/SocialLinks.astro';
 
 interface Props {
   footer?: StrapiFooter;
@@ -33,12 +34,6 @@ const fallbackColumns: StrapiFooter['columns'] = [
 
 const columns = (footer?.columns?.length ?? 0) > 0 ? footer!.columns : fallbackColumns;
 
-const socials = [
-  { key: 'instagram', label: 'Instagram', short: 'IG', href: global?.instagram },
-  { key: 'facebook',  label: 'Facebook',  short: 'FB', href: global?.facebook  },
-  { key: 'youtube',   label: 'YouTube',   short: 'YT', href: global?.youtube   },
-  { key: 'tiktok',    label: 'TikTok',    short: 'TT', href: global?.tiktok    },
-].filter(s => s.href);
 ---
 
 <footer class="twh-footer">
@@ -56,21 +51,7 @@ const socials = [
     <div class="twh-footer__strip-inner">
       <p class="twh-footer__tagline">{tagline}</p>
 
-      {socials.length > 0 && (
-        <div class="twh-footer__socials">
-          {socials.map(s => (
-            <a
-              href={s.href}
-              aria-label={s.label}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="twh-footer__social-link"
-            >
-              {s.short}
-            </a>
-          ))}
-        </div>
-      )}
+      <SocialLinks {global} variant="footer" class="twh-footer__socials" />
     </div>
   </div>
 

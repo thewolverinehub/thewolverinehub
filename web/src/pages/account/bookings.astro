@@ -26,6 +26,7 @@ const tab = tabParam === 'past' || tabParam === 'cancelled' ? tabParam : 'upcomi
 const booked = q.get('booked');
 const payment = q.get('payment');
 const cancelled = q.get('cancelled') === '1';
+const refund = q.get('refund');
 
 const lists = { upcoming: stats.upcoming, past: stats.past, cancelled: stats.cancelled };
 const tabs = [
@@ -39,11 +40,11 @@ const shown = lists[tab];
 <AccountLayout {member} active="bookings" title="My Bookings">
   {booked && (
     <p class="twh-banner twh-banner--good" role="status">
-      <b>You're booked in!</b> Your booking <b>{booked}</b> is confirmed. We've emailed your confirmation, and we'll remind you the evening before.
+      <b>You're booked in!</b> Your booking <b>{booked}</b> is confirmed. Your confirmation is in your <a href="/account/messages">Messages</a> (email preview mode), and we'll remind you the evening before.
     </p>
   )}
   {payment && <p class="twh-banner twh-banner--warn" role="status">{payment === 'cancelled' ? 'Payment cancelled — your seat was released.' : 'The payment did not go through — your seat was released. You can book again any time.'}</p>}
-  {cancelled && <p class="twh-banner twh-banner--good" role="status">Your booking has been cancelled.</p>}
+  {cancelled && <p class="twh-banner twh-banner--good" role="status">Your booking has been cancelled.{refund && <> <b>{refund}</b> has been refunded to your original payment method (test mode — no real money moved).</>} A confirmation is in your <a href="/account/messages">Messages</a>.</p>}
   {loadError && <p class="twh-banner twh-banner--warn" role="alert">We couldn't load your bookings right now. Please refresh in a moment.</p>}
 
   <div class="twh-subtabs" role="tablist" aria-label="Booking lists">

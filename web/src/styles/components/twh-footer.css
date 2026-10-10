@@ -59,7 +59,7 @@
 .twh-footer__hero-wordmark {
   display: block;
   font-family: var(--font-display);
-  font-size: clamp(3.5rem, 10vw, 10rem);
+  font-size: clamp(2.25rem, 10.5vw, 10rem);
   line-height: 0.85;
   letter-spacing: 0.01em;
   text-transform: uppercase;
@@ -110,27 +110,6 @@
   gap: 0.5rem;
 }
 
-.twh-footer__social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--color-twh-grey-800);
-  font-size: 0.5625rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  color: var(--color-twh-grey-500);
-  text-decoration: none;
-  border-radius: 2px;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-
-.twh-footer__social-link:hover {
-  border-color: var(--color-twh-yellow);
-  color: var(--color-twh-black);
-  background: var(--color-twh-yellow);
-}
 
 /* ── Navigation grid ─────────────────────────────────────── */
 
@@ -307,7 +286,8 @@
 @media (max-width: 767px) {
   .twh-footer__brand-hero { padding: 3.5rem 1.5rem 2.5rem; }
   .twh-footer__strip-inner { padding: 1rem 1.5rem; }
-  .twh-footer__nav-grid { padding: 2.5rem 1.5rem; }
+  .twh-footer__nav-grid { padding: 0; }
+  .twh-footer__col { padding: 2rem 1.5rem; }
   .twh-footer__bottom { padding: 1rem 1.5rem; }
   .twh-footer__hero-slash--c { width: 500px; height: 450px; }
 }
@@ -315,7 +295,6 @@
 /* ── Reduced motion ──────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .twh-footer__social-link,
   .twh-footer__col,
   .twh-footer__col-link,
   .twh-footer__col-heading::after,

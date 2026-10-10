@@ -288,13 +288,22 @@ export async function cancelBooking(strapi: Core.Strapi, input: { userId: number
   const wasPaid = booking.status === 'confirmed' && (booking.amount ?? 0) > 0;
   const updated = await dq(strapi)(BOOKING).update({ where: { id: booking.id }, data: { status: 'cancelled', cancelledAt: nowISO(), holdExpiresAt: null } });
   if (wasPaid) {
-    await dq(strapi)(PAYMENT).updateMany({ where: { booking: booking.id, status: 'paid' }, data: { status: 'refunded' } });
+    const paidRows: any[] = await dq(strapi)(PAYMENT).findMany({ where: { booking: booking.id, status: 'paid' } });
+    for (const p of paidRows) {
+      await dq(strapi)(PAYMENT).update({
+        where: { id: p.id },
+        data: {
+          status: 'refunded',
+          rawPayload: { ...(p.rawPayload && typeof p.rawPayload === 'object' ? p.rawPayload : {}), refund: { amount: p.amount, at: nowISO(), reason: 'member-cancelled', test: true } },
+        },
+      });
+    }
   } else {
     await dq(strapi)(PAYMENT).updateMany({ where: { booking: booking.id, status: 'pending' }, data: { status: 'cancelled' } });
   }
   try {
     const data = await mailData(strapi, booking);
-    if (data.email) await sendEmail(strapi, bookingCancelledEmail(data));
+    if (data.email) await sendEmail(strapi, bookingCancelledEmail({ ...data, refundAmount: wasPaid ? Number(booking.amount) : undefined }));
   } catch { /* email problems never block a cancellation */ }
   return updated;
 }
