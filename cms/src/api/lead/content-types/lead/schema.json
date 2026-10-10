@@ -48,6 +48,14 @@
     "message": {
       "type": "text"
     },
+    "topic": {
+      "type": "string",
+      "pluginOptions": { "content-manager": { "label": "Topic", "description": "What the visitor picked on the contact form." } }
+    },
+    "preferredContact": {
+      "type": "string",
+      "pluginOptions": { "content-manager": { "label": "Preferred way to reach", "description": "WhatsApp, call or email." } }
+    },
     "fields": {
       "type": "json"
     },

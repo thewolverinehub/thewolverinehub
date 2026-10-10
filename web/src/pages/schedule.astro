@@ -299,6 +299,10 @@ const seo = {
                             <div class="twh-schedule__action">
                               <p class="twh-schedule__price">{slot.price > 0 ? formatLKR(slot.price) : 'Free'}</p>
                               {forNextWeek && <p class="twh-schedule__next-date">Next: {sess.short}</p>}
+                              {sess.state === 'open' && (
+                                <button type="button" class="twh-add twh-add--sm" data-basket-add aria-pressed="false" title="Add to basket to book several sessions at once"
+                                  data-item={JSON.stringify({ slotId: slot.id, date: bookDate, slug: slot.slug, name: slot.name, start: slot.start, end: slot.end, price: slot.price, room: slot.room, short: sess.short })}><span data-label>Add</span></button>
+                              )}
                               {sess.state === 'open' ? (
                                 <a
                                   href={`/book/${slot.id}?date=${bookDate}`}
@@ -393,6 +397,8 @@ const seo = {
 <style is:global>@import '../styles/pages/twh-schedule.css';</style>
 
 <script>
+  import { initBasketButtons } from '../scripts/interactions/basket';
+  initBasketButtons();
   import gsap from 'gsap';
   import { DAYS, type Day, getColomboNow, weekDates, dateLabel, colomboClockSeconds, colomboDateLong } from '../lib/utils/colombo';
   import { slotState, findNext, nextLabel, nowMinutes, STATE_LABEL, type SlotLite } from '../lib/utils/schedule';

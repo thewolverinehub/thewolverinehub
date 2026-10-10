@@ -23,6 +23,15 @@
         }
       }
     },
+    "orderId": {
+      "type": "string",
+      "pluginOptions": {
+        "content-manager": {
+          "label": "Order ID",
+          "description": "Bookings paid together share one order (one payment, one confirmation email)."
+        }
+      }
+    },
     "user": {
       "type": "relation",
       "relation": "manyToOne",

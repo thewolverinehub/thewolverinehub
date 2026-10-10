@@ -23,26 +23,23 @@ export function initPricing() {
     }
   }
 
-  // ── Rate ladder: bars grow when they scroll into view; tier filter ──
-  const ladder = document.getElementById('ladder');
-  if (ladder) {
-    const rungs = Array.from(ladder.querySelectorAll<HTMLElement>('.twh-px-rung'));
-    if (reduced || !('IntersectionObserver' in window)) {
-      rungs.forEach((r) => r.classList.add('is-in'));
-    } else {
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
-      }, { threshold: 0.3 });
-      rungs.forEach((r, i) => { r.style.setProperty('--d', `${(i % 6) * 70}ms`); io.observe(r); });
-    }
-
-    const chips = document.querySelectorAll<HTMLButtonElement>('.twh-px-chip');
-    chips.forEach((chip) => chip.addEventListener('click', () => {
-      const tier = chip.dataset.tier!;
-      chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
-      rungs.forEach((r) => { r.hidden = tier !== 'all' && r.dataset.tier !== tier; });
-    }));
+  // ── Price tickets: reveal on scroll + tier filter ──────────
+  const grid = document.getElementById('ladder');
+  const tickets = grid ? Array.from(grid.querySelectorAll<HTMLElement>('.twh-px-ticket')) : [];
+  if (reduced || !('IntersectionObserver' in window)) {
+    tickets.forEach((t) => t.classList.add('is-in'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    tickets.forEach((t, i) => { t.style.setProperty('--d', `${(i % 4) * 70}ms`); io.observe(t); });
   }
+  const chips = document.querySelectorAll<HTMLButtonElement>('.twh-px-chip');
+  chips.forEach((chip) => chip.addEventListener('click', () => {
+    const tier = chip.dataset.tier!;
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+    tickets.forEach((t) => { t.hidden = tier !== 'all' && t.dataset.tier !== tier; });
+  }));
 
   // ── Planner ────────────────────────────────────────────────
   const root = document.querySelector<HTMLElement>('[data-planner]');
@@ -82,8 +79,15 @@ export function initPricing() {
     out.month.textContent = fmt(week * 4.33);
     out.sessions.textContent = String(sessions);
     out.lines.innerHTML = lines.length ? lines.join('') : '<li class="twh-px-sum__empty">Choose a class to start.</li>';
-    const first = Array.from(state.keys()).find((k) => (state.get(k) ?? 0) > 0);
-    out.cta.href = first ? `/schedule?class=${encodeURIComponent(first)}` : '/schedule';
+    const chosen = Array.from(state.keys()).filter((k) => (state.get(k) ?? 0) > 0);
+    out.cta.href = chosen.length ? `/basket?classes=${chosen.map(encodeURIComponent).join(',')}#add` : '/basket';
+    // mirror the planner onto the price tickets
+    document.querySelectorAll<HTMLButtonElement>('[data-plan-toggle]').forEach((b) => {
+      const on = chosen.includes(b.dataset.planToggle!);
+      b.setAttribute('aria-pressed', String(on));
+      b.classList.toggle('is-on', on);
+      const l = b.querySelector('[data-label]'); if (l) l.textContent = on ? '✓ In plan' : '+ Plan';
+    });
   };
 
   picks.forEach((p) => {
@@ -100,6 +104,11 @@ export function initPricing() {
       render();
     });
   });
+  document.querySelectorAll<HTMLButtonElement>('[data-plan-toggle]').forEach((b) => b.addEventListener('click', () => {
+    const slug = b.dataset.planToggle!;
+    if ((state.get(slug) ?? 0) > 0) state.delete(slug); else state.set(slug, 1);
+    render();
+  }));
   root.querySelector('[data-reset]')!.addEventListener('click', () => { state.clear(); render(); });
   render();
 }

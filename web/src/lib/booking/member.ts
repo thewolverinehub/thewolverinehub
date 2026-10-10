@@ -21,14 +21,15 @@ export type BookingView = Booking & {
   canCancel: boolean;
   awaitingPayment: boolean;
   /** order id to resume checkout for a pending booking */
-  orderId?: string;
+  checkoutOrderId?: string;
 };
 
 const WEEKDAY_SHORT = (long: string) => long.split(',')[0].slice(0, 3);
 
 export function viewBookings(bookings: Booking[], payments: Payment[], now: ColomboNow = getColomboNow()): BookingView[] {
-  const pendingOrder = new Map<number, string>();
-  for (const p of payments) if (p.status === 'pending' && p.booking?.id) pendingOrder.set(p.booking.id, p.orderId);
+  const pendingOrders = new Set<string>();
+  const pendingByBooking = new Map<number, string>();
+  for (const p of payments) if (p.status === 'pending') { pendingOrders.add(p.orderId); if (p.booking?.id) pendingByBooking.set(p.booking.id, p.orderId); }
 
   return bookings.map((b) => {
     const date = String(b.sessionDate).slice(0, 10);
@@ -62,7 +63,7 @@ export function viewBookings(bookings: Booking[], payments: Payment[], now: Colo
       bucket, label, tone,
       canCancel: bucket === 'upcoming' && (awaitingPayment || hoursLeft >= CANCEL_CUTOFF_HOURS),
       awaitingPayment,
-      orderId: pendingOrder.get(b.id),
+      checkoutOrderId: (b.orderId && pendingOrders.has(b.orderId) ? b.orderId : undefined) ?? pendingByBooking.get(b.id),
     };
   });
 }

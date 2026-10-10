@@ -12,7 +12,7 @@ import { fmtTime, longDate } from './colombo';
 
 const SITE_URL = () => (process.env.PUBLIC_SITE_URL || 'http://localhost:4321').replace(/\/$/, '');
 
-export type EmailType = 'booking-confirmation' | 'booking-reminder' | 'booking-cancelled' | 'welcome' | 'password-reset' | 'other';
+export type EmailType = 'booking-confirmation' | 'booking-reminder' | 'booking-cancelled' | 'welcome' | 'password-reset' | 'contact-lead' | 'contact-ack' | 'other';
 
 export interface OutgoingEmail {
   to: string;
@@ -20,6 +20,9 @@ export interface OutgoingEmail {
   text: string;
   html: string;
   type?: EmailType;
+  /** e.g. the PDF receipt. Sent when a real provider is connected; always noted in the email log. */
+  attachments?: { filename: string; content: Uint8Array; contentType?: string }[];
+  replyTo?: string;
 }
 
 export async function sendEmail(strapi: Core.Strapi, mail: OutgoingEmail): Promise<{ status: 'logged' | 'sent' | 'failed' }> {
@@ -35,6 +38,8 @@ export async function sendEmail(strapi: Core.Strapi, mail: OutgoingEmail): Promi
         subject: mail.subject,
         text: mail.text,
         html: mail.html,
+        replyTo: mail.replyTo,
+        attachments: mail.attachments?.map((a) => ({ filename: a.filename, content: Buffer.from(a.content), contentType: a.contentType ?? 'application/pdf' })),
       });
       status = 'sent';
     } catch (err: any) {
@@ -52,7 +57,7 @@ export async function sendEmail(strapi: Core.Strapi, mail: OutgoingEmail): Promi
         to: mail.to,
         subject: mail.subject,
         type: mail.type ?? 'other',
-        body: mail.text,
+        body: mail.attachments?.length ? `${mail.text}\n\n[Attachment: ${mail.attachments.map((a) => a.filename).join(', ')}]` : mail.text,
         html: mail.html,
         status,
         error,
@@ -126,6 +131,81 @@ export function bookingConfirmationEmail(b: BookingMailData): OutgoingEmail {
     subject: `Booking confirmed — ${b.className}, ${longDate(b.sessionDate)}`,
     text: `Hi ${b.name},\n\nYour booking is confirmed${b.amount > 0 ? ' and your payment was received' : ''}.\n\n${d.text}\n\nManage your bookings: ${SITE_URL()}/account/bookings\n\nSee you on the mat,\nThe Wolverine Hub`,
     html: layout('You\'re booked in', `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hi ${esc(b.name)}, your booking is confirmed${b.amount > 0 ? ' and your payment was received' : ''}.</p>${d.html}<p style="font-size:13px;color:#a0a0a8;line-height:1.6;">We will send you a reminder the evening before your session. Please arrive 10 minutes early.</p>`, { label: 'View my bookings', href: `${SITE_URL()}/account/bookings` }),
+  };
+}
+
+export interface OrderMailData {
+  name: string;
+  email: string;
+  orderId: string;
+  total: number;
+  items: BookingMailData[];
+  receiptUrl: string;
+}
+
+/** One confirmation for the whole order — every session, the total and a receipt link (+ PDF attached). */
+export function orderConfirmationEmail(o: OrderMailData): OutgoingEmail {
+  const n = o.items.length;
+  const first = o.items[0];
+  const sessionsText = o.items.map((b, i) => `${i + 1}. ${b.className} - ${longDate(b.sessionDate)}, ${fmtTime(b.startTime)} - ${fmtTime(b.endTime)}${b.room ? ` (${b.room})` : ''} - ${money(b.amount)} - Ref ${b.reference}`).join('\n');
+  const rowsHtml = o.items
+    .map((b) => `<tr>
+<td style="padding:12px 0;border-bottom:1px solid #2a2a30;vertical-align:top;">
+<div style="font-size:16px;font-weight:700;color:#ffffff;">${esc(b.className)}</div>
+<div style="font-size:13px;color:#a0a0a8;margin-top:3px;">${esc(longDate(b.sessionDate))} · ${esc(fmtTime(b.startTime))} – ${esc(fmtTime(b.endTime))}</div>
+<div style="font-size:12px;color:#78787f;margin-top:2px;">${esc([b.room, b.coachNames ? 'Coach ' + b.coachNames : ''].filter(Boolean).join(' · '))} · Ref ${esc(b.reference)}</div>
+</td>
+<td style="padding:12px 0 12px 12px;border-bottom:1px solid #2a2a30;text-align:right;vertical-align:top;font-size:15px;font-weight:700;color:#ffc20e;white-space:nowrap;">${esc(money(b.amount))}</td></tr>`)
+    .join('');
+  return {
+    to: o.email,
+    type: 'booking-confirmation',
+    subject: n === 1 ? `Booking confirmed — ${first.className}, ${longDate(first.sessionDate)}` : `Booking confirmed — ${n} sessions (${money(o.total)})`,
+    text: `Hi ${o.name},\n\nYour booking${n > 1 ? 's are' : ' is'} confirmed${o.total > 0 ? ' and your payment was received' : ''}.\n\nOrder ${o.orderId}\n\n${sessionsText}\n\nTotal: ${money(o.total)}\n\nReceipt (PDF): ${o.receiptUrl}\nManage your bookings: ${SITE_URL()}/account/bookings\n\nSee you on the mat,\nThe Wolverine Hub`,
+    html: layout(n === 1 ? "You're booked in" : `You're booked in — ${n} sessions`,
+      `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hi ${esc(o.name)}, your booking${n > 1 ? 's are' : ' is'} confirmed${o.total > 0 ? ' and your payment was received' : ''}.</p>
+<p style="margin:0 0 4px;font-size:12px;color:#78787f;letter-spacing:1px;text-transform:uppercase;">Order ${esc(o.orderId)}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:8px 0;">${rowsHtml}
+<tr><td style="padding:14px 0;font-size:13px;color:#a0a0a8;text-transform:uppercase;letter-spacing:1px;">Total</td><td style="padding:14px 0 14px 12px;text-align:right;font-size:20px;font-weight:900;color:#ffffff;">${esc(money(o.total))}</td></tr></table>
+<p style="font-size:13px;color:#a0a0a8;line-height:1.6;">Your PDF receipt is attached. You can also <a href="${o.receiptUrl}" style="color:#ffc20e;">download it any time</a>. We will remind you the evening before each session. Please arrive 10 minutes early.</p>`,
+      { label: 'View my bookings', href: `${SITE_URL()}/account/bookings` }),
+  };
+}
+
+export interface LeadMailData {
+  name: string;
+  email: string;
+  phone?: string;
+  topic?: string;
+  prefer?: string;
+  message?: string;
+  receivedAt: string;
+}
+
+/** To the business: a new enquiry from the contact form. */
+export function contactLeadEmail(to: string, l: LeadMailData): OutgoingEmail {
+  const rows: [string, string][] = [
+    ['Name', l.name], ['Email', l.email], ['Phone', l.phone || '-'], ['Topic', l.topic || '-'], ['Best way to reach', l.prefer || '-'], ['Received', l.receivedAt],
+  ];
+  const tableHtml = `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:8px 0;">${rows.map(([k, v]) => `<tr><td style="padding:8px 0;border-bottom:1px solid #2a2a30;color:#a0a0a8;font-size:13px;width:140px;">${esc(k)}</td><td style="padding:8px 0;border-bottom:1px solid #2a2a30;color:#ffffff;font-size:15px;font-weight:600;">${esc(v)}</td></tr>`).join('')}</table>`;
+  return {
+    to,
+    type: 'contact-lead',
+    replyTo: l.email,
+    subject: `New enquiry from ${l.name}${l.topic ? ` — ${l.topic}` : ''}`,
+    text: `New website enquiry\n\n${rows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nMessage:\n${l.message || '(no message)'}\n\nReply directly to this email to answer ${l.name}.`,
+    html: layout('New website enquiry', `${tableHtml}<p style="margin:16px 0 4px;font-size:12px;color:#78787f;letter-spacing:1px;text-transform:uppercase;">Message</p><p style="margin:0;font-size:15px;line-height:1.7;white-space:pre-wrap;color:#ffffff;">${esc(l.message || '(no message)')}</p><p style="font-size:13px;color:#a0a0a8;margin-top:18px;">Reply to this email to answer ${esc(l.name)} directly. The enquiry is also saved in Strapi under Leads.</p>`),
+  };
+}
+
+/** To the visitor: "we got your message". */
+export function contactAckEmail(l: LeadMailData): OutgoingEmail {
+  return {
+    to: l.email,
+    type: 'contact-ack',
+    subject: 'We got your message — The Wolverine Hub',
+    text: `Hi ${l.name},\n\nThanks for getting in touch. We have your message and will reply${l.prefer ? ` by ${l.prefer.toLowerCase()}` : ''} within 24 hours on business days.\n\nYour message:\n${l.message || '(no message)'}\n\nThe Wolverine Hub`,
+    html: layout('We got your message', `<p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hi ${esc(l.name)}, thanks for getting in touch. We will reply${l.prefer ? ` by <strong style="color:#ffc20e;">${esc(l.prefer.toLowerCase())}</strong>` : ''} within 24 hours on business days.</p><p style="margin:16px 0 4px;font-size:12px;color:#78787f;letter-spacing:1px;text-transform:uppercase;">Your message</p><p style="margin:0;font-size:15px;line-height:1.7;white-space:pre-wrap;color:#ffffff;">${esc(l.message || '(no message)')}</p>`, { label: 'Browse classes', href: `${SITE_URL()}/classes` }),
   };
 }
 

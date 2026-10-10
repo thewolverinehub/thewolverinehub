@@ -723,6 +723,13 @@ export interface ApiBookingBooking extends Struct.CollectionTypeSchema {
           label: 'Notes';
         };
       }>;
+    orderId: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'Bookings paid together share one order (one payment, one confirmation email).';
+          label: 'Order ID';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     reference: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -1215,6 +1222,8 @@ export interface ApiEmailLogEmailLog extends Struct.CollectionTypeSchema {
         'booking-cancelled',
         'welcome',
         'password-reset',
+        'contact-lead',
+        'contact-ack',
         'other',
       ]
     > &
@@ -1880,7 +1889,21 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
           label: 'Phone Number';
         };
       }>;
+    preferredContact: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'WhatsApp, call or email.';
+          label: 'Preferred way to reach';
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
+    topic: Schema.Attribute.String &
+      Schema.Attribute.SetPluginOptions<{
+        'content-manager': {
+          description: 'What the visitor picked on the contact form.';
+          label: 'Topic';
+        };
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

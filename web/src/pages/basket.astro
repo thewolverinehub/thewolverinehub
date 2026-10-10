@@ -1,0 +1,133 @@
+---
+/**
+ * Booking basket: review the sessions you collected (from class pages, the schedule or the pricing
+ * planner), add more sessions for chosen classes, then pay for everything in one go.
+ * The basket itself lives in the browser; this page also server-renders the "add sessions" picker.
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+import { getClasses, getGlobal, getScheduleSlots } from '../lib/strapi/queries';
+import { seatsTaken } from '../lib/auth/cms';
+import { BOOKING_WINDOW_DAYS, sessionFor, spotsLabel, upcomingDates } from '../lib/booking/sessions';
+import { HOLD_MINUTES, CANCEL_CUTOFF_HOURS } from '../lib/booking/rules';
+import { DAYS, addDays, formatLKR, getColomboNow, toMinutes, type Day } from '../lib/utils/colombo';
+
+export const prerender = false;
+
+const logged = Boolean(Astro.locals.session);
+let global, classes: Awaited<ReturnType<typeof getClasses>> = [], slots: Awaited<ReturnType<typeof getScheduleSlots>> = [];
+try {
+  [global, classes, slots] = await Promise.all([getGlobal(), getClasses(), getScheduleSlots()]);
+} catch { /* CMS offline */ }
+
+const requested = (Astro.url.searchParams.get('classes') ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+const picked = classes.filter((c) => requested.includes(c.slug));
+
+const now = getColomboNow();
+const taken = picked.length ? await seatsTaken(now.dateISO, addDays(now.dateISO, BOOKING_WINDOW_DAYS)) : {};
+
+const panels = picked.map((c) => {
+  const price = c.isFree ? 0 : (c.price ?? 0);
+  const sessions = slots
+    .filter((s) => s.class?.slug === c.slug)
+    .sort((a, b) => DAYS.indexOf(a.weekday as Day) - DAYS.indexOf(b.weekday as Day) || toMinutes(a.startTime) - toMinutes(b.startTime))
+    .flatMap((s) => upcomingDates(s as any, 3, now).map((d) => sessionFor(s as any, d, taken, now)))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin)
+    .slice(0, 12);
+  return { c, price, sessions };
+});
+
+const chipLink = (slug: string) => {
+  const next = requested.includes(slug) ? requested.filter((s) => s !== slug) : [...requested, slug];
+  return next.length ? `/basket?classes=${next.join(',')}#add` : '/basket#add';
+};
+---
+
+<PageLayout seo={{ metaTitle: 'Your booking basket — The Wolverine Hub', metaDescription: 'Review your sessions and pay once.' }} {global} noindex>
+  <section class="twh-bk-page" data-logged={logged ? '1' : '0'}>
+    <div class="twh-bk-page__inner">
+      <p class="twh-bk-page__crumb"><a href="/classes">← Keep browsing</a></p>
+      <h1 class="twh-bk-page__title">Your basket</h1>
+      <p class="twh-bk-page__sub">Collect sessions from any classes and days, then pay for them together — one payment, one confirmation email with every detail, one PDF receipt.</p>
+
+      <div class="twh-bk-page__grid">
+        <div class="twh-bk-page__main">
+          <section class="twh-bk-card" aria-labelledby="bk-items-h">
+            <div class="twh-bk-card__head">
+              <h2 id="bk-items-h">Sessions <span id="bk-count">0</span></h2>
+              <button type="button" class="twh-bk-link" id="bk-clear" hidden>Clear basket</button>
+            </div>
+            <ul class="twh-bk-items" id="bk-items" role="list" aria-live="polite"></ul>
+            <div class="twh-bk-empty" id="bk-empty">
+              <p class="twh-bk-empty__title">Nothing here yet</p>
+              <p>Add sessions from a class page or the schedule — or pick classes below.</p>
+              <div class="twh-bk-empty__links">
+                <a href="/classes" class="twh-btn twh-btn--ghost twh-btn--sm">Browse classes</a>
+                <a href="/schedule" class="twh-btn twh-btn--ghost twh-btn--sm">See the schedule</a>
+                <a href="/pricing#planner" class="twh-btn twh-btn--ghost twh-btn--sm">Plan my week</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="twh-bk-card" id="add" aria-labelledby="bk-add-h">
+            <div class="twh-bk-card__head"><h2 id="bk-add-h">Add more sessions</h2></div>
+            <p class="twh-bk-note">Pick one or more classes to see their next sessions.</p>
+            <ul class="twh-bk-chips" role="list">
+              {classes.map((c) => (
+                <li><a href={chipLink(c.slug)} class={`twh-bk-chip${requested.includes(c.slug) ? ' is-on' : ''}`} aria-pressed={requested.includes(c.slug) ? 'true' : 'false'}>{c.name}<small>{c.isFree || !c.price ? 'Free' : formatLKR(c.price)}</small></a></li>
+              ))}
+            </ul>
+
+            {panels.map(({ c, price, sessions }) => (
+              <div class="twh-bk-panel">
+                <h3 class="twh-bk-panel__title"><a href={`/classes/${c.slug}`}>{c.name}</a> <small>{price === 0 ? 'Free' : `${formatLKR(price)} / session`}</small></h3>
+                {sessions.length === 0 ? <p class="twh-bk-note">No upcoming sessions right now.</p> : (
+                  <ul class="twh-bk-sessions" role="list">
+                    {sessions.map((s) => {
+                      const item = { slotId: s.slotId, date: s.date, slug: c.slug, name: c.name, start: s.start, end: s.end, price, room: s.room, short: s.short };
+                      const disabled = s.state !== 'open';
+                      return (
+                        <li class={`twh-bk-session${disabled ? ' is-off' : ''}`}>
+                          <span class="twh-bk-session__when"><b>{s.short}</b><small>{s.start} – {s.end}</small></span>
+                          <span class="twh-bk-session__spots">{spotsLabel(s)}</span>
+                          <button type="button" class="twh-bk-add" data-basket-add data-item={JSON.stringify(item)} disabled={disabled} aria-pressed="false">
+                            <span data-label>{disabled ? spotsLabel(s) : 'Add'}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </section>
+        </div>
+
+        <aside class="twh-bk-sum" aria-label="Order summary">
+          <p class="twh-bk-sum__label">Order summary</p>
+          <ul class="twh-bk-sum__lines" id="bk-lines" role="list"></ul>
+          <div class="twh-bk-sum__total"><span>Total</span><b id="bk-total">LKR 0</b></div>
+          <p class="twh-bk-sum__err" id="bk-error" role="alert" hidden></p>
+          {logged ? (
+            <button type="button" class="twh-btn twh-btn--primary twh-btn--lg twh-bk-sum__pay" id="bk-pay" disabled>Pay now</button>
+          ) : (
+            <a href="/login?next=%2Fbasket" class="twh-btn twh-btn--primary twh-btn--lg twh-bk-sum__pay" id="bk-login">Sign in to pay</a>
+          )}
+          <ul class="twh-bk-sum__facts" role="list">
+            <li>Seats held {HOLD_MINUTES} minutes while you pay</li>
+            <li>Cancel any session free up to {CANCEL_CUTOFF_HOURS}h before</li>
+            <li>One email with all details + PDF receipt</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style is:global>@import '../styles/pages/twh-basket-page.css';</style>
+
+<script>
+  import { initBasketButtons } from '../scripts/interactions/basket';
+  import { initBasketPage } from '../scripts/interactions/basket-page';
+  initBasketButtons();
+  initBasketPage();
+</script>

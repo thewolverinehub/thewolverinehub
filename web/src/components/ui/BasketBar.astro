@@ -1,0 +1,35 @@
+---
+/**
+ * Floating basket summary. Appears on every page once the visitor has added a session
+ * (hidden on the basket / checkout / booking pages themselves).
+ */
+---
+
+<div class="twh-bbar" id="basket-bar" role="region" aria-label="Your booking basket" hidden>
+  <svg class="twh-bbar__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 12H7L6 7Z" /><path d="M9 7V6a3 3 0 0 1 6 0v1" /></svg>
+  <span class="twh-bbar__text"><b id="bbar-count">0 sessions</b><small id="bbar-total">LKR 0</small></span>
+  <a href="/basket" class="twh-btn twh-btn--primary twh-btn--sm twh-bbar__cta">Review &amp; pay</a>
+</div>
+
+<style is:global>@import '../../styles/components/twh-basket.css';</style>
+
+<script>
+  import { getItems, total, formatLKR, onChange } from '../../scripts/interactions/basket';
+
+  const bar = document.getElementById('basket-bar');
+  if (bar) {
+    const hideOn = /^\/(basket|checkout|book)(\/|$)/.test(location.pathname);
+    const count = document.getElementById('bbar-count')!;
+    const sum = document.getElementById('bbar-total')!;
+    const render = () => {
+      const items = getItems();
+      const n = items.length;
+      bar.hidden = hideOn || n === 0;
+      count.textContent = `${n} session${n === 1 ? '' : 's'}`;
+      sum.textContent = formatLKR(total(items));
+    };
+    onChange(render);
+    render();
+    window.addEventListener('pageshow', render);
+  }
+</script>

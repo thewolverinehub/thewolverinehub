@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
 
     if (result === 'success') {
       const done = await completePayment(orderId, `PREVIEW-${Date.now()}`);
-      return json({ ok: true, redirect: `/account/bookings?booked=${encodeURIComponent(done.booking.reference)}` });
+      return json({ ok: true, redirect: `/account/bookings?booked=${encodeURIComponent(orderId)}&n=${done.bookings?.length ?? 1}` });
     }
     await failPayment(orderId, result === 'cancelled' ? 'cancelled' : 'failed');
     return json({ ok: true, redirect: `/account/bookings?payment=${result}` });

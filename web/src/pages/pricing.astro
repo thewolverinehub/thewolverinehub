@@ -38,7 +38,6 @@ const paid = rows.filter((r) => r.price > 0);
 const minPaid = paid[0]?.price ?? 0;
 const maxPaid = paid[paid.length - 1]?.price ?? 0;
 const freeCount = rows.length - paid.length;
-const top = Math.max(1, maxPaid);
 const dur = (m: number) => (m >= 240 ? 'Day pass' : `${m} min`);
 const tierOf = (p: number) => (p === 0 ? 'free' : p <= 3000 ? 'core' : 'premium');
 
@@ -91,12 +90,12 @@ const calcData = JSON.stringify(rows.map((r) => ({ slug: r.slug, name: r.name, p
   </section>
 
   <!-- ═════════ Rate ladder ═════════ -->
-  <section class="twh-px-sec" id="rates" aria-labelledby="ladder-h">
+  <section class="twh-px-sec twh-px-sec--board" id="rates" aria-labelledby="ladder-h">
     <div class="twh-px-wrap">
       <div class="twh-px-head">
         <p class="twh-px-eyebrow"><span aria-hidden="true">/</span> Rate card</p>
         <h2 class="twh-px-title" id="ladder-h">Every class. Every price.</h2>
-        <p class="twh-px-lead">Bars show each session price against the most expensive class. Tap a class for the full programme.</p>
+        <p class="twh-px-lead">Every class has its own price per session. Tap a ticket for the full programme, or hit + Plan to add it to the week planner below.</p>
       </div>
 
       {rows.length === 0 ? (
@@ -110,17 +109,31 @@ const calcData = JSON.stringify(rows.map((r) => ({ slug: r.slug, name: r.name, p
             <button type="button" class="twh-px-chip" data-tier="premium" aria-pressed="false">Premium <span>{rows.filter((r) => tierOf(r.price) === 'premium').length}</span></button>
           </div>
 
-          <ol class="twh-px-ladder" role="list" id="ladder">
+          <ul class="twh-px-tickets" role="list" id="ladder">
             {rows.map((r) => (
-              <li class="twh-px-rung" data-tier={tierOf(r.price)} style={`--w:${r.price === 0 ? 3 : Math.max(8, Math.round((r.price / top) * 100))}%`}>
-                <a href={`/classes/${r.slug}`} class="twh-px-rung__link">
-                  <span class="twh-px-rung__name"><b>{r.name}</b><small>{r.tagline} · {dur(r.minutes)}</small></span>
-                  <span class="twh-px-rung__bar" aria-hidden="true"><i></i></span>
-                  <span class="twh-px-rung__price">{r.price === 0 ? 'FREE' : formatLKR(r.price)}</span>
-                </a>
+              <li class="twh-px-ticket" data-tier={tierOf(r.price)}>
+                <div class="twh-px-ticket__top">
+                  <span class="twh-px-ticket__tier">{tierOf(r.price) === 'free' ? 'Free' : tierOf(r.price) === 'core' ? 'Core' : 'Premium'}</span>
+                  <p class="twh-px-ticket__price">{r.price === 0 ? 'FREE' : formatLKR(r.price)}</p>
+                  <p class="twh-px-ticket__per">{r.price === 0 ? 'no charge' : 'per session'}</p>
+                </div>
+                <div class="twh-px-ticket__tear" aria-hidden="true"></div>
+                <div class="twh-px-ticket__body">
+                  <h3 class="twh-px-ticket__name">{r.name}</h3>
+                  <p class="twh-px-ticket__tag">{r.tagline}</p>
+                  <ul class="twh-px-ticket__chips" role="list">
+                    <li>{dur(r.minutes)}</li>
+                    <li>{r.perWeek}× / week</li>
+                    {r.level && r.level !== 'all' && <li>{r.level}</li>}
+                  </ul>
+                  <div class="twh-px-ticket__actions">
+                    <a href={`/classes/${r.slug}`} class="twh-px-ticket__view">View class →</a>
+                    <button type="button" class="twh-px-ticket__plan" data-plan-toggle={r.slug} aria-pressed="false"><span data-label>+ Plan</span></button>
+                  </div>
+                </div>
               </li>
             ))}
-          </ol>
+          </ul>
         </>
       )}
     </div>
@@ -159,7 +172,8 @@ const calcData = JSON.stringify(rows.map((r) => ({ slug: r.slug, name: r.name, p
             <p class="twh-px-sum__sub">per week · <b data-sessions>0</b> sessions</p>
             <div class="twh-px-sum__month"><span>Approx. per month</span><b data-month>LKR 0</b></div>
             <ul class="twh-px-sum__lines" role="list" data-lines><li class="twh-px-sum__empty">Choose a class to start.</li></ul>
-            <a href="/schedule" class="twh-btn twh-btn--primary twh-btn--md twh-px-sum__cta" data-cta>Book these classes</a>
+            <a href="/basket" class="twh-btn twh-btn--primary twh-btn--md twh-px-sum__cta" data-cta>Pick dates &amp; book</a>
+            <p class="twh-px-sum__hint">Next you choose the exact days — then pay for everything at once.</p>
             <button type="button" class="twh-px-sum__reset" data-reset>Reset</button>
           </aside>
         </div>

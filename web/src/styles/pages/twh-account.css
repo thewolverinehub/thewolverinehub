@@ -318,3 +318,8 @@
 .twh-dlg__danger { background: var(--color-twh-red); border-color: var(--color-twh-red); color: var(--color-twh-white); }
 .twh-dlg__danger:hover { background: var(--color-twh-red-deep); border-color: var(--color-twh-red-deep); }
 @media (max-width: 480px) { .twh-dlg__actions { flex-direction: column-reverse; } .twh-dlg__actions .twh-btn { width: 100%; justify-content: center; } }
+
+/* Receipt links */
+.twh-bk__receipt { font-weight: 800; color: var(--color-twh-yellow); text-decoration: underline; text-underline-offset: 3px; }
+.twh-bk__receipt:hover { color: var(--color-twh-white); }
+.twh-muted { color: var(--color-twh-grey-500); }

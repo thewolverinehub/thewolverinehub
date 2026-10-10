@@ -19,19 +19,27 @@ let global;
 try { global = await getGlobal(); } catch { /* CMS offline */ }
 
 let payment: Awaited<ReturnType<typeof getPaymentByOrder>>['payment'] | null = null;
+let orderBookings: Awaited<ReturnType<typeof getPaymentByOrder>>['bookings'] = [];
 try {
-  payment = (await getPaymentByOrder(orderId!, session.uid)).payment;
+  const res = await getPaymentByOrder(orderId!, session.uid);
+  payment = res.payment;
+  orderBookings = res.bookings?.length ? res.bookings : (res.payment.booking ? [res.payment.booking] : []);
 } catch (err) {
   if (!(err instanceof CmsError && err.status === 404)) console.error('[checkout]', err);
 }
 
 if (!payment) return Astro.redirect('/account/bookings', 302);
-if (payment.status === 'paid') return Astro.redirect(`/account/bookings?booked=${encodeURIComponent(payment.booking?.reference ?? '')}`, 302);
+if (payment.status === 'paid') return Astro.redirect(`/account/bookings?booked=${encodeURIComponent(payment.orderId)}&n=${orderBookings.length || 1}`, 302);
 
-const b = payment.booking;
-const holdMs = b?.holdExpiresAt ? new Date(b.holdExpiresAt).getTime() - Date.now() : 0;
-const expired = payment.status !== 'pending' || holdMs <= 0 || b?.status === 'cancelled';
-const date = b ? dateLabel(String(b.sessionDate).slice(0, 10)) : null;
+const shortOf = (iso: string) => { const d = dateLabel(iso); return `${d.long.split(',')[0].slice(0, 3)} ${d.num} ${d.month}`; };
+const live = orderBookings.filter((x) => x.status === 'pending');
+const b = live[0] ?? orderBookings[0];
+const holdEnds = live.map((x) => (x.holdExpiresAt ? new Date(x.holdExpiresAt).getTime() : 0)).filter(Boolean);
+const holdAt = holdEnds.length ? Math.min(...holdEnds) : 0;
+const holdMs = holdAt ? holdAt - Date.now() : 0;
+const expired = payment.status !== 'pending' || holdMs <= 0 || live.length === 0;
+const holdIso = holdAt ? new Date(holdAt).toISOString() : '';
+const totalDue = live.reduce((n, x) => n + (x.amount ?? 0), 0) || payment.amount;
 ---
 
 <PageLayout seo={{ metaTitle: 'Payment — The Wolverine Hub' }} {global} noindex>
@@ -51,31 +59,39 @@ const date = b ? dateLabel(String(b.sessionDate).slice(0, 10)) : null;
               <p class="twh-checkout__preview"><b>Test checkout</b> — this is a preview payment screen. No real money is charged, and no card details are collected.</p>
             )}
 
-            <p class="twh-checkout__label">Booking</p>
-            <h2 class="twh-checkout__class">{b.classNameSnapshot}</h2>
+            <p class="twh-checkout__label">{live.length > 1 ? `Your ${live.length} sessions` : 'Booking'}</p>
+            <ul class="twh-checkout__items" role="list">
+              {live.map((x) => {
+                const d = dateLabel(String(x.sessionDate).slice(0, 10));
+                return (
+                  <li class="twh-checkout__item">
+                    <span class="twh-checkout__item-date"><i>{d.long.split(',')[0].slice(0, 3)}</i><b>{d.num}</b><i>{d.month}</i></span>
+                    <span class="twh-checkout__item-body"><b>{x.classNameSnapshot}</b><small>{fmtMinutes(toMinutes(x.startTime))} – {fmtMinutes(toMinutes(x.endTime))} <em>(Sri Lanka time)</em> · Ref {x.reference}</small></span>
+                    <span class="twh-checkout__item-price">{x.amount > 0 ? formatLKR(x.amount) : 'Free'}</span>
+                  </li>
+                );
+              })}
+            </ul>
             <dl class="twh-checkout__facts">
-              <div><dt>Date</dt><dd>{date?.long}</dd></div>
-              <div><dt>Time</dt><dd>{fmtMinutes(toMinutes(b.startTime))} – {fmtMinutes(toMinutes(b.endTime))} <small>(Sri Lanka time)</small></dd></div>
-              <div><dt>Reference</dt><dd>{b.reference}</dd></div>
               <div><dt>Order</dt><dd><code>{payment.orderId}</code></dd></div>
             </dl>
 
-            <div class="twh-checkout__hold" id="hold" data-expires={b.holdExpiresAt}>
+            <div class="twh-checkout__hold" id="hold" data-expires={holdIso}>
               Seat held for <b id="hold-time">--:--</b>
             </div>
           </div>
 
           <aside class="twh-checkout__card twh-checkout__summary">
             <p class="twh-checkout__label">Order summary</p>
-            <div class="twh-checkout__line"><span>{b.classNameSnapshot} · 1 session</span><span>{formatLKR(payment.amount)}</span></div>
-            <div class="twh-checkout__total"><span>Total</span><span>{formatLKR(payment.amount)}</span></div>
+            {live.map((x) => <div class="twh-checkout__line"><span>{x.classNameSnapshot} · {shortOf(String(x.sessionDate).slice(0, 10))}</span><span>{x.amount > 0 ? formatLKR(x.amount) : 'Free'}</span></div>)}
+            <div class="twh-checkout__total"><span>Total</span><span>{formatLKR(totalDue)}</span></div>
 
             {mode === 'live' ? (
               <p class="twh-banner twh-banner--warn" role="alert">Online payments are not switched on yet. Please contact us to complete this booking.</p>
             ) : (
               <>
                 <p class="twh-auth__status" data-pay-status hidden></p>
-                <button type="button" class="twh-btn twh-btn--primary twh-btn--lg twh-checkout__pay" data-pay="success" data-order={payment.orderId}>Pay {formatLKR(payment.amount)} (test)</button>
+                <button type="button" class="twh-btn twh-btn--primary twh-btn--lg twh-checkout__pay" data-pay="success" data-order={payment.orderId}>Pay {formatLKR(totalDue)} (test)</button>
                 <button type="button" class="twh-btn twh-btn--ghost twh-btn--md twh-checkout__pay" data-pay="failed" data-order={payment.orderId}>Simulate a failed payment</button>
                 <button type="button" class="twh-checkout__cancel" data-pay="cancelled" data-order={payment.orderId}>Cancel and release my seat</button>
               </>

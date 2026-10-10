@@ -28,6 +28,8 @@
         "booking-cancelled",
         "welcome",
         "password-reset",
+        "contact-lead",
+        "contact-ack",
         "other"
       ],
       "default": "other"

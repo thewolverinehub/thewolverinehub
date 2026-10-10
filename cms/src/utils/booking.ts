@@ -3,11 +3,12 @@ import type { Core } from '@strapi/strapi';
 import { addDays, bookingCutoffMinutes, colomboNow, toMinutes, weekdayOf } from './colombo';
 import {
   bookingCancelledEmail,
-  bookingConfirmationEmail,
   bookingReminderEmail,
+  orderConfirmationEmail,
   sendEmail,
   type BookingMailData,
 } from './email';
+import { buildReceiptPdf, type ReceiptData } from './receipt';
 
 /** A pending booking holds its seat this long while the member pays. */
 export const HOLD_MINUTES = 15;
@@ -119,131 +120,205 @@ async function mailData(strapi: Core.Strapi, booking: any): Promise<BookingMailD
   };
 }
 
-// ── Reserve ─────────────────────────────────────────────────────────────────
+// ── Orders ──────────────────────────────────────────────────────────────────
+// One order = one payment covering one or more session bookings (all carry the same orderId).
 
-export async function reserve(
-  strapi: Core.Strapi,
-  input: { userId: number; slotDocumentId: string; date: string },
-) {
-  const { userId, slotDocumentId, date } = input;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new BookingError(400, 'Invalid date.', 'bad-date');
+export const MAX_ORDER_ITEMS = 12;
 
+/** All bookings that belong to a payment (legacy single bookings fall back to payment.booking). */
+export async function bookingsOfOrder(strapi: Core.Strapi, payment: any): Promise<any[]> {
+  const rows: any[] = await dq(strapi)(BOOKING).findMany({ where: { orderId: payment.orderId }, orderBy: [{ sessionDate: 'asc' }, { startTime: 'asc' }], limit: 100 });
+  if (rows.length > 0) return rows;
+  return payment.booking ? [payment.booking] : [];
+}
+
+interface OrderItemInput { slotDocumentId: string; date: string }
+
+async function validateItem(strapi: Core.Strapi, item: OrderItemInput) {
+  const { slotDocumentId, date } = item;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) throw new BookingError(400, 'Invalid date.', 'bad-date');
   const slot = await getSlot(strapi, slotDocumentId);
   if (!slot || slot.isActive === false || !slot.class) throw new BookingError(404, 'That session is not available.', 'no-slot');
-  if (weekdayOf(date) !== slot.weekday) throw new BookingError(400, 'That class does not run on this date.', 'wrong-day');
+  if (weekdayOf(date) !== slot.weekday) throw new BookingError(400, `${slot.class.name} does not run on that date.`, 'wrong-day');
 
   const now = colomboNow();
-  if (date < now.dateISO) throw new BookingError(400, 'That date has already passed.', 'past');
+  if (date < now.dateISO) throw new BookingError(400, `${slot.class.name}: that date has already passed.`, 'past');
   if (date > addDays(now.dateISO, BOOKING_WINDOW_DAYS)) throw new BookingError(400, `You can book up to ${BOOKING_WINDOW_DAYS} days ahead.`, 'too-far');
 
   const startMin = toMinutes(slot.startTime);
   const endMin = toMinutes(slot.endTime);
   if (date === now.dateISO && now.minutes >= bookingCutoffMinutes(startMin, endMin)) {
-    throw new BookingError(409, 'Booking for this session has closed.', 'closed');
+    throw new BookingError(409, `Booking for ${slot.class.name} today has closed.`, 'closed');
   }
-
-  await loadUser(strapi, userId);
   const price = Number(slot.class.price ?? 0) || 0;
   const free = price === 0 || slot.class.isFree === true;
-  const amount = free ? 0 : price;
+  return { slot, amount: free ? 0 : price };
+}
 
-  return strapi.db.transaction(async ({ trx }: any) => {
-    // Serialise concurrent bookings of the same session so capacity can never be oversold.
-    try {
-      const lock = BigInt('0x' + crypto.createHash('sha1').update(`${slotDocumentId}|${date}`).digest('hex').slice(0, 15));
-      await trx.raw('select pg_advisory_xact_lock(?)', [lock.toString()]);
-    } catch { /* non-postgres dev DB: best effort */ }
+export async function reserveMany(strapi: Core.Strapi, input: { userId: number; items: OrderItemInput[] }) {
+  const { userId } = input;
+  // de-duplicate
+  const seen = new Set<string>();
+  const items = input.items.filter((i) => { const k = `${i.slotDocumentId}|${i.date}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  if (items.length === 0) throw new BookingError(400, 'Choose at least one session.', 'empty');
+  if (items.length > MAX_ORDER_ITEMS) throw new BookingError(400, `You can book up to ${MAX_ORDER_ITEMS} sessions at once.`, 'too-many');
 
-    const existing = await dq(strapi)(BOOKING).findOne({
-      where: {
-        slotDocumentId,
-        sessionDate: date,
-        user: userId,
-        $or: [{ status: 'confirmed' }, { status: 'pending', holdExpiresAt: { $gt: nowISO() } }],
-      },
-    });
-    if (existing) {
-      if (existing.status === 'pending') {
-        // resume the checkout they already started
-        const pay = await dq(strapi)(PAYMENT).findOne({ where: { booking: existing.id, status: 'pending' }, orderBy: { id: 'desc' } });
-        return { booking: existing, payment: pay, resumed: true };
-      }
-      throw new BookingError(409, 'You are already booked into this session.', 'duplicate');
+  await loadUser(strapi, userId);
+  const checked: { it: OrderItemInput; slot: any; amount: number }[] = [];
+  for (const it of items) checked.push({ it, ...(await validateItem(strapi, it)) });
+  const total = checked.reduce((n, c) => n + c.amount, 0);
+  const free = total === 0;
+  const orderId = newOrderId();
+
+  const result = await strapi.db.transaction(async ({ trx }: any) => {
+    // Serialise concurrent bookings of the same sessions (sorted → no deadlocks) so capacity can never be oversold.
+    for (const key of [...seen].sort()) {
+      try {
+        const lock = BigInt('0x' + crypto.createHash('sha1').update(key).digest('hex').slice(0, 15));
+        await trx.raw('select pg_advisory_xact_lock(?)', [lock.toString()]);
+      } catch { /* non-postgres dev DB: best effort */ }
     }
 
-    const taken = await countTaken(strapi, slotDocumentId, date);
-    const capacity = Number(slot.capacity ?? 0);
-    if (capacity > 0 && taken >= capacity) throw new BookingError(409, 'Sorry — this session is full.', 'full');
+    const created: any[] = [];
+    for (const c of checked) {
+      const { it, slot, amount } = c;
+      // the member's own unfinished checkout for this session is simply replaced
+      const mine: any[] = await dq(strapi)(BOOKING).findMany({ where: { slotDocumentId: it.slotDocumentId, sessionDate: it.date, user: userId, status: 'pending' } });
+      for (const m of mine) await releasePending(strapi, m);
 
-    const booking = await dq(strapi)(BOOKING).create({
-      data: {
-        reference: newReference(),
-        user: userId,
-        classDocumentId: slot.class.documentId,
-        classSlug: slot.class.slug,
-        slotDocumentId,
-        sessionDate: date,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        classNameSnapshot: slot.class.name,
-        amount,
-        currency: 'LKR',
-        status: free ? 'confirmed' : 'pending',
-        holdExpiresAt: free ? null : new Date(Date.now() + HOLD_MINUTES * 60_000).toISOString(),
-      },
-    });
+      const confirmed = await dq(strapi)(BOOKING).findOne({ where: { slotDocumentId: it.slotDocumentId, sessionDate: it.date, user: userId, status: 'confirmed' } });
+      if (confirmed) throw new BookingError(409, `You are already booked into ${slot.class.name} on ${it.date}.`, 'duplicate');
+
+      const taken = await countTaken(strapi, it.slotDocumentId, it.date);
+      const capacity = Number(slot.capacity ?? 0);
+      if (capacity > 0 && taken >= capacity) throw new BookingError(409, `Sorry — ${slot.class.name} on ${it.date} is full.`, 'full');
+
+      created.push(await dq(strapi)(BOOKING).create({
+        data: {
+          reference: newReference(),
+          orderId,
+          user: userId,
+          classDocumentId: slot.class.documentId,
+          classSlug: slot.class.slug,
+          slotDocumentId: it.slotDocumentId,
+          sessionDate: it.date,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          classNameSnapshot: slot.class.name,
+          amount,
+          currency: 'LKR',
+          status: free ? 'confirmed' : 'pending',
+          holdExpiresAt: free ? null : new Date(Date.now() + HOLD_MINUTES * 60_000).toISOString(),
+        },
+      }));
+    }
 
     const payment = await dq(strapi)(PAYMENT).create({
       data: {
-        orderId: newOrderId(),
-        booking: booking.id,
+        orderId,
+        booking: created[0].id,
         user: userId,
-        amount,
+        amount: total,
         currency: 'LKR',
         provider: free ? 'free' : (process.env.PAYMENT_MODE === 'payhere' ? 'payhere' : 'preview'),
         status: free ? 'paid' : 'pending',
         paidAt: free ? nowISO() : null,
       },
     });
-
-    return { booking, payment, resumed: false };
-  }).then(async (result: any) => {
-    if (result.booking.status === 'confirmed' && !result.resumed) await notifyConfirmed(strapi, result.booking);
-    return result;
+    return { orderId, bookings: created, booking: created[0], payment, total, resumed: false };
   });
+
+  if (free) await notifyOrderConfirmed(strapi, orderId);
+  return result;
+}
+
+/** Single-session convenience wrapper (keeps the old API shape). */
+export async function reserve(strapi: Core.Strapi, input: { userId: number; slotDocumentId: string; date: string }) {
+  return reserveMany(strapi, { userId: input.userId, items: [{ slotDocumentId: input.slotDocumentId, date: input.date }] });
+}
+
+/** Cancel a member's unfinished (pending) booking and keep its order's payment consistent. */
+async function releasePending(strapi: Core.Strapi, booking: any) {
+  await dq(strapi)(BOOKING).update({ where: { id: booking.id }, data: { status: 'cancelled', cancelledAt: nowISO(), holdExpiresAt: null } });
+  if (!booking.orderId) return;
+  const pay = await dq(strapi)(PAYMENT).findOne({ where: { orderId: booking.orderId } });
+  if (!pay || pay.status !== 'pending') return;
+  const left: any[] = await dq(strapi)(BOOKING).findMany({ where: { orderId: booking.orderId, status: 'pending' } });
+  if (left.length === 0) await dq(strapi)(PAYMENT).update({ where: { id: pay.id }, data: { status: 'cancelled' } });
+  else await dq(strapi)(PAYMENT).update({ where: { id: pay.id }, data: { amount: left.reduce((n, b) => n + (b.amount ?? 0), 0) } });
 }
 
 // ── Payment results ─────────────────────────────────────────────────────────
 
-async function notifyConfirmed(strapi: Core.Strapi, booking: any) {
+/** Receipt payload for an order (PDF + email use the same data). */
+export async function receiptData(strapi: Core.Strapi, orderId: string, userId?: number): Promise<ReceiptData> {
+  const payment = await dq(strapi)(PAYMENT).findOne({ where: { orderId }, populate: ['booking', 'user'] });
+  if (!payment || (userId && payment.user?.id !== userId)) throw new BookingError(404, 'Order not found.', 'no-payment');
+  const bookings = await bookingsOfOrder(strapi, payment);
+  const items = [];
+  for (const b of bookings) {
+    const m = await mailData(strapi, { ...b, userId: payment.user?.id });
+    items.push({ reference: b.reference, className: b.classNameSnapshot, sessionDate: String(b.sessionDate).slice(0, 10), startTime: b.startTime, endTime: b.endTime, amount: b.amount ?? 0, status: b.status, room: m.room, coachNames: m.coachNames });
+  }
+  const raw = payment.rawPayload && typeof payment.rawPayload === 'object' ? payment.rawPayload : {};
+  const refunded = Array.isArray((raw as any).refunds) ? (raw as any).refunds.reduce((n: number, r: any) => n + (Number(r.amount) || 0), 0) : payment.status === 'refunded' ? payment.amount : 0;
+  return {
+    orderId,
+    customerName: displayName(payment.user ?? {}),
+    customerEmail: payment.user?.email ?? '',
+    createdAt: payment.createdAt,
+    paidAt: payment.paidAt,
+    status: payment.status,
+    provider: payment.provider,
+    currency: payment.currency ?? 'LKR',
+    total: bookings.reduce((n, b) => n + (b.amount ?? 0), 0) || payment.amount,
+    refunded,
+    items,
+  };
+}
+
+export async function receiptPdf(strapi: Core.Strapi, orderId: string, userId?: number) {
+  return buildReceiptPdf(await receiptData(strapi, orderId, userId));
+}
+
+async function notifyOrderConfirmed(strapi: Core.Strapi, orderId: string) {
   try {
-    const data = await mailData(strapi, booking);
-    if (data.email) {
-      await sendEmail(strapi, bookingConfirmationEmail(data));
-      await dq(strapi)(BOOKING).update({ where: { id: booking.id }, data: { confirmationSentAt: nowISO() } });
-    }
+    const payment = await dq(strapi)(PAYMENT).findOne({ where: { orderId }, populate: ['booking', 'user'] });
+    if (!payment) return;
+    const bookings = await bookingsOfOrder(strapi, payment);
+    const items: BookingMailData[] = [];
+    for (const b of bookings) items.push(await mailData(strapi, { ...b, userId: payment.user?.id }));
+    if (!items[0]?.email) return;
+    const site = (process.env.PUBLIC_SITE_URL || 'http://localhost:4321').replace(/\/$/, '');
+    const pdf = await receiptPdf(strapi, orderId);
+    await sendEmail(strapi, {
+      ...orderConfirmationEmail({ name: items[0].name, email: items[0].email, orderId, total: bookings.reduce((n, b) => n + (b.amount ?? 0), 0), items, receiptUrl: `${site}/account/receipt/${orderId}` }),
+      attachments: [{ filename: `receipt-${orderId}.pdf`, content: pdf, contentType: 'application/pdf' }],
+    });
+    for (const b of bookings) await dq(strapi)(BOOKING).update({ where: { id: b.id }, data: { confirmationSentAt: nowISO() } });
   } catch (err: any) {
-    strapi.log.error(`[booking] confirmation email failed for ${booking.reference}: ${err?.message ?? err}`);
+    strapi.log.error(`[booking] confirmation email failed for order ${orderId}: ${err?.message ?? err}`);
   }
 }
 
 export async function completePayment(strapi: Core.Strapi, orderId: string, providerReference?: string, raw?: unknown) {
   const payment = await dq(strapi)(PAYMENT).findOne({ where: { orderId }, populate: ['booking'] });
   if (!payment) throw new BookingError(404, 'Payment not found.', 'no-payment');
-  const booking = payment.booking;
-  if (!booking) throw new BookingError(404, 'Booking not found.', 'no-booking');
-  if (payment.status === 'paid') return { payment, booking, already: true };
+  const bookings = await bookingsOfOrder(strapi, payment);
+  if (bookings.length === 0) throw new BookingError(404, 'Booking not found.', 'no-booking');
+  if (payment.status === 'paid') return { payment, booking: bookings[0], bookings, already: true };
 
-  // Seat check again: the hold may have expired while the member was paying.
-  if (booking.status !== 'confirmed') {
-    const taken = await countTaken(strapi, booking.slotDocumentId, String(booking.sessionDate).slice(0, 10));
+  // Seat check again: a hold may have expired while the member was paying.
+  for (const booking of bookings.filter((b) => b.status === 'pending')) {
+    const date = String(booking.sessionDate).slice(0, 10);
+    const taken = await countTaken(strapi, booking.slotDocumentId, date);
     const slot = await getSlot(strapi, booking.slotDocumentId).catch(() => null);
     const holdValid = booking.holdExpiresAt && new Date(booking.holdExpiresAt).getTime() > Date.now();
     const capacity = Number(slot?.capacity ?? 0);
     if (!holdValid && capacity > 0 && taken >= capacity) {
       await dq(strapi)(PAYMENT).update({ where: { id: payment.id }, data: { status: 'failed', rawPayload: { reason: 'hold-expired-full', raw } } });
-      await dq(strapi)(BOOKING).update({ where: { id: booking.id }, data: { status: 'cancelled', cancelledAt: nowISO() } });
-      throw new BookingError(409, 'Your seat hold expired and the session is now full. No payment was taken.', 'expired');
+      for (const b of bookings) if (b.status === 'pending') await dq(strapi)(BOOKING).update({ where: { id: b.id }, data: { status: 'cancelled', cancelledAt: nowISO() } });
+      throw new BookingError(409, `Your seat hold expired and ${booking.classNameSnapshot} on ${date} is now full. No payment was taken.`, 'expired');
     }
   }
 
@@ -251,12 +326,12 @@ export async function completePayment(strapi: Core.Strapi, orderId: string, prov
     where: { id: payment.id },
     data: { status: 'paid', paidAt: nowISO(), providerReference: providerReference ?? payment.providerReference, rawPayload: raw ?? payment.rawPayload },
   });
-  const updatedBooking = await dq(strapi)(BOOKING).update({
-    where: { id: booking.id },
-    data: { status: 'confirmed', holdExpiresAt: null },
-  });
-  await notifyConfirmed(strapi, updatedBooking);
-  return { payment: updatedPayment, booking: updatedBooking, already: false };
+  const confirmed: any[] = [];
+  for (const b of bookings) {
+    confirmed.push(b.status === 'pending' ? await dq(strapi)(BOOKING).update({ where: { id: b.id }, data: { status: 'confirmed', holdExpiresAt: null } }) : b);
+  }
+  await notifyOrderConfirmed(strapi, orderId);
+  return { payment: updatedPayment, booking: confirmed[0], bookings: confirmed, already: false };
 }
 
 export async function failPayment(strapi: Core.Strapi, orderId: string, status: 'failed' | 'cancelled' = 'failed') {
@@ -264,9 +339,9 @@ export async function failPayment(strapi: Core.Strapi, orderId: string, status: 
   if (!payment) throw new BookingError(404, 'Payment not found.', 'no-payment');
   if (payment.status === 'paid') return { payment, booking: payment.booking };
   const updated = await dq(strapi)(PAYMENT).update({ where: { id: payment.id }, data: { status } });
-  // free the seat straight away
-  if (payment.booking && payment.booking.status === 'pending') {
-    await dq(strapi)(BOOKING).update({ where: { id: payment.booking.id }, data: { status: 'cancelled', cancelledAt: nowISO() } });
+  // free every held seat straight away
+  for (const b of await bookingsOfOrder(strapi, payment)) {
+    if (b.status === 'pending') await dq(strapi)(BOOKING).update({ where: { id: b.id }, data: { status: 'cancelled', cancelledAt: nowISO(), holdExpiresAt: null } });
   }
   return { payment: updated, booking: payment.booking };
 }
@@ -288,16 +363,18 @@ export async function cancelBooking(strapi: Core.Strapi, input: { userId: number
   const wasPaid = booking.status === 'confirmed' && (booking.amount ?? 0) > 0;
   const updated = await dq(strapi)(BOOKING).update({ where: { id: booking.id }, data: { status: 'cancelled', cancelledAt: nowISO(), holdExpiresAt: null } });
   if (wasPaid) {
-    const paidRows: any[] = await dq(strapi)(PAYMENT).findMany({ where: { booking: booking.id, status: 'paid' } });
-    for (const p of paidRows) {
-      await dq(strapi)(PAYMENT).update({
-        where: { id: p.id },
-        data: {
-          status: 'refunded',
-          rawPayload: { ...(p.rawPayload && typeof p.rawPayload === 'object' ? p.rawPayload : {}), refund: { amount: p.amount, at: nowISO(), reason: 'member-cancelled', test: true } },
-        },
-      });
+    // refund just this session against its order's payment (test mode: nothing real moves)
+    const pay = booking.orderId
+      ? await dq(strapi)(PAYMENT).findOne({ where: { orderId: booking.orderId } })
+      : await dq(strapi)(PAYMENT).findOne({ where: { booking: booking.id, status: 'paid' } });
+    if (pay) {
+      const raw = pay.rawPayload && typeof pay.rawPayload === 'object' ? pay.rawPayload : {};
+      const refunds = [...(Array.isArray((raw as any).refunds) ? (raw as any).refunds : []), { reference: booking.reference, amount: booking.amount, at: nowISO(), reason: 'member-cancelled', test: true }];
+      const live = booking.orderId ? await dq(strapi)(BOOKING).count({ where: { orderId: booking.orderId, status: 'confirmed' } }) : 0;
+      await dq(strapi)(PAYMENT).update({ where: { id: pay.id }, data: { status: live === 0 ? 'refunded' : 'paid', rawPayload: { ...raw, refunds } } });
     }
+  } else if (booking.orderId) {
+    await releasePending(strapi, { ...booking, id: booking.id });
   } else {
     await dq(strapi)(PAYMENT).updateMany({ where: { booking: booking.id, status: 'pending' }, data: { status: 'cancelled' } });
   }

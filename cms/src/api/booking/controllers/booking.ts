@@ -1,6 +1,6 @@
 import { factories } from '@strapi/strapi';
 import {
-  BookingError, availability, cancelBooking, listForUser, reserve, sendDayBeforeReminders,
+  BookingError, availability, cancelBooking, listForUser, receiptPdf, reserveMany, sendDayBeforeReminders,
 } from '../../../utils/booking';
 
 /** Maps BookingError → a clean JSON error response. */
@@ -26,14 +26,33 @@ const userIdOf = (ctx: any): number => {
 };
 
 export default factories.createCoreController('api::booking.booking', ({ strapi }) => ({
-  /** POST /api/bookings/reserve  { userId, slotId, date } */
+  /** POST /api/bookings/reserve  { userId, items: [{ slotId, date }] }  (or the single { slotId, date }) */
   async reserve(ctx) {
     await run(ctx, async () => {
-      const { slotId, date } = ctx.request.body ?? {};
-      if (!slotId || !date) throw new BookingError(400, 'Choose a session and a date.', 'bad-request');
-      const { booking, payment, resumed } = await reserve(strapi, { userId: userIdOf(ctx), slotDocumentId: String(slotId), date: String(date) });
-      return { booking, payment, resumed };
+      const body = ctx.request.body ?? {};
+      const raw: { slotId?: string; date?: string }[] = Array.isArray(body.items) ? body.items : [{ slotId: body.slotId, date: body.date }];
+      const items = raw.map((i) => ({ slotDocumentId: String(i?.slotId ?? ''), date: String(i?.date ?? '') })).filter((i) => i.slotDocumentId && i.date);
+      if (items.length === 0) throw new BookingError(400, 'Choose a session and a date.', 'bad-request');
+      const { orderId, bookings, booking, payment, total, resumed } = await reserveMany(strapi, { userId: userIdOf(ctx), items });
+      return { orderId, bookings, booking, payment, total, resumed };
     });
+  },
+
+  /** GET /api/bookings/receipt?userId=&orderId=  → application/pdf */
+  async receipt(ctx) {
+    try {
+      const orderId = String(ctx.query?.orderId ?? '');
+      if (!orderId) throw new BookingError(400, 'Missing order.', 'bad-request');
+      const pdf = await receiptPdf(strapi, orderId, userIdOf(ctx));
+      ctx.set('Content-Type', 'application/pdf');
+      ctx.set('Content-Disposition', `inline; filename="receipt-${orderId}.pdf"`);
+      ctx.body = Buffer.from(pdf);
+    } catch (err: any) {
+      if (err instanceof BookingError) { ctx.status = err.status; ctx.body = { error: { status: err.status, code: err.code, message: err.message } }; return; }
+      strapi.log.error(`[booking] receipt: ${err?.stack ?? err}`);
+      ctx.status = 500;
+      ctx.body = { error: { status: 500, code: 'server', message: 'Could not create the receipt.' } };
+    }
   },
 
   /** POST /api/bookings/:documentId/cancel  { userId } */

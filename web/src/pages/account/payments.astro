@@ -44,7 +44,7 @@ const when = (iso: string) => {
     ) : (
       <div class="twh-table-wrap">
         <table class="twh-table">
-          <thead><tr><th>Date</th><th>Class</th><th>Method</th><th>Order</th><th class="twh-table__num">Amount</th><th>Status</th></tr></thead>
+          <thead><tr><th>Date</th><th>Class</th><th>Method</th><th>Order</th><th class="twh-table__num">Amount</th><th>Status</th><th>Receipt</th></tr></thead>
           <tbody>
             {payments.map((p) => (
               <tr>
@@ -54,6 +54,7 @@ const when = (iso: string) => {
                 <td data-label="Order"><code>{p.orderId}</code></td>
                 <td data-label="Amount" class="twh-table__num">{p.amount > 0 ? formatLKR(p.amount) : 'Free'}</td>
                 <td data-label="Status"><span class={`twh-pill twh-pill--${tone[p.status] ?? 'muted'}`}>{p.status}</span></td>
+                <td data-label="Receipt">{['paid', 'refunded'].includes(p.status) ? <a href={`/account/receipt/${p.orderId}`} target="_blank" rel="noopener" class="twh-bk__receipt">PDF</a> : <span class="twh-muted">—</span>}</td>
               </tr>
             ))}
           </tbody>

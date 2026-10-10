@@ -28,7 +28,7 @@ const taken = await seatsTaken(now.dateISO, addDays(now.dateISO, BOOKING_WINDOW_
 const sessions: SessionOption[] = classSlots
   .flatMap((slot) => upcomingDates(slot, 4, now).map((d) => sessionFor(slot as any, d, taken, now)))
   .sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin)
-  .slice(0, 8);
+  .slice(0, 16);
 const nextOpen = sessions.find((s) => s.state === 'open');
 
 const isFree = (cls.price ?? 0) === 0 || cls.isFree;
@@ -245,6 +245,7 @@ const seo = cls.seo ?? {
       <div class="twh-book__inner">
         <div class="twh-book__head">
           <h2 id="book-h" class="twh-book__title"><span aria-hidden="true">/</span> Book a slot</h2>
+          <p class="twh-book__hint">Tick as many days as you like — add other classes too — then review and pay once.</p>
           <p class="twh-book__sub">
             {isFree ? 'This class is free — reserve your spot.' : `${priceLabel} per session — pay online when you book.`}
             {!logged && ' You’ll be asked to sign in or create a free account.'}
@@ -268,7 +269,10 @@ const seo = cls.seo ?? {
                   <p class="twh-session__spots">{spotsLabel(s)}</p>
                 </div>
                 {s.state === 'open' ? (
-                  <a href={`/book/${s.slotId}?date=${s.date}`} class="twh-btn twh-btn--primary twh-btn--sm twh-session__btn">Book now</a>
+                  <div class="twh-session__actions">
+                    <button type="button" class="twh-add" data-basket-add aria-pressed="false" data-item={JSON.stringify({ slotId: s.slotId, date: s.date, slug: cls.slug, name: cls.name, start: s.start, end: s.end, price: isFree ? 0 : (cls.price ?? 0), room: s.room, short: s.short })}><span data-label>Add</span></button>
+                    <a href={`/book/${s.slotId}?date=${s.date}`} class="twh-session__single">Book only this</a>
+                  </div>
                 ) : (
                   <span class="twh-btn twh-btn--ghost twh-btn--sm twh-session__btn is-disabled" aria-disabled="true">{s.state === 'full' ? 'Full' : 'Closed'}</span>
                 )}
@@ -285,6 +289,8 @@ const seo = cls.seo ?? {
 <style is:global>@import '../../styles/pages/twh-class-detail.css';</style>
 
 <script>
+  import { initBasketButtons } from '../../scripts/interactions/basket';
+  initBasketButtons();
   import gsap from 'gsap';
 
   gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {

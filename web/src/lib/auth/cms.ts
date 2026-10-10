@@ -121,6 +121,8 @@ export interface Booking {
   startTime: string;
   endTime: string;
   classNameSnapshot: string;
+  /** bookings paid together share one order */
+  orderId?: string | null;
   amount: number;
   currency: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'attended' | 'no-show';
@@ -153,8 +155,20 @@ export interface MemberEmail {
 /** Emails the system sent (or, until a provider is connected, logged) to this member. */
 export const myEmails = (userId: number) => cms<{ emails: MemberEmail[] }>(`/api/bookings/messages?userId=${userId}`);
 
-export const reserveBooking = (userId: number, slotId: string, date: string) =>
-  cms<{ booking: Booking; payment: Payment; resumed: boolean }>('/api/bookings/reserve', { method: 'POST', json: { userId, slotId, date } });
+export interface OrderItemInput { slotId: string; date: string }
+
+/** Reserve one or many sessions in a single order (one payment, one confirmation email). */
+export const reserveItems = (userId: number, items: OrderItemInput[]) =>
+  cms<{ orderId: string; bookings: Booking[]; booking: Booking; payment: Payment; total: number }>('/api/bookings/reserve', { method: 'POST', json: { userId, items } });
+
+export const reserveBooking = (userId: number, slotId: string, date: string) => reserveItems(userId, [{ slotId, date }]);
+
+/** The PDF receipt for an order (null when it is not this member's). */
+export async function fetchReceipt(userId: number, orderId: string): Promise<{ bytes: ArrayBuffer; name: string } | null> {
+  const res = await fetch(`${CMS_URL()}/api/bookings/receipt?userId=${userId}&orderId=${encodeURIComponent(orderId)}`, { headers: TOKEN() ? { Authorization: `Bearer ${TOKEN()}` } : {} });
+  if (!res.ok) return null;
+  return { bytes: await res.arrayBuffer(), name: `receipt-${orderId}.pdf` };
+}
 
 export const myBookings = (userId: number) =>
   cms<{ bookings: Booking[]; payments: Payment[] }>(`/api/bookings/mine?userId=${userId}`);
@@ -163,10 +177,10 @@ export const cancelBooking = (userId: number, bookingDocumentId: string) =>
   cms<{ booking: Booking }>(`/api/bookings/${bookingDocumentId}/cancel`, { method: 'POST', json: { userId } });
 
 export const getPaymentByOrder = (orderId: string, userId: number) =>
-  cms<{ payment: Payment & { booking: Booking } }>(`/api/payments/by-order/${encodeURIComponent(orderId)}?userId=${userId}`);
+  cms<{ payment: Payment & { booking: Booking }; bookings: Booking[] }>(`/api/payments/by-order/${encodeURIComponent(orderId)}?userId=${userId}`);
 
 export const completePayment = (orderId: string, providerReference?: string) =>
-  cms<{ payment: Payment; booking: Booking }>(`/api/payments/${encodeURIComponent(orderId)}/complete`, { method: 'POST', json: { providerReference } });
+  cms<{ payment: Payment; booking: Booking; bookings: Booking[] }>(`/api/payments/${encodeURIComponent(orderId)}/complete`, { method: 'POST', json: { providerReference } });
 
 export const failPayment = (orderId: string, status: 'failed' | 'cancelled' = 'failed') =>
   cms(`/api/payments/${encodeURIComponent(orderId)}/fail`, { method: 'POST', json: { status } });

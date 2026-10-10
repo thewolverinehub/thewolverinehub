@@ -1,7 +1,7 @@
 /* ============================================================
    PRICING — /pricing  (pay per class)
    Prefix: twh-px
-   Contents: 1 Shared  2 Hero  3 Rate ladder  4 Planner  5 Rules  6 FAQ  7 CTA  8 Responsive
+   Contents: 1 Shared  2 Hero  3 Price tickets  4 Planner  5 Rules  6 FAQ  7 CTA  8 Responsive
    ============================================================ */
 
 /* ── 1. Shared ─────────────────────────────────────────────── */
@@ -49,22 +49,36 @@
 .twh-px-chip[aria-pressed="true"] { color: var(--color-twh-black); background: var(--color-twh-yellow); border-color: var(--color-twh-yellow); }
 .twh-px-chip[aria-pressed="true"] span { background: rgba(0, 0, 0, 0.18); }
 
-.twh-px-ladder { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
-.twh-px-rung[hidden] { display: none; }
-.twh-px-rung__link { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr) auto; gap: 1.5rem; align-items: center; padding: 1rem 1.25rem; text-decoration: none; background: var(--color-twh-ink); border: 1px solid var(--color-twh-grey-800); border-left: 4px solid var(--color-twh-grey-600); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, background 0.2s; }
-.twh-px-rung[data-tier="free"] .twh-px-rung__link { border-left-color: var(--color-twh-blue); }
-.twh-px-rung[data-tier="core"] .twh-px-rung__link { border-left-color: var(--color-twh-yellow); }
-.twh-px-rung[data-tier="premium"] .twh-px-rung__link { border-left-color: var(--color-twh-red); }
-.twh-px-rung__link:hover, .twh-px-rung__link:focus-visible { transform: translateX(6px); border-color: var(--color-twh-yellow); background: #1a1a20; }
-.twh-px-rung__name { display: grid; gap: 0.15rem; min-width: 0; }
-.twh-px-rung__name b { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-twh-white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.twh-px-rung__name small { font-size: 0.8125rem; color: var(--color-twh-grey-300); }
-.twh-px-rung__bar { position: relative; height: 12px; background: rgba(255, 255, 255, 0.06); border-radius: 99px; overflow: hidden; }
-.twh-px-rung__bar i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--color-twh-red-deep), var(--color-twh-red)); transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms); }
-.twh-px-rung[data-tier="free"] .twh-px-rung__bar i { background: var(--color-twh-blue); }
-.twh-px-rung[data-tier="core"] .twh-px-rung__bar i { background: linear-gradient(90deg, #a87b00, var(--color-twh-yellow)); }
-.twh-px-rung.is-in .twh-px-rung__bar i { width: var(--w); }
-.twh-px-rung__price { min-width: 7.5rem; text-align: right; font-family: var(--font-display); font-size: 1.75rem; letter-spacing: 0.03em; color: var(--color-twh-yellow); font-variant-numeric: tabular-nums; }
+/* Price tickets */
+.twh-px-tickets { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+.twh-px-ticket { --tc: var(--color-twh-yellow); display: grid; grid-template-rows: auto auto 1fr; opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease var(--d, 0ms), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms); filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.45)); }
+.twh-px-ticket[hidden] { display: none; }
+.twh-px-ticket.is-in { opacity: 1; transform: none; }
+.twh-px-ticket[data-tier="free"] { --tc: #5b8cff; }
+.twh-px-ticket[data-tier="premium"] { --tc: var(--color-twh-red); }
+.twh-px-ticket__top { position: relative; padding: 1.4rem 1.5rem 1.2rem; color: var(--color-twh-black); background: var(--tc); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+.twh-px-ticket[data-tier="premium"] .twh-px-ticket__top, .twh-px-ticket[data-tier="free"] .twh-px-ticket__top { color: var(--color-twh-white); }
+.twh-px-ticket__top::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-35deg, rgba(0, 0, 0, 0.08) 0 2px, transparent 2px 14px); pointer-events: none; }
+.twh-px-ticket__tier { position: relative; z-index: 1; display: inline-block; padding: 0.15rem 0.6rem; font-size: 0.6875rem; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; background: rgba(0, 0, 0, 0.22); border-radius: 99px; }
+.twh-px-ticket__price { position: relative; z-index: 1; margin: 0.5rem 0 0; font-family: var(--font-display); font-size: clamp(2.5rem, 4vw, 3.25rem); line-height: 1; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.twh-px-ticket__per { position: relative; z-index: 1; margin: 0.15rem 0 0; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
+/* perforated tear line with side notches */
+.twh-px-ticket__tear { position: relative; height: 18px; background: var(--color-twh-ink); }
+.twh-px-ticket__tear::before { content: ''; position: absolute; left: 14px; right: 14px; top: 50%; border-top: 2px dashed var(--color-twh-grey-700); }
+.twh-px-ticket__tear::after { content: ''; position: absolute; left: -9px; right: -9px; top: 0; height: 18px; background: radial-gradient(circle 9px at 0 50%, var(--ticket-bg, var(--color-twh-black)) 98%, transparent) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, var(--ticket-bg, var(--color-twh-black)) 98%, transparent) right / 51% 100% no-repeat; }
+.twh-px-sec--board { --ticket-bg: var(--color-twh-black); }
+.twh-px-ticket__body { display: grid; align-content: start; gap: 0.35rem; padding: 0.5rem 1.5rem 1.4rem; background: var(--color-twh-ink); border: 1px solid var(--color-twh-grey-800); border-top: 0; }
+.twh-px-ticket__name { margin: 0; font-family: var(--font-display); font-size: 1.75rem; line-height: 1.05; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-twh-white); overflow-wrap: anywhere; }
+.twh-px-ticket__tag { margin: 0; font-size: 0.9375rem; color: var(--color-twh-grey-300); }
+.twh-px-ticket__chips { list-style: none; margin: 0.4rem 0 0.6rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.twh-px-ticket__chips li { padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: 700; text-transform: capitalize; color: var(--color-twh-grey-100); border: 1px solid var(--color-twh-grey-700); border-radius: 99px; }
+.twh-px-ticket__actions { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: auto; padding-top: 0.5rem; }
+.twh-px-ticket__view { font-size: 0.875rem; font-weight: 800; color: var(--color-twh-grey-100); text-decoration: none; }
+.twh-px-ticket__view:hover { color: var(--tc); }
+.twh-px-ticket__plan { min-height: 40px; padding: 0.4rem 0.95rem; font: inherit; font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-twh-white); background: transparent; border: 1px solid var(--color-twh-grey-500); border-radius: 2px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+.twh-px-ticket__plan:hover { border-color: var(--color-twh-yellow); color: var(--color-twh-yellow); }
+.twh-px-ticket__plan.is-on { color: var(--color-twh-black); background: var(--color-twh-yellow); border-color: var(--color-twh-yellow); }
+.twh-px-ticket:hover { transform: translateY(-6px); }
 
 /* ── 4. Planner ────────────────────────────────────────────── */
 
@@ -97,6 +111,7 @@
 .twh-px-sum__lines b { font-variant-numeric: tabular-nums; }
 .twh-px-sum__empty { color: var(--color-twh-grey-400) !important; }
 .twh-px-sum__cta { width: 100%; justify-content: center; }
+.twh-px-sum__hint { margin: 0.6rem 0 0; font-size: 0.8125rem; line-height: 1.5; text-align: center; color: var(--color-twh-grey-300); }
 .twh-px-sum__reset { display: block; margin: 0.75rem auto 0; padding: 0.4rem; font: inherit; font-size: 0.875rem; font-weight: 600; color: var(--color-twh-grey-300); text-decoration: underline; background: none; border: 0; cursor: pointer; }
 .twh-px-sum__reset:hover { color: var(--color-twh-white); }
 
@@ -138,20 +153,17 @@
 }
 
 @media (max-width: 767px) {
+  .twh-px-tickets { grid-template-columns: minmax(0, 1fr); }
   .twh-px-wrap, .twh-px-hero__inner { padding: 0 1.25rem; }
   .twh-px-sec { padding: 3.5rem 0; }
   .twh-px-hero { padding: 3.5rem 0 3rem; }
   .twh-px-hero__cta .twh-btn { flex: 1 1 100%; justify-content: center; }
-  .twh-px-rung__link { grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem 1rem; padding: 0.9rem 1rem; }
-  .twh-px-rung__bar { grid-column: 1 / -1; grid-row: 2; }
-  .twh-px-rung__name b { font-size: 1.3rem; }
-  .twh-px-rung__price { min-width: 0; font-size: 1.5rem; }
   .twh-px-plan__list { grid-template-columns: minmax(0, 1fr); }
   .twh-px-rules { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .twh-px-rung__bar i, .twh-px-rung__link, .twh-px-rule, .twh-px-chip { transition: none; }
-  .twh-px-rung__link:hover { transform: none; }
+  .twh-px-ticket, .twh-px-rule, .twh-px-chip { transition: none; opacity: 1; transform: none; }
+  .twh-px-ticket:hover { transform: none; }
   .twh-px-rule:hover { transform: none; }
 }

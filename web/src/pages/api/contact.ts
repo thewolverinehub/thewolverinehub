@@ -14,6 +14,8 @@ export const POST: APIRoute = async ({ request }) => {
   const email   = String(body.email   ?? '').trim();
   const phone   = String(body.phone   ?? '').trim();
   const message = String(body.message ?? '').trim();
+  const topic   = String(body.topic ?? '').trim().slice(0, 80);
+  const preferredContact = String(body.preferredContact ?? '').trim().slice(0, 40);
 
   if (!name || !email) {
     return new Response(JSON.stringify({ message: 'Name and email are required.' }), {
@@ -45,6 +47,8 @@ export const POST: APIRoute = async ({ request }) => {
           email,
           phone: phone || undefined,
           message: message || undefined,
+          topic: topic || undefined,
+          preferredContact: preferredContact || undefined,
         },
       }),
     });

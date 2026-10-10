@@ -24,6 +24,8 @@ const q = Astro.url.searchParams;
 const tabParam = q.get('tab');
 const tab = tabParam === 'past' || tabParam === 'cancelled' ? tabParam : 'upcoming';
 const booked = q.get('booked');
+const bookedN = Math.max(1, Number(q.get('n') ?? 1) || 1);
+const bookedIsOrder = Boolean(booked && booked.startsWith('TWHO-'));
 const payment = q.get('payment');
 const cancelled = q.get('cancelled') === '1';
 const refund = q.get('refund');
@@ -40,7 +42,7 @@ const shown = lists[tab];
 <AccountLayout {member} active="bookings" title="My Bookings">
   {booked && (
     <p class="twh-banner twh-banner--good" role="status">
-      <b>You're booked in!</b> Your booking <b>{booked}</b> is confirmed. Your confirmation is in your <a href="/account/messages">Messages</a> (email preview mode), and we'll remind you the evening before.
+      <b>You're booked in!</b> {bookedIsOrder ? (bookedN > 1 ? `${bookedN} sessions are confirmed.` : 'Your session is confirmed.') : <>Your booking <b>{booked}</b> is confirmed.</>} The confirmation with every detail is in your <a href="/account/messages">Messages</a> (email preview mode){bookedIsOrder && <>, and you can <a href={`/account/receipt/${booked}`} target="_blank" rel="noopener">download the PDF receipt</a></>}. We'll remind you the evening before each session.
     </p>
   )}
   {payment && <p class="twh-banner twh-banner--warn" role="status">{payment === 'cancelled' ? 'Payment cancelled — your seat was released.' : 'The payment did not go through — your seat was released. You can book again any time.'}</p>}

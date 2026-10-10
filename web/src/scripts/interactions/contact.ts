@@ -144,7 +144,7 @@ function initForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, message: `[Topic: ${topic} · Prefers: ${prefer}]\n${body}`.trim() }),
+        body: JSON.stringify({ name, email, phone, message: body, topic, preferredContact: prefer }),
       });
       if (res.ok) {
         doneText.textContent = `Thanks ${name.split(' ')[0]} — we'll reply by ${prefer.toLowerCase()} within 24 hours.`;

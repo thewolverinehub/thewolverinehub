@@ -117,14 +117,14 @@ const hoursJson = JSON.stringify(hours);
               <label for="cf-phone">Phone</label>
               <input id="cf-phone" name="phone" type="tel" autocomplete="tel" placeholder="+94 77 000 0000" />
             </div>
-            <fieldset class="twh-ct-field twh-ct-prefer">
-              <legend>Best way to reach you</legend>
+            <div class="twh-ct-field twh-ct-prefer" role="group" aria-labelledby="cf-prefer-l">
+              <span class="twh-ct-label" id="cf-prefer-l">Best way to reach you</span>
               <div class="twh-ct-pills">
                 <label><input type="radio" name="prefer" value="WhatsApp" checked /><span>WhatsApp</span></label>
                 <label><input type="radio" name="prefer" value="Phone call" /><span>Call</span></label>
                 <label><input type="radio" name="prefer" value="Email" /><span>Email</span></label>
               </div>
-            </fieldset>
+            </div>
           </div>
           <div class="twh-ct-field">
             <label for="cf-message">Message</label>

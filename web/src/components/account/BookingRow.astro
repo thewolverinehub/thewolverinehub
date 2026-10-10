@@ -28,13 +28,14 @@ const [dow, num, month] = b.short.split(' ');
     <p class="twh-bk__meta">
       <span>Ref <b>{b.reference}</b></span>
       <span>{b.amount > 0 ? formatLKR(b.amount) : 'Free'}</span>
+      {b.orderId && ['confirmed', 'attended', 'no-show'].includes(b.status) && <a href={`/account/receipt/${b.orderId}`} target="_blank" rel="noopener" class="twh-bk__receipt">Receipt (PDF)</a>}
     </p>
     <p class="twh-bk__error" data-row-error hidden></p>
   </div>
 
-  {actions && (b.canCancel || (b.awaitingPayment && b.orderId)) && (
+  {actions && (b.canCancel || (b.awaitingPayment && b.checkoutOrderId)) && (
     <div class="twh-bk__actions">
-      {b.awaitingPayment && b.orderId && <a href={`/checkout/${b.orderId}`} class="twh-btn twh-btn--primary twh-btn--sm">Pay now</a>}
+      {b.awaitingPayment && b.checkoutOrderId && <a href={`/checkout/${b.checkoutOrderId}`} class="twh-btn twh-btn--primary twh-btn--sm">Pay now</a>}
       {b.canCancel && <button
           type="button"
           class="twh-btn twh-btn--ghost twh-btn--sm"

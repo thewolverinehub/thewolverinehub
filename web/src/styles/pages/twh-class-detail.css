@@ -423,3 +423,10 @@
 .twh-program--expect .twh-program__prose h3 { margin: 1.25rem 0 0.5rem; font-size: 1.125rem; letter-spacing: 0.06em; color: var(--color-twh-yellow); }
 .twh-program--expect .twh-program__prose ul { margin: 0 0 0.5rem; padding-left: 1.25rem; display: grid; gap: 0.4rem; }
 .twh-program--expect .twh-program__prose li::marker { color: var(--color-twh-red); }
+
+/* ── Multi-session booking (add to basket) ────────────────── */
+.twh-book__hint { margin: 0 0 0.35rem; font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-twh-yellow); }
+.twh-session__actions { display: grid; justify-items: stretch; gap: 0.35rem; text-align: center; }
+.twh-session__actions .twh-add { width: 100%; }
+.twh-session__single { font-size: 0.75rem; font-weight: 700; color: var(--color-twh-grey-300); text-decoration: underline; }
+.twh-session__single:hover { color: var(--color-twh-white); }

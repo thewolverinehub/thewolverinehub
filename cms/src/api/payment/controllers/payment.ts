@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi';
-import { BookingError, completePayment, failPayment } from '../../../utils/booking';
+import { BookingError, bookingsOfOrder, completePayment, failPayment } from '../../../utils/booking';
 
 async function run(ctx: any, fn: () => Promise<unknown>) {
   try {
@@ -27,7 +27,8 @@ export default factories.createCoreController('api::payment.payment', ({ strapi 
       });
       if (!payment || (userId && payment.user?.id !== userId)) throw new BookingError(404, 'Payment not found.', 'no-payment');
       const { user, ...rest } = payment;
-      return { payment: rest };
+      const bookings = await bookingsOfOrder(strapi, payment);
+      return { payment: rest, bookings };
     });
   },
 
