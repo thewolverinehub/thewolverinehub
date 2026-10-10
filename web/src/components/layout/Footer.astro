@@ -28,10 +28,13 @@ const fallbackColumns: StrapiFooter['columns'] = [
   { heading: 'Info', links: [
     { label: 'Blog', href: '/blog', openInNewTab: false },
     { label: 'FAQ',  href: '/faq',  openInNewTab: false },
-    { label: 'Privacy', href: '/privacy', openInNewTab: false },
-    { label: 'Terms', href: '/terms', openInNewTab: false },
   ]},
 ];
+
+// Privacy + Terms live in the bottom bar only (not in the Info column).
+const legalLinks = (footer?.legalLinks?.length ?? 0) > 0
+  ? footer!.legalLinks
+  : [{ label: 'Privacy Policy', href: '/privacy' }, { label: 'Terms of Use', href: '/terms' }];
 
 const columns = (footer?.columns?.length ?? 0) > 0 ? footer!.columns : fallbackColumns;
 
@@ -130,7 +133,7 @@ const columns = (footer?.columns?.length ?? 0) > 0 ? footer!.columns : fallbackC
       <p class="twh-footer__company">Reg. {global.companyNumber}</p>
     )}
     <nav aria-label="Legal" class="twh-footer__legal-nav">
-      {footer?.legalLinks?.map((link) => (
+      {legalLinks.map((link) => (
         <a href={link.href} class="twh-footer__legal-link">{link.label}</a>
       ))}
     </nav>
